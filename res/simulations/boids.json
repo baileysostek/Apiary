@@ -1,0 +1,42 @@
+{
+  "world":{
+    "name":"Move towards food",
+    "type":"3D"
+  },
+  "agents":{
+    "Sphere":{
+      "attributes":{
+        "velocity":{
+          "type":"VEC3",
+          "default_value":"RANDOM"
+        },
+        "position":{
+          "type":"VEC3",
+          "default_value":"RANDOM"
+        },
+        "color":{
+          "type":"VEC3",
+          "default_value": []
+        },
+        "sight_range":{
+          "type":"FLOAT",
+          "default_value":1.0
+        }
+      }
+    },
+    "Food":{
+      "attributes":{
+        "position":{
+          "type":"VEC3",
+          "default_value":"RANDOM"
+        }
+      }
+    }
+  },
+  "steps":[
+    {
+      "agents":["Sphere"],
+      "logic":["Food", "@agent", "@all", "@filter", ""]
+    }
+  ]
+}

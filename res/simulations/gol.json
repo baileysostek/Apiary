@@ -1,0 +1,26 @@
+{
+  "world":{
+    "name":"Conway's Game of Life",
+    "type":"2D"
+  },
+  "agents":{
+    "cell":{
+      "attributes":{
+        "position":{
+          "type":"VEC2",
+          "default_value":"RANDOM"
+        },
+        "alive":{
+          "type":"BOOL",
+          "default_value":"RANDOM"
+        }
+      }
+    }
+  },
+  "steps":[
+    {
+      "agents":["cell"],
+      "logic":["", "@get_adjacent", "@all", "@filter", ""]
+    }
+  ]
+}

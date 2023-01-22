@@ -1,0 +1,14 @@
+{
+  "name": "simulation_scheme",
+  "fields":{
+    "world":{
+      "type":"JsonObject"
+    },
+    "agents":{
+      "type":"JsonObject"
+    },
+    "steps":{
+      "type":"JsonArray"
+    }
+  }
+}
