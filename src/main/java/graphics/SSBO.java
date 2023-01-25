@@ -33,8 +33,8 @@ public class SSBO extends GLStruct{
 
         // Now we ask GL for an ID to use for the SSBO
         this.id = GL46.glGenBuffers();
-        GL46.glBindBuffer(GL46.GL_SHADER_STORAGE_BUFFER, this.id);
         this.bind();
+        GL46.glBindBufferBase(GL46.GL_SHADER_STORAGE_BUFFER, location, id);
         // Load data based on our initial capacity
         this.unbind();
     }
@@ -51,7 +51,10 @@ public class SSBO extends GLStruct{
     public void allocate(int number_of_agents){
         this.capacity = number_of_agents;
         this.data = new float[capacity * this.computeSafeSizeInFloats()];
-        Arrays.fill(this.data, 0);
+//        Arrays.fill(this.data, 0);
+        for(int i = 0; i < this.data.length; i++){
+            this.data[i] = (float) Math.random();
+        }
     }
 
     private void bind(){
@@ -82,7 +85,7 @@ public class SSBO extends GLStruct{
         String attribute_definitions = "";
         for(String attribute_name : this.getAttributes().keySet()){
             GLDataType type = this.getAttributes().get(attribute_name);
-            attribute_definitions += String.format("\t%s %s;\n", type.getGLSL(), attribute_name);
+            attribute_definitions += String.format("\t%s %s[%s];\n", type.getGLSL(), attribute_name, this.capacity+"");
         }
         substitutions.put("attributes", attribute_definitions);
 

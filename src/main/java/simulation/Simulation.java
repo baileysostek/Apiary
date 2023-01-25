@@ -1,21 +1,41 @@
 package simulation;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import graphics.GLDataType;
 import graphics.SSBO;
 import graphics.ShaderManager;
+import graphics.VAO;
 import org.lwjgl.opengl.GL46;
 import simulation.world.World;
 import simulation.world.World2D;
 import util.JsonUtils;
-import util.StringUtils;
 
+import java.nio.FloatBuffer;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
 public class Simulation {
+
+    private final int program_id;
+    private final VAO vao;
+
+    float vertices[] = {
+        -1.0f, -1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f
+    };
+
+//    float vertices[] = {
+//        -0.5f, -0.5f, 0.0f,
+//        0.5f, -0.5f, 0.0f,
+//        0.0f,  0.5f, 0.0f
+//    };
+
+
+
 
     private String name;
     private World simulation_world; // The simulation world is used as the tempalte for the worldstate during simulation.
@@ -85,7 +105,7 @@ public class Simulation {
                 }
             }
 
-            agent_ssbo.allocate(100);
+            agent_ssbo.allocate(1000);
             agent_ssbo.flush();
             agent_ssbo.computeSafeSizeInFloats();
 
@@ -94,6 +114,46 @@ public class Simulation {
         }
 
         // Now we are going to determine the pipeline steps used
+
+        // Shader
+
+        String vertex_source =
+                "#version 460\n" +
+                "layout (location = 0) in vec3 position;\n" +
+                "out vec3 pass_position;\n" +
+                "void main(void){\n" +
+                "pass_position = position;\n" +
+                "gl_Position = vec4(position, 1.0);\n" +
+                "}\n";
+
+        String fragment_source =
+                "#version 460\n" +
+                agents.get("cell").generateGLSL() +
+                "in vec3 pass_position;\n" +
+                "out vec4 out_color; \n" +
+                "void main(void){\n" +
+                "vec2 screen_pos = (pass_position.xy + vec2(1)) / vec2(2);\n" +
+                "int index = int(floor((screen_pos.x * 1920.0) + (1920 * (screen_pos.y * 1080)))) % 1000; \n" +
+                "vec3 color = all_cell.color[index];\n" +
+                "out_color = vec4(all_cell.alive[index] > 0.99 ? color : vec3(screen_pos, 0.0), 1.0);\n" +
+                "}\n";
+
+        int vertex   = ShaderManager.getInstance().compileShader(GL46.GL_VERTEX_SHADER, vertex_source);
+        int fragment = ShaderManager.getInstance().compileShader(GL46.GL_FRAGMENT_SHADER, fragment_source);
+
+        this.program_id = ShaderManager.getInstance().linkShader(vertex, fragment);
+
+        this.vao = new VAO();
+        this.vao.bind();
+
+        int vbo_vertex_id = GL46.glGenBuffers();
+        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vbo_vertex_id);
+        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, vertices, GL46.GL_STATIC_DRAW);
+        GL46.glVertexAttribPointer(0, 3, GL46.GL_FLOAT, false, 0, 0);
+        GL46.glEnableVertexAttribArray(0);
+        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, 0);
+        this.vao.unbind();
+
     }
 
     public void update(double delta){
@@ -102,12 +162,23 @@ public class Simulation {
 
     public void render(){
         // Now we try to step the simulation
-        for(Step step : pipeline){
-            for(String agent_name : step.getAgents()){
+//        for(Step step : pipeline){
+//            for(String agent_name : step.getAgents()){
+//
+//            }
+//        }
 
-            }
-        }
+        GL46.glClearColor(1f, 1f, 1f, 1.0f);
+        GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
 
+        this.agents.get("cell").flush();
+
+        // This stage renders an input image to the screen.
+        GL46.glUseProgram(program_id);
+        this.vao.bind();
+        GL46.glDrawArrays(GL46.GL_TRIANGLES, 0, vertices.length / 3);
+        this.vao.unbind();
+        GL46.glUseProgram(0);
 
     }
 

@@ -25,11 +25,16 @@ public class Apiary {
 
     // The window handle
     private long window;
+    private int window_width = 1920;
+    private int window_height = 1080;
+    private float aspect_ratio = (float)window_width / (float)window_height;
 
     // Variables used
     private static boolean RUNNING = false;
 
     private static int FRAMES = 0;
+
+    private int shader_id;
 
     public void run() {
 
@@ -54,13 +59,13 @@ public class Apiary {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 
         // Create the window
-        window = glfwCreateWindow(1920, 1080, "Apiary Simulation Engine", NULL, NULL);
+        window = glfwCreateWindow(window_width, window_height, "Apiary Simulation Engine", NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -68,6 +73,23 @@ public class Apiary {
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+        });
+
+        glfwSetFramebufferSizeCallback(window, new GLFWFramebufferSizeCallback() {
+            @Override
+            public void invoke(long windowId, int width, int height) {
+                // Update the window size
+                if(width > 0 && height > 0){
+                    Apiary.this.window_width  = width;
+                    Apiary.this.window_height = height;
+//                    glfwSetWindowSize(window, width, height);
+                    Apiary.this.aspect_ratio = (float)width / (float)height;
+                    GL46.glViewport(0, 0, width, height);
+//                    Renderer.getInstance().resize(width, height);
+//                    Renderer.getInstance().setScreenSize(width, height);
+                    System.out.println("The window changed size, the aspect ratio is " + aspect_ratio);
+                }
+            }
         });
 
         // Get the thread stack and push a new frame
@@ -83,9 +105,9 @@ public class Apiary {
 
             // Center the window
             glfwSetWindowPos(
-                    window,
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
+                window,
+                (vidmode.width() - pWidth.get(0)) / 2,
+                (vidmode.height() - pHeight.get(0)) / 2
             );
         } // the stack frame is popped automatically
 
@@ -100,34 +122,15 @@ public class Apiary {
         // Create our capabilities
         GL.createCapabilities();
 
+        GL46.glViewport(0, 0, 1920, 1080);
+
         // Initialize all of our singleton instances here
         JsonUtils.initialize();
         ShaderManager.initialize();
         SimulationManager.initialize();
 
-//        SimulationManager.getInstance().load("simulations/gol.json");
-//        System.out.println(SimulationManager.getInstance());
+        SimulationManager.getInstance().load("simulations/gol.json");
 
-
-        String vertex_source =
-                "#version 460\n" +
-                "layout(location = 0) in vec3 position;\n" +
-                "void main(void){\n" +
-                "gl_Position = vec4(position, 1);\n" +
-                "}";
-
-        String fragment_source =
-                "#version 460\n" +
-                "out vec4 out_Color; \n" +
-                "void main(void){\n" +
-                "out_Color = vec4(1, 0, 0, 1);\n" +
-                "}";
-
-        int vertex   = ShaderManager.getInstance().compileShader(GL46.GL_VERTEX_SHADER, vertex_source);
-        int fragment = ShaderManager.getInstance().compileShader(GL46.GL_FRAGMENT_SHADER, fragment_source);
-
-
-        System.out.println(vertex+","+fragment);
     }
 
     private void loop() {
@@ -153,7 +156,7 @@ public class Apiary {
                 frameDelta = ((now - last) / (double) 1000000000);
                 runningDelta += frameDelta;
 
-                if(GLFW.glfwGetWindowAttrib(window, GLFW.GLFW_FOCUSED) == 1) {
+                if(GLFW.glfwGetWindowAttrib(window, GLFW.GLFW_FOCUSED) == 1 || true) {
                     update(frameDelta);
 
                     if (runningDelta > 1) {

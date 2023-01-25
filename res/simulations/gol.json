@@ -6,12 +6,12 @@
   "agents":{
     "cell":{
       "attributes":{
-        "position":{
-          "type":"VEC2",
+        "color":{
+          "type":"VEC3",
           "default_value":"RANDOM"
         },
         "alive":{
-          "type":"BOOL",
+          "type":"FLOAT",
           "default_value":"RANDOM"
         }
       }

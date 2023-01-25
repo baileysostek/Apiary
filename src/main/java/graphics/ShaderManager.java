@@ -92,6 +92,7 @@ public class ShaderManager {
         int shader_id   = GL46.glCreateShader(shader_type);
         GL46.glShaderSource(shader_id, shader_source);
         GL46.glCompileShader(shader_id);
+        checkForError(String.format("Compiling %s Shader", shader_type_name));
 
         //Buffer for reading compile status
         int[] compile_buffer = new int[]{ 0 };
@@ -118,6 +119,7 @@ public class ShaderManager {
             }
         }else{
             if(compile_buffer[0] == GL46.GL_TRUE){
+                checkForError("Compilation Error");
                 System.out.println("Shader compiled Successfully.");
             }else{
                 System.out.println("Shader compiled in an unknown state. This may cause strange behavior.");
@@ -137,36 +139,43 @@ public class ShaderManager {
 
         System.out.println("Linking Vertex and Fragment shaders to Program...");
 
-//        int attributeIndex = 1;
-//        for(String attribute : attributes){
-//            GL46.glBindAttribLocation(programID, attributeIndex, attribute);
-//            attributeIndex++;
-//        }
+        int attributeIndex = 1;
+        for(String attribute : new String[]{"position"}){
+            GL46.glBindAttribLocation(program_id, attributeIndex, attribute);
+            attributeIndex++;
+        }
 
         //Combine vertex and fragment shaders into one program
         GL46.glAttachShader(program_id, vertex);
         GL46.glAttachShader(program_id, fragment);
 
+        checkForError("Attach Shaders");
+
         //Link
         GL46.glLinkProgram(program_id);
+        checkForError("Linking Shaders");
 
         //Check that the link status was successful.
-        GL46.glGetShaderiv(program_id, GL46.GL_LINK_STATUS, compile_buffer);
+        GL46.glGetProgramiv(program_id, GL46.GL_LINK_STATUS, compile_buffer);
         if (compile_buffer[0] == GL46.GL_TRUE) {
-            System.out.println("Shader Link was successful.");
+            System.out.println("Successfully linked shaders into program.");
         }else{
-            System.err.println("Shader Link failed.");
+            String error_message = GL46.glGetProgramInfoLog(program_id);
+            System.err.println(String.format("Error linking shaders into program | %s ", error_message));
+            //Cleanup our broken program
             GL46.glDeleteProgram(program_id);
+            System.exit(1);
+
             return -1;
         }
 
         return program_id;
     }
 
-    public void checkForError(){
+    public void checkForError(String error_cause){
         int error_check = GL46.glGetError();
         while (error_check != GL46.GL_NO_ERROR) {
-            System.out.println("Error:" + error_check);
+            System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
             error_check = GL46.glGetError();
         }
     }
