@@ -2,7 +2,7 @@ package simulation;
 
 import com.google.gson.JsonObject;
 import graphics.Shader;
-import org.lwjgl.opengl.GL46;
+import org.lwjgl.opengl.GL43;
 import util.JsonUtils;
 
 public class SimulationManager {
@@ -56,8 +56,8 @@ public class SimulationManager {
 
     public void render(){
 
-        GL46.glEnable(GL46.GL_DEPTH_TEST);
-        GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT | GL46.GL_COLOR_BUFFER_BIT);
+        GL43.glEnable(GL43.GL_DEPTH_TEST);
+        GL43.glClear(GL43.GL_DEPTH_BUFFER_BIT | GL43.GL_COLOR_BUFFER_BIT);
 
         if(hasActiveSimulation()){
             simulation.render();

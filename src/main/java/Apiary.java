@@ -84,7 +84,7 @@ public class Apiary {
                     Apiary.this.window_height = height;
 //                    glfwSetWindowSize(window, width, height);
                     Apiary.this.aspect_ratio = (float)width / (float)height;
-                    GL46.glViewport(0, 0, width, height);
+                    GL43.glViewport(0, 0, width, height);
 //                    Renderer.getInstance().resize(width, height);
 //                    Renderer.getInstance().setScreenSize(width, height);
                     System.out.println("The window changed size, the aspect ratio is " + aspect_ratio);
@@ -122,7 +122,7 @@ public class Apiary {
         // Create our capabilities
         GL.createCapabilities();
 
-        GL46.glViewport(0, 0, 1920, 1080);
+        GL43.glViewport(0, 0, 1920, 1080);
 
         // Initialize all of our singleton instances here
         JsonUtils.initialize();

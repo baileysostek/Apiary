@@ -5,7 +5,7 @@ import graphics.GLDataType;
 import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.VAO;
-import org.lwjgl.opengl.GL46;
+import org.lwjgl.opengl.GL43;
 import simulation.world.World;
 import simulation.world.World2D;
 import util.JsonUtils;
@@ -138,20 +138,20 @@ public class Simulation {
                 "out_color = vec4(all_cell.alive[index] > 0.99 ? color : vec3(screen_pos, 0.0), 1.0);\n" +
                 "}\n";
 
-        int vertex   = ShaderManager.getInstance().compileShader(GL46.GL_VERTEX_SHADER, vertex_source);
-        int fragment = ShaderManager.getInstance().compileShader(GL46.GL_FRAGMENT_SHADER, fragment_source);
+        int vertex   = ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER, vertex_source);
+        int fragment = ShaderManager.getInstance().compileShader(GL43.GL_FRAGMENT_SHADER, fragment_source);
 
         this.program_id = ShaderManager.getInstance().linkShader(vertex, fragment);
 
         this.vao = new VAO();
         this.vao.bind();
 
-        int vbo_vertex_id = GL46.glGenBuffers();
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vbo_vertex_id);
-        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, vertices, GL46.GL_STATIC_DRAW);
-        GL46.glVertexAttribPointer(0, 3, GL46.GL_FLOAT, false, 0, 0);
-        GL46.glEnableVertexAttribArray(0);
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, 0);
+        int vbo_vertex_id = GL43.glGenBuffers();
+        GL43.glBindBuffer(GL43.GL_ARRAY_BUFFER, vbo_vertex_id);
+        GL43.glBufferData(GL43.GL_ARRAY_BUFFER, vertices, GL43.GL_STATIC_DRAW);
+        GL43.glVertexAttribPointer(0, 3, GL43.GL_FLOAT, false, 0, 0);
+        GL43.glEnableVertexAttribArray(0);
+        GL43.glBindBuffer(GL43.GL_ARRAY_BUFFER, 0);
         this.vao.unbind();
 
     }
@@ -168,17 +168,17 @@ public class Simulation {
 //            }
 //        }
 
-        GL46.glClearColor(1f, 1f, 1f, 1.0f);
-        GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
+        GL43.glClearColor(1f, 1f, 1f, 1.0f);
+        GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
 
         this.agents.get("cell").flush();
 
         // This stage renders an input image to the screen.
-        GL46.glUseProgram(program_id);
+        GL43.glUseProgram(program_id);
         this.vao.bind();
-        GL46.glDrawArrays(GL46.GL_TRIANGLES, 0, vertices.length / 3);
+        GL43.glDrawArrays(GL43.GL_TRIANGLES, 0, vertices.length / 3);
         this.vao.unbind();
-        GL46.glUseProgram(0);
+        GL43.glUseProgram(0);
 
     }
 

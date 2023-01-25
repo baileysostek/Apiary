@@ -1,6 +1,6 @@
 package graphics;
 
-import org.lwjgl.opengl.GL46;
+import org.lwjgl.opengl.GL43;
 import util.StringUtils;
 
 import java.util.Arrays;
@@ -32,9 +32,9 @@ public class SSBO extends GLStruct{
         next_available_location++;
 
         // Now we ask GL for an ID to use for the SSBO
-        this.id = GL46.glGenBuffers();
+        this.id = GL43.glGenBuffers();
         this.bind();
-        GL46.glBindBufferBase(GL46.GL_SHADER_STORAGE_BUFFER, location, id);
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, location, id);
         // Load data based on our initial capacity
         this.unbind();
     }
@@ -44,7 +44,7 @@ public class SSBO extends GLStruct{
      */
     public void flush(){
         bind();
-        GL46.glBufferData(GL46.GL_SHADER_STORAGE_BUFFER, this.data, GL46.GL_DYNAMIC_DRAW);
+        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.data, GL43.GL_DYNAMIC_DRAW);
         unbind();
     }
 
@@ -59,7 +59,7 @@ public class SSBO extends GLStruct{
 
     private void bind(){
         if(id >= 0) {
-            GL46.glBindBuffer(GL46.GL_SHADER_STORAGE_BUFFER, id);
+            GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id);
         }else{
             System.out.println("Error tried to bind SSBO before id was assigned.");
             System.exit(1);
@@ -67,7 +67,7 @@ public class SSBO extends GLStruct{
     }
 
     private void unbind(){
-        GL46.glBindBuffer(GL46.GL_SHADER_STORAGE_BUFFER, 0);
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
     }
 
     /**\
@@ -101,6 +101,6 @@ public class SSBO extends GLStruct{
      * On Shutdown we will execute all cleanup functions to correctly deallocate buffers and such.
      */
     public void cleanup(){
-        GL46.glDeleteBuffers(id);
+        GL43.glDeleteBuffers(id);
     }
 }
