@@ -1,18 +1,15 @@
-import graphics.GLDataType;
-import graphics.SSBO;
+package core;
+
 import graphics.ShaderManager;
+import input.Mouse;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
-import simulation.Simulation;
 import simulation.SimulationManager;
 import util.JsonUtils;
-import util.StringUtils;
 
 import java.nio.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -24,17 +21,15 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Apiary {
 
     // The window handle
-    private long window;
-    private int window_width = 1920;
-    private int window_height = 1080;
-    private float aspect_ratio = (float)window_width / (float)window_height;
+    private static long window;
+    private static int window_width = 1920;
+    private static int window_height = 1080;
+    private static float aspect_ratio = (float)window_width / (float)window_height;
 
     // Variables used
     private static boolean RUNNING = false;
 
     private static int FRAMES = 0;
-
-    private int shader_id;
 
     public void run() {
 
@@ -58,8 +53,8 @@ public class Apiary {
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ShaderManager.GL_MAJOR_VERSION);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ShaderManager.GL_MINOR_VERSION);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -128,6 +123,7 @@ public class Apiary {
         JsonUtils.initialize();
         ShaderManager.initialize();
         SimulationManager.initialize();
+        Mouse.initialize();
 
         SimulationManager.getInstance().load("simulations/gol.json");
 
@@ -163,7 +159,7 @@ public class Apiary {
                         FRAMES = frames;
                         frames = 0;
                         runningDelta -= 1;
-                        System.out.println("Frames: " + FRAMES);
+//                        System.out.println("Frames: " + FRAMES);
                     }
                     render();
 
@@ -187,6 +183,11 @@ public class Apiary {
     }
 
     private void update(double delta){
+        // Here we have all Singletons which need to update.
+        Mouse.getInstance().update(delta);
+        ShaderManager.getInstance().update(delta);
+
+        // Simulation manager should update last. This ensures that every other singleton which has uniforms has the chance to update those uniforms.
         if(SimulationManager.getInstance().hasActiveSimulation()){
             SimulationManager.getInstance().update(delta);
         }
@@ -208,6 +209,22 @@ public class Apiary {
         // Terminate GLFW and free the error callback
         glfwTerminate();
         glfwSetErrorCallback(null).free();
+    }
+
+    public static int getWindowWidth(){
+        return window_width;
+    }
+
+    public static int getWindowHeight(){
+        return window_height;
+    }
+
+    public static float getAspectRatio() {
+        return aspect_ratio;
+    }
+
+    public static long getWindowPointer(){
+        return window;
     }
 
     public static void main(String[] args) {

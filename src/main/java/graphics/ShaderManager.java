@@ -1,5 +1,6 @@
 package graphics;
 
+import core.Apiary;
 import org.lwjgl.opengl.GL43;
 import simulation.world.World;
 
@@ -9,15 +10,33 @@ public class ShaderManager {
 
     // Singleton Instance
     private static ShaderManager singleton;
-    // Singleton variables
-    private HashMap<String, Shader> shaders = new HashMap<>();
 
     public final byte ALIGNMENT = 4;
-    public final String GLSL_VERSION;
+    private final String GLSL_VERSION;
 
-    private int active_shader = -1;
+    public static final int GL_MAJOR_VERSION = 4;
+    public static final int GL_MINOR_VERSION = 3;
+
+    private int bound_shader = -1;
+
+    // These are some uniforms that exist globally in every simulation and project
+    private HashMap<String, Uniform> uniforms = new HashMap<>();
+
+    //TODO move to ScreenManager or WindowManager class.
+    private final Uniform u_window_size;
+    private final Uniform u_aspect_ratio;
 
     private HashMap<String, GLDataType> type_mapping = new HashMap<>();
+
+    // Quad the size of the screen.
+    float vertices[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f, 0.0f
+    };
 
     private ShaderManager() {
         // Define our typeMapping
@@ -28,10 +47,24 @@ public class ShaderManager {
         // Here we can explicitly add more name associations to make the user experience easier.
 
         // Ask what the GLSL version is and set it
-        String version = GL43.glGetString(GL43.GL_SHADING_LANGUAGE_VERSION);
-        this.GLSL_VERSION = version.replace(".", "").substring(0,3);
+        String version_string = GL43.glGetString(GL43.GL_SHADING_LANGUAGE_VERSION);
+        version_string = version_string.replace(".", "").substring(0,3);
+        int version = Integer.parseInt(version_string);
+
+        // If we are connected to a Graphics Card which can use the requested version of GLSL
+        if(version >= (GL_MAJOR_VERSION * 100) + (GL_MINOR_VERSION * 10)){
+            this.GLSL_VERSION = version_string;
+        }else{
+            this.GLSL_VERSION = "";
+            System.err.println("Error: The requested GL instance of version:"+GL_MAJOR_VERSION+"."+GL_MINOR_VERSION+" could not be created on this card. The connected GPU is using version:" + version_string);
+            System.exit(1);
+        }
 
         System.out.println("Shader Version:" + this.GLSL_VERSION);
+
+        // Here we register our uniforms
+        this.u_window_size = this.createUniform("u_window_size", GLDataType.VEC2);
+        this.u_aspect_ratio = this.createUniform("u_aspect_ratio", GLDataType.FLOAT);
     }
 
     // Singleton initializer and getter
@@ -176,6 +209,37 @@ public class ShaderManager {
         while (error_check != GL43.GL_NO_ERROR) {
             System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
             error_check = GL43.glGetError();
+        }
+    }
+
+    // Uniform stuff
+    public Uniform createUniform(String name, GLDataType type){
+        Uniform uniform = new Uniform(name, type);
+        this.uniforms.put(name, uniform);
+        return uniform;
+    }
+
+    public void update(double delta){
+        this.u_window_size.set(Apiary.getWindowWidth(), Apiary.getWindowHeight());
+        this.u_aspect_ratio.set(Apiary.getAspectRatio());
+    }
+
+    public String getGLSLVersion(){
+        return GLSL_VERSION+"";
+    }
+
+    public void bind(int program_id) {
+        this.bound_shader = program_id;
+        GL43.glUseProgram(this.bound_shader);
+    }
+
+    public int getBoundShader(){
+        return this.bound_shader;
+    }
+
+    public void bindUniforms() {
+        for(Uniform uniform : this.uniforms.values()){
+            uniform.bind();
         }
     }
 }

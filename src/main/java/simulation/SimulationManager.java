@@ -1,7 +1,10 @@
 package simulation;
 
 import com.google.gson.JsonObject;
+import graphics.GLDataType;
 import graphics.Shader;
+import graphics.ShaderManager;
+import graphics.Uniform;
 import org.lwjgl.opengl.GL43;
 import util.JsonUtils;
 
@@ -9,8 +12,11 @@ public class SimulationManager {
 
     // Singleton Instance
     private static SimulationManager singleton;
-    // Singleton variables
+
+    // If we have a simulation loaded
     private Simulation simulation = null;
+
+    private Uniform u_time_seconds = ShaderManager.getInstance().createUniform("u_time_seconds", GLDataType.FLOAT);
 
     private SimulationManager() {
 
@@ -49,6 +55,9 @@ public class SimulationManager {
 
 
     public void update(double delta){
+        // Update our uniforms
+        u_time_seconds.set((float) (u_time_seconds.get()[0] + delta));
+        // If we have a simulation update the simulation
         if(hasActiveSimulation()){
             simulation.update(delta);
         }
@@ -60,6 +69,8 @@ public class SimulationManager {
         GL43.glClear(GL43.GL_DEPTH_BUFFER_BIT | GL43.GL_COLOR_BUFFER_BIT);
 
         if(hasActiveSimulation()){
+            // Right before we render we are going to bind all of our uniforms
+            ShaderManager.getInstance().bindUniforms();
             simulation.render();
         }
     }

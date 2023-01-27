@@ -12,7 +12,7 @@
         },
         "alive":{
           "type":"FLOAT",
-          "default_value":"RANDOM"
+          "default_value":["", "@get_adjacent", "@all", "@filter", ""]
         }
       }
     }
@@ -20,7 +20,8 @@
   "steps":[
     {
       "agents":["cell"],
-      "logic":["", "@get_adjacent", "@all", "@filter", ""]
+      "logic":["", "@get_adjacent", "@all", "@filter", ""],
+      "out":"@screen"
     }
   ]
 }

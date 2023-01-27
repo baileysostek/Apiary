@@ -5,6 +5,7 @@ import graphics.GLDataType;
 import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.VAO;
+import input.Mouse;
 import org.lwjgl.opengl.GL43;
 import simulation.world.World;
 import simulation.world.World2D;
@@ -130,12 +131,16 @@ public class Simulation {
                 "#version 460\n" +
                 agents.get("cell").generateGLSL() +
                 "in vec3 pass_position;\n" +
+                "uniform vec2 u_window_size;\n" +
+                "uniform vec2 u_mouse_pos_pixels;\n" +
+                "uniform float u_time_seconds;\n" +
                 "out vec4 out_color; \n" +
                 "void main(void){\n" +
                 "vec2 screen_pos = (pass_position.xy + vec2(1)) / vec2(2);\n" +
-                "int index = int(floor((screen_pos.x * 1920.0) + (1920 * (screen_pos.y * 1080)))) % 1000; \n" +
+                "int index = int(floor((screen_pos.x * u_window_size.x) + (u_window_size.x * (screen_pos.y * u_window_size.y)))) % 1000; \n" +
                 "vec3 color = all_cell.color[index];\n" +
-                "out_color = vec4(all_cell.alive[index] > 0.99 ? color : vec3(screen_pos, 0.0), 1.0);\n" +
+                "float size = abs(sin(u_time_seconds * 3.14159)) * (u_window_size.x * .05); \n" +
+                "out_color = vec4((abs(int(screen_pos.x * u_window_size.x) - u_mouse_pos_pixels.x) < size) && (abs(int(screen_pos.y * u_window_size.y) - u_mouse_pos_pixels.y) < size) ? color : vec3(screen_pos, 0.0), 1.0);\n" +
                 "}\n";
 
         int vertex   = ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER, vertex_source);
@@ -157,7 +162,13 @@ public class Simulation {
     }
 
     public void update(double delta){
-
+        //TODO move to shader manager.
+        // If we have a program loaded
+        if(program_id > -1){
+            ShaderManager.getInstance().bind(program_id);
+        }
+        // Bind all of our uniform variable
+        Mouse.getInstance().bindUniforms();
     }
 
     public void render(){
@@ -174,7 +185,6 @@ public class Simulation {
         this.agents.get("cell").flush();
 
         // This stage renders an input image to the screen.
-        GL43.glUseProgram(program_id);
         this.vao.bind();
         GL43.glDrawArrays(GL43.GL_TRIANGLES, 0, vertices.length / 3);
         this.vao.unbind();
