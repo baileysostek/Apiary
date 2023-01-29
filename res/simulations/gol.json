@@ -14,7 +14,7 @@
           "default_value":["@random_float", "@random_float", "@random_float", "@vec3"]
         },
         "alive":{
-          "type":"float",
+          "type":"bool",
           "default_value":["@random_bool"]
         }
       }

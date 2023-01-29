@@ -142,10 +142,11 @@ public class ShaderManager {
                     e.printStackTrace();
                 }
                 System.err.println(String.format("Error compiling %s shader| %s | %s", shader_type_name, line_number, GL43.glGetShaderInfoLog(shader_id)));
+                System.err.println(shader_source.split("\n")[Integer.parseInt(line_number) - 1]);
                 //Cleanup our broken shader
                 GL43.glDeleteShader(shader_id);
 
-                System.exit(0);
+                System.exit(1);
 
                 return -1;
             }
@@ -161,7 +162,7 @@ public class ShaderManager {
         return shader_id;
     }
 
-    public int linkShader(int vertex, int fragment){
+    public int linkShader(int ... shaders){
 
         //Buffer for reading compile status
         int[] compile_buffer = new int[]{ 0 };
@@ -170,40 +171,32 @@ public class ShaderManager {
         int program_id = GL43.glCreateProgram();
 
         System.out.println("Linking Vertex and Fragment shaders to Program...");
-        System.out.println(1);
         int attributeIndex = 1;
         for(String attribute : new String[]{"position"}){
             GL43.glBindAttribLocation(program_id, attributeIndex, attribute);
             attributeIndex++;
         }
-        System.out.println(2);
         //Combine vertex and fragment shaders into one program
-        GL43.glAttachShader(program_id, vertex);
-        GL43.glAttachShader(program_id, fragment);
-        System.out.println(3);
+        for(int shader_id : shaders) {
+            GL43.glAttachShader(program_id, shader_id);
+        }
+
         checkForError("Attach Shaders");
-        System.out.println(4);
         //Link
         GL43.glLinkProgram(program_id);
-        System.out.println(4.5f);
         checkForError("Linking Shaders");
-        System.out.println(5);
         //Check that the link status was successful.
         GL43.glGetProgramiv(program_id, GL43.GL_LINK_STATUS, compile_buffer);
         if (compile_buffer[0] == GL43.GL_TRUE) {
-            System.out.println(6);
             System.out.println("Successfully linked shaders into program.");
         }else{
-            System.out.println(7);
             String error_message = GL43.glGetProgramInfoLog(program_id);
             System.err.println(String.format("Error linking shaders into program | %s ", error_message));
             //Cleanup our broken program
             GL43.glDeleteProgram(program_id);
-            System.exit(1);
 
             return -1;
         }
-        System.out.println(8);
 
         return program_id;
     }

@@ -1,23 +1,19 @@
 package graphics;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.system.MemoryUtil;
 import util.StringUtils;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class SSBO extends GLStruct{
 
     private static int next_available_location = 0;
 
     private final int id;  // GL provided instance ID used to reference where in memory this is stored.
+    private final int id_copy;
     private final int location; // Sequential integer representing the location where this SSBO is bound.
     private int capacity = 1;
 
@@ -34,12 +30,18 @@ public class SSBO extends GLStruct{
         // Locations of SSBOs are determined when SSBOs are generated.
         // These are globally unique and constant.
         this.location = next_available_location;
-        next_available_location++;
+        next_available_location+=2; // Double Buffer
 
         // Now we ask GL for an ID to use for the SSBO
         this.id = GL43.glGenBuffers();
         this.bind();
         GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, location, id);
+        // Load data based on our initial capacity
+        this.unbind();
+
+        this.id_copy = GL43.glGenBuffers();
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_copy);
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, location + 1, id_copy);
         // Load data based on our initial capacity
         this.unbind();
     }
@@ -50,27 +52,22 @@ public class SSBO extends GLStruct{
     public void flush(){
         bind();
         GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.buffer, GL43.GL_DYNAMIC_DRAW);
-        //TODO: move this to a ByteBuffer upload instead of float array. That will better support datatypes GPU side.
         unbind();
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_copy);
+        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.buffer, GL43.GL_DYNAMIC_DRAW);
+        // Load data based on our initial capacity
+        this.unbind();
     }
 
     public void allocate(int number_of_agents){
         this.capacity = number_of_agents; //Temp
-        this.buffer = MemoryUtil.memAlloc(this.capacity);
-        for(int i = 0; i < this.capacity / 4; i++){
-            this.buffer.putFloat((float) Math.random());
-            if(i % 100000 == 0) {
-                System.out.println(i);
-            }
+        int buffer_capacity = this.computeSizeInBytes() * capacity;
+        this.buffer = MemoryUtil.memAlloc(buffer_capacity);
+        for(int i = 0; i < buffer_capacity; i++){
+//            this.buffer.put((byte)(255*Math.random()));
+            this.buffer.put((byte)127);
         }
         this.buffer.flip();
-//
-//        for(int i = 0; i < this.data.length; i++){
-//            this.data[i] = (float) Math.random();
-//            if(i % 1000 == 0) {
-//                System.out.println(i);
-//            }
-//        }
     }
 
     private void bind(){
@@ -95,6 +92,7 @@ public class SSBO extends GLStruct{
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("version", ShaderManager.getInstance().getGLTargetVersion());
         substitutions.put("binding_location", this.location);
+        substitutions.put("binding_location_second_buffer", this.location + 1);
         substitutions.put("struct_name", this.getName());
 
         // Compute how to represent our attributes
@@ -112,7 +110,10 @@ public class SSBO extends GLStruct{
             "};\n" +
             "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
             "{{struct_name}} agent[];\n" +
-            "} all_{{struct_name}};\n",
+            "} all_{{struct_name}};\n"+
+            "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
+            "{{struct_name}} agent[];\n" +
+            "} all_{{struct_name}}_2;\n",
             substitutions
         );
     }

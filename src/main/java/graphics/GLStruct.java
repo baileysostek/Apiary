@@ -18,12 +18,18 @@ public abstract class GLStruct {
      * So, at a minimum we need to use 4 floats to represent something in memory, this is a little bit wasteful in that we will have holes in our SSBO data. But its okay for now.
      * @return Returns the size in floats that can be used to SAFELY represent this data
      */
-    public final int computeSafeSizeInFloats(){
-        int total = 0;
+    public final int computeSizeInBytes(){
+        int total_size_in_bytes = 0;
         for(GLDataType type : attributes.values()){
-            total += Math.ceil(type.getSizeInFloats() / 4.0f) * 4;
+            total_size_in_bytes += type.getSizeInBytes();
         }
-        return total;
+        // We need to have a byte alignment of 4.
+        int delta = (total_size_in_bytes % ShaderManager.getInstance().ALIGNMENT);
+        if(delta > 0){
+            total_size_in_bytes += ShaderManager.getInstance().ALIGNMENT - delta;
+        }
+
+        return total_size_in_bytes;
     }
 
     public final int computeSizeInFloats(){

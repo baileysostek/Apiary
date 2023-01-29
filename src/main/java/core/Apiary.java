@@ -117,8 +117,6 @@ public class Apiary {
         // Create our capabilities
         GL.createCapabilities();
 
-        GL43.glViewport(0, 0, 1920, 1080);
-
         // Initialize all of our singleton instances here
         JsonUtils.initialize();
         ShaderManager.initialize();
