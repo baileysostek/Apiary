@@ -159,7 +159,7 @@ public class Apiary {
                         FRAMES = frames;
                         frames = 0;
                         runningDelta -= 1;
-//                        System.out.println("Frames: " + FRAMES);
+                        System.out.println("Frames: " + FRAMES);
                     }
                     render();
 

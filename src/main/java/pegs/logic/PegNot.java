@@ -27,11 +27,9 @@ public class PegNot extends Peg {
     }
 
     @Override
-    protected LinkedList<String> toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
-        LinkedList<String> par_0 = PegManager.getInstance().transpile(params[0]);
+    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
+        String par_0 = PegManager.getInstance().transpile(params[0]);
 
-        LinkedList<String> out = new LinkedList<>();
-        out.push(String.format("!%s", par_0));
-        return out;
+        return String.format("!%s", par_0);
     }
 }

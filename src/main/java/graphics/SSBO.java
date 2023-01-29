@@ -1,8 +1,13 @@
 package graphics;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL43;
+import org.lwjgl.system.MemoryUtil;
 import util.StringUtils;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -14,9 +19,9 @@ public class SSBO extends GLStruct{
 
     private final int id;  // GL provided instance ID used to reference where in memory this is stored.
     private final int location; // Sequential integer representing the location where this SSBO is bound.
-    private int capacity;
+    private int capacity = 1;
 
-    private float[] data = new float[0];
+    private ByteBuffer buffer;
 
     public SSBO (String name, LinkedHashMap<String, GLDataType> attributes){
         super(name);
@@ -44,17 +49,28 @@ public class SSBO extends GLStruct{
      */
     public void flush(){
         bind();
-        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.data, GL43.GL_DYNAMIC_DRAW);
+        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.buffer, GL43.GL_DYNAMIC_DRAW);
+        //TODO: move this to a ByteBuffer upload instead of float array. That will better support datatypes GPU side.
         unbind();
     }
 
     public void allocate(int number_of_agents){
-        this.capacity = number_of_agents;
-        this.data = new float[capacity * this.computeSafeSizeInFloats()];
-//        Arrays.fill(this.data, 0);
-        for(int i = 0; i < this.data.length; i++){
-            this.data[i] = (float) Math.random();
+        this.capacity = number_of_agents; //Temp
+        this.buffer = MemoryUtil.memAlloc(this.capacity);
+        for(int i = 0; i < this.capacity / 4; i++){
+            this.buffer.putFloat((float) Math.random());
+            if(i % 100000 == 0) {
+                System.out.println(i);
+            }
         }
+        this.buffer.flip();
+//
+//        for(int i = 0; i < this.data.length; i++){
+//            this.data[i] = (float) Math.random();
+//            if(i % 1000 == 0) {
+//                System.out.println(i);
+//            }
+//        }
     }
 
     private void bind(){
@@ -85,13 +101,17 @@ public class SSBO extends GLStruct{
         String attribute_definitions = "";
         for(String attribute_name : this.getAttributes().keySet()){
             GLDataType type = this.getAttributes().get(attribute_name);
-            attribute_definitions += String.format("\t%s %s[%s];\n", type.getGLSL(), attribute_name, this.capacity+"");
+            attribute_definitions += String.format("\t%s %s;\n", type.getGLSL(), attribute_name);
         }
         substitutions.put("attributes", attribute_definitions);
 
         return StringUtils.format(
-            "layout(std{{version}}, binding = {{binding_location}}) buffer {{struct_name}}{\n" +
-            "{{attributes}}" +
+    "struct {{struct_name}}\n" +
+            "{\n" +
+            "{{attributes}}"+
+            "};\n" +
+            "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
+            "{{struct_name}} agent[];\n" +
             "} all_{{struct_name}};\n",
             substitutions
         );
@@ -101,6 +121,11 @@ public class SSBO extends GLStruct{
      * On Shutdown we will execute all cleanup functions to correctly deallocate buffers and such.
      */
     public void cleanup(){
+        MemoryUtil.memFree(this.buffer);
         GL43.glDeleteBuffers(id);
+    }
+
+    public int getCapacity() {
+        return this.capacity;
     }
 }

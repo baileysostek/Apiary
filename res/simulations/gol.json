@@ -1,18 +1,21 @@
 {
   "world":{
     "name":"Conway's Game of Life",
-    "type":"2D"
+    "type":"AgentGrid",
+    "parameters":{
+      "agent":"cell"
+    }
   },
   "agents":{
     "cell":{
       "attributes":{
         "color":{
-          "type":"VEC3",
-          "default_value":"RANDOM"
+          "type":"vec3",
+          "default_value":["@random_float", "@random_float", "@random_float", "@vec3"]
         },
         "alive":{
-          "type":"FLOAT",
-          "default_value":["", "@get_adjacent", "@all", "@filter", ""]
+          "type":"float",
+          "default_value":["@random_bool"]
         }
       }
     }
@@ -20,8 +23,11 @@
   "steps":[
     {
       "agents":["cell"],
-      "logic":["", "@get_adjacent", "@all", "@filter", ""],
-      "out":"@screen"
+      "logic":[ "cell", "@agent_count", [["current_cell", "cell", "cell", "0", "@get_agent_at_index", "@define"], ["cell", "@agent_count"], ["cell", "@agent_count"], ["cell", "@agent_count"], "@conditional"], "@for_each"]
+    },
+    {
+      "agents":["cell"],
+      "logic":["int fragment_index = int(floor((screen_pos.x * u_window_size.x) + (u_window_size.x * (screen_pos.y * u_window_size.y))));\n", "@code", ["cell", ["fragment_index", "@code"], "@get_agent_at_index", ".alive", "@code"], ["1.0", "1.0", "1.0", "1.0", "@vec4", "@out_color"], ["0.0", "0.0", "0.0", "1.0", "@vec4", "@out_color"], "@conditional"]
     }
   ]
 }

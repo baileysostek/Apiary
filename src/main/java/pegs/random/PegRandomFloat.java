@@ -1,11 +1,12 @@
-package pegs;
+package pegs.random;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import pegs.Peg;
 
 import java.util.Stack;
 
-public class PegRandomFloat extends Peg{
+public class PegRandomFloat extends Peg {
 
     public PegRandomFloat(){
         super("@random_float", 0);

@@ -1,5 +1,5 @@
 {
-  "name": "simulation_scheme",
+  "name": "simulation_schema",
   "fields":{
     "world":{
       "type":"JsonObject"

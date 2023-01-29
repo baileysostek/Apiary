@@ -34,12 +34,10 @@ public class PegLess extends Peg {
     }
 
     @Override
-    protected LinkedList<String> toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
-        LinkedList<String> par_0 = PegManager.getInstance().transpile(params[0]);
-        LinkedList<String> par_1 = PegManager.getInstance().transpile(params[1]);
+    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
+        String par_0 = PegManager.getInstance().transpile(params[0]);
+        String par_1 = PegManager.getInstance().transpile(params[1]);
 
-        LinkedList<String> out = new LinkedList<>();
-        out.push(String.format("%s < %s", par_0, par_1));
-        return out;
+        return String.format("%s < %s", par_0, par_1);
     }
 }

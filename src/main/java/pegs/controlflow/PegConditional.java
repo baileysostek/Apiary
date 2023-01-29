@@ -1,12 +1,14 @@
-package pegs;
+package pegs.controlflow;
 
 import com.google.gson.JsonElement;
+import pegs.Peg;
+import pegs.PegManager;
 
 import java.util.LinkedList;
 import java.util.Stack;
 
 public class PegConditional extends Peg {
-    protected PegConditional() {
+    public PegConditional() {
         super("@conditional", 3);
     }
 
@@ -32,17 +34,17 @@ public class PegConditional extends Peg {
     }
 
     @Override
-    protected LinkedList<String> toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
-        LinkedList<String> conditional = PegManager.getInstance().transpile(params[0]);
-        LinkedList<String> if_statement = PegManager.getInstance().transpile(params[1]);
-        LinkedList<String> else_statement = PegManager.getInstance().transpile(params[2]);
+    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
+        String conditional = PegManager.getInstance().transpile(params[0]);
+        String if_statement = PegManager.getInstance().transpile(params[1]);
+        String else_statement = PegManager.getInstance().transpile(params[2]);
 
-        LinkedList<String> out = new LinkedList<>();
-        out.addLast(String.format("if (%s) {", conditional));
-        out.addLast(String.format("%s", if_statement));
-        out.addLast("} else {");
-        out.addLast(String.format("%s", else_statement));
-        out.addLast("}");
+        String out = "";
+        out += (String.format("if (%s) {\n", conditional));
+        out += (String.format("%s", if_statement));
+        out += ("} else {\n");
+        out += (String.format("%s", else_statement));
+        out += ("}\n");
         return out;
     }
 }

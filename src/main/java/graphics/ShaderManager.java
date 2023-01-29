@@ -152,7 +152,7 @@ public class ShaderManager {
         }else{
             if(compile_buffer[0] == GL43.GL_TRUE){
                 checkForError("Compilation Error");
-                System.out.println("Shader compiled Successfully.");
+                System.out.println(String.format("%s Shader compiled Successfully.", shader_type_name));
             }else{
                 System.out.println("Shader compiled in an unknown state. This may cause strange behavior.");
             }
@@ -170,28 +170,31 @@ public class ShaderManager {
         int program_id = GL43.glCreateProgram();
 
         System.out.println("Linking Vertex and Fragment shaders to Program...");
-
+        System.out.println(1);
         int attributeIndex = 1;
         for(String attribute : new String[]{"position"}){
             GL43.glBindAttribLocation(program_id, attributeIndex, attribute);
             attributeIndex++;
         }
-
+        System.out.println(2);
         //Combine vertex and fragment shaders into one program
         GL43.glAttachShader(program_id, vertex);
         GL43.glAttachShader(program_id, fragment);
-
+        System.out.println(3);
         checkForError("Attach Shaders");
-
+        System.out.println(4);
         //Link
         GL43.glLinkProgram(program_id);
+        System.out.println(4.5f);
         checkForError("Linking Shaders");
-
+        System.out.println(5);
         //Check that the link status was successful.
         GL43.glGetProgramiv(program_id, GL43.GL_LINK_STATUS, compile_buffer);
         if (compile_buffer[0] == GL43.GL_TRUE) {
+            System.out.println(6);
             System.out.println("Successfully linked shaders into program.");
         }else{
+            System.out.println(7);
             String error_message = GL43.glGetProgramInfoLog(program_id);
             System.err.println(String.format("Error linking shaders into program | %s ", error_message));
             //Cleanup our broken program
@@ -200,16 +203,20 @@ public class ShaderManager {
 
             return -1;
         }
+        System.out.println(8);
 
         return program_id;
     }
 
     public void checkForError(String error_cause){
-        int error_check = GL43.glGetError();
-        while (error_check != GL43.GL_NO_ERROR) {
-            System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
-            error_check = GL43.glGetError();
-        }
+//        System.out.println("check - 1");
+//        int error_check = GL43.glGetError();
+//        System.out.println("check - 2");
+//        while (error_check != GL43.GL_NO_ERROR) {
+//            System.out.println("check - 3");
+//            System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
+//            error_check = GL43.glGetError();
+//        }
     }
 
     // Uniform stuff

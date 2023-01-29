@@ -1,7 +1,6 @@
 package pegs;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
 
 import java.util.LinkedList;
@@ -29,23 +28,17 @@ public abstract class Peg {
 
     protected abstract void action(Stack<JsonElement> stack, JsonElement[] params);
 
-    protected final LinkedList<String> transpile(Stack<JsonElement> stack){
+    protected final String transpile(Stack<JsonElement> stack){
         JsonElement[] params = new JsonElement[num_params];
         for(int i = 0; i < num_params; i++){
             params[num_params - i - 1] = stack.pop();
         }
-        LinkedList<String> out = toGLSL(stack, params);
-        String concat = "";
-        for(String line : out){
-            concat += line + " ";
-        }
-        stack.push(new JsonPrimitive(concat));
+        String out = toGLSL(stack, params);
+        stack.push(new JsonPrimitive(out));
         return out;
     }
-    protected LinkedList<String> toGLSL(Stack<JsonElement> stack, JsonElement[] params){
-        LinkedList<String> default_glsl = new LinkedList<>();
-        default_glsl.push(this.key);
-        return default_glsl;
+    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params){
+        return this.key;
     };
 
     public String getKey() {

@@ -18,11 +18,13 @@ public class JsonUtils {
 
     public JsonSchema SCHEMA_SCHEMA;
     public JsonSchema SIMULATION_SCHEMA;
+    public JsonSchema STEP_SCHEMA;
 
     private JsonUtils() {
         parser = new JsonParser();
 
         SIMULATION_SCHEMA = new JsonSchema(loadJson("schema/simulation.json"));
+        STEP_SCHEMA = new JsonSchema(loadJson("schema/step.json"));
     }
 
     public static JsonObject parseJson(String json_data){
@@ -42,6 +44,11 @@ public class JsonUtils {
         return singleton;
     }
 
+    public JsonParser getParser(){
+        return parser;
+    }
+
+    // TODO remove static instance.
     public static JsonObject loadJson(String file_name){
         String data = StringUtils.loadNoCache(file_name);
         if(data != null) {

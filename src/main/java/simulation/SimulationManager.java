@@ -16,7 +16,9 @@ public class SimulationManager {
     // If we have a simulation loaded
     private Simulation simulation = null;
 
+    // Here are all uniforms that every simulation has access too. Simulation Specific uniforms can be registered as well.
     private Uniform u_time_seconds = ShaderManager.getInstance().createUniform("u_time_seconds", GLDataType.FLOAT);
+
 
     private SimulationManager() {
 
@@ -52,6 +54,9 @@ public class SimulationManager {
 
     }
 
+    protected void setActiveSimulation(Simulation simulation){
+        this.simulation = simulation;
+    }
 
 
     public void update(double delta){
@@ -85,4 +90,7 @@ public class SimulationManager {
         }
     }
 
+    public Simulation getActiveSimulation() {
+        return this.simulation;
+    }
 }

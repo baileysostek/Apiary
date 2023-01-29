@@ -1,5 +1,6 @@
 package simulation;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import graphics.GLDataType;
 import graphics.SSBO;
@@ -7,6 +8,7 @@ import graphics.ShaderManager;
 import graphics.VAO;
 import input.Mouse;
 import org.lwjgl.opengl.GL43;
+import pegs.PegManager;
 import simulation.world.World;
 import simulation.world.World2D;
 import util.JsonUtils;
@@ -14,6 +16,7 @@ import util.JsonUtils;
 import java.nio.FloatBuffer;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 public class Simulation {
 
@@ -56,6 +59,9 @@ public class Simulation {
     }
 
     protected Simulation(JsonObject object){
+        // First thing we do is set the active simulation to this one
+        SimulationManager.getInstance().setActiveSimulation(this);
+
         // Determine what world template we are using
         JsonObject simulation_world_template = object.getAsJsonObject("world");
         resolve_world_template:{
@@ -106,20 +112,29 @@ public class Simulation {
                 }
             }
 
-            agent_ssbo.allocate(1000);
+            agent_ssbo.allocate(Integer.MAX_VALUE);
             agent_ssbo.flush();
-            agent_ssbo.computeSafeSizeInFloats();
 
             // Add agent to sim.
             agents.put(agent_name, agent_ssbo);
         }
-
         // Now we are going to determine the pipeline steps used
+        JsonArray simulation_steps = object.getAsJsonArray("steps");
+        for(int i = 0; i < simulation_steps.size(); i++){
+            JsonObject step = simulation_steps.get(i).getAsJsonObject();
+            // Process data about each step.
+//            if(JsonUtils.validate(step, JsonUtils.getInstance().STEP_SCHEMA)){
+                JsonArray pegs_input = step.getAsJsonArray("logic");
+                String glsl = PegManager.getInstance().transpile(pegs_input);
+                System.out.println(glsl);
+//            }
+            // Schema validate the step
+        }
 
         // Shader
 
         String vertex_source =
-                "#version 460\n" +
+                String.format("#version %s\n", ShaderManager.getInstance().getGLTargetVersion()) +
                 "layout (location = 0) in vec3 position;\n" +
                 "out vec3 pass_position;\n" +
                 "void main(void){\n" +
@@ -128,7 +143,7 @@ public class Simulation {
                 "}\n";
 
         String fragment_source =
-                "#version 460\n" +
+                String.format("#version %s\n", ShaderManager.getInstance().getGLTargetVersion()) +
                 agents.get("cell").generateGLSL() +
                 "in vec3 pass_position;\n" +
                 "uniform vec2 u_window_size;\n" +
@@ -137,11 +152,23 @@ public class Simulation {
                 "out vec4 out_color; \n" +
                 "void main(void){\n" +
                 "vec2 screen_pos = (pass_position.xy + vec2(1)) / vec2(2);\n" +
-                "int index = int(floor((screen_pos.x * u_window_size.x) + (u_window_size.x * (screen_pos.y * u_window_size.y)))) % 1000; \n" +
-                "vec3 color = all_cell.color[index];\n" +
-                "float size = abs(sin(u_time_seconds * 3.14159)) * (u_window_size.x * .05); \n" +
-                "out_color = vec4((abs(int(screen_pos.x * u_window_size.x) - u_mouse_pos_pixels.x) < size) && (abs(int(screen_pos.y * u_window_size.y) - u_mouse_pos_pixels.y) < size) ? color : vec3(screen_pos, 0.0), 1.0);\n" +
+                "int fragment_index = int(floor((screen_pos.x * u_window_size.x) + (u_window_size.x * (screen_pos.y * u_window_size.y))));\n" +
+                "if (all_cell.agent[fragment_index].alive > 0.5) {\n" +
+                "    out_color = vec4(all_cell.agent[fragment_index].color , 1.0);\n" +
+                "} else {\n" +
+                "    out_color = vec4(0.0 , 0.0 , 0.0 , 1.0);\n" +
+                "}\n" +
                 "}\n";
+
+//        String fragment_source = String.format("#version %s\n", ShaderManager.getInstance().getGLTargetVersion()) +
+//            "in vec3 pass_position;\n" +
+//            "uniform vec2 u_window_size;\n" +
+//            "uniform vec2 u_mouse_pos_pixels;\n" +
+//            "uniform float u_time_seconds;\n" +
+//            "out vec4 out_color; \n" +
+//            "void main(void){\n" +
+//            "    out_color = vec4(0.0 , 0.0 , 0.0 , 1.0);\n" +
+//            "}\n";
 
         int vertex   = ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER, vertex_source);
         int fragment = ShaderManager.getInstance().compileShader(GL43.GL_FRAGMENT_SHADER, fragment_source);
@@ -182,7 +209,7 @@ public class Simulation {
         GL43.glClearColor(1f, 1f, 1f, 1.0f);
         GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
 
-        this.agents.get("cell").flush();
+//        this.agents.get("cell").flush();
 
         // This stage renders an input image to the screen.
         this.vao.bind();
@@ -194,5 +221,18 @@ public class Simulation {
 
     public void cleanup(){
         // Free all allocated buffers and stuff
+    }
+
+    public boolean hasAgent(String agent_type) {
+        return this.agents.containsKey(agent_type);
+    }
+
+    //TODO: FIX
+    public int getAllocatedCapacity(String agent_type){
+//        if(hasAgent(agent_type)){
+//            return this.agents.get(agent_type).getCapacity();
+//        }
+        // We dont have an agent of this type. So our allocated capacity is 0
+        return Integer.MAX_VALUE;
     }
 }
