@@ -17,6 +17,9 @@ public class Mouse {
     private int mouse_x = 0;
     private int mouse_y = 0;
 
+    private float mouse_scroll_x = 1f;
+    private float mouse_scroll_y = 1f;
+
     // These are the frame deltas
     private int mouse_delta_x = 0;
     private int mouse_delta_y = 0;
@@ -29,10 +32,19 @@ public class Mouse {
 
     // Uniform variables
     private Uniform u_mouse_pos_pixels = ShaderManager.getInstance().createUniform("u_mouse_pos_pixels", GLDataType.VEC2);
+    private Uniform u_mouse_scroll = ShaderManager.getInstance().createUniform("u_mouse_scroll", GLDataType.VEC2);
 
     private Mouse(){
         GLFW.glfwSetMouseButtonCallback(Apiary.getWindowPointer(), (long window, int button, int action, int mods) -> {
             processMouse(button, action);
+        });
+
+        GLFW.glfwSetScrollCallback(Apiary.getWindowPointer(), (long window, double xoffset, double yoffset) -> {
+            // Default for Engine opperation
+            mouse_scroll_x += (float) xoffset;
+            mouse_scroll_x = Math.max(mouse_scroll_x, 1f);
+            mouse_scroll_y += (float) yoffset;
+            mouse_scroll_y = Math.max(mouse_scroll_y, 1f);
         });
 
     }
@@ -72,7 +84,8 @@ public class Mouse {
 //        ray = calculateMouseRay();
 
         // Update our mouse pos uniform
-        u_mouse_pos_pixels.set(mouse_x, Apiary.getWindowHeight() - mouse_y);
+        u_mouse_pos_pixels.set(mouse_x, (Apiary.getWindowHeight() - mouse_y));
+        u_mouse_scroll.set(mouse_scroll_x, mouse_scroll_y);
     }
 
     public void bindUniforms(){
