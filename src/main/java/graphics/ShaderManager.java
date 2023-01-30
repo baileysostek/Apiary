@@ -52,8 +52,9 @@ public class ShaderManager {
         int version = Integer.parseInt(version_string);
 
         // If we are connected to a Graphics Card which can use the requested version of GLSL
-        if(version >= (GL_MAJOR_VERSION * 100) + (GL_MINOR_VERSION * 10)){
-            this.GLSL_VERSION = version_string;
+        int desired_version = (GL_MAJOR_VERSION * 100) + (GL_MINOR_VERSION * 10);
+        if(version >= desired_version){
+            this.GLSL_VERSION = desired_version+"";
         }else{
             this.GLSL_VERSION = "";
             System.err.println("Error: The requested GL instance of version:"+GL_MAJOR_VERSION+"."+GL_MINOR_VERSION+" could not be created on this card. The connected GPU is using version:" + version_string);
