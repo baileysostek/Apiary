@@ -3,8 +3,11 @@ package graphics;
 import core.Apiary;
 import org.lwjgl.opengl.GL43;
 import simulation.world.World;
+import util.StringUtils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 public class ShaderManager {
 
@@ -18,6 +21,13 @@ public class ShaderManager {
     public static final int GL_MINOR_VERSION = 3;
 
     private int bound_shader = -1;
+
+    // Indies used for SSBO location binding
+    private static int next_available_location = 0;
+
+    // GLSL libraries
+    private LinkedHashSet<String> custom_directives = new LinkedHashSet<>();
+    private LinkedHashMap<String, String[]> glsl_library_files = new LinkedHashMap<>();
 
     // These are some uniforms that exist globally in every simulation and project
     private HashMap<String, Uniform> uniforms = new HashMap<>();
@@ -39,6 +49,9 @@ public class ShaderManager {
     };
 
     private ShaderManager() {
+        // Register any custom directives we want to support
+        custom_directives.add("#include");
+
         // Define our typeMapping
         // By default we just use the name of the enum values
         for(GLDataType type : GLDataType.values()){
@@ -105,7 +118,30 @@ public class ShaderManager {
         return null;
     }
 
+    private String glslPreCompiler(String shader_source){
+        // We are going to traverse the shader_source and look for custom directives
+        String[] shader_source_lines = shader_source.split("\n");
+
+        for(int line_index = 0; line_index < shader_source_lines.length; line_index++){
+            String line = shader_source_lines[line_index];
+            line = line.trim(); // Remove leading and trailing whitespace.
+            // Custom include header
+            if(line.startsWith("#include")){
+                String glsl_library_file_name = line.replace("#include", "").trim();
+                // Inject the contents of the included library into our shader file, replaceing the include line with the content containted within the library.
+                // This is a recursive operation so libraries can include other libraries.
+                shader_source_lines[line_index] =  glslPreCompiler(StringUtils.load(String.format("/shaderlib/%s%s", glsl_library_file_name, !(glsl_library_file_name.endsWith(".glsl")) ? ".glsl" : "")) + "\n");
+            }
+        }
+
+        return String.join("\n", shader_source_lines);
+    }
+
     public int compileShader(int shader_type, String shader_source){
+        // We are going to run our precompiler on the incoming shader source
+        String precompiled_shader_source = glslPreCompiler(shader_source);
+
+        // Determine the type of shader that we are loading
         String shader_type_name = "unknown";
         switch (shader_type){
             case GL43.GL_VERTEX_SHADER:{
@@ -121,9 +157,10 @@ public class ShaderManager {
                 break;
             }
         }
+
         // Allocate memory for the new shader program
         int shader_id   = GL43.glCreateShader(shader_type);
-        GL43.glShaderSource(shader_id, shader_source);
+        GL43.glShaderSource(shader_id, precompiled_shader_source);
         GL43.glCompileShader(shader_id);
         checkForError(String.format("Compiling %s Shader", shader_type_name));
 
@@ -143,7 +180,7 @@ public class ShaderManager {
                     e.printStackTrace();
                 }
                 System.err.println(String.format("Error compiling %s shader| %s | %s", shader_type_name, line_number, GL43.glGetShaderInfoLog(shader_id)));
-                System.err.println(shader_source.split("\n")[Integer.parseInt(line_number) - 1]);
+                System.err.println(precompiled_shader_source.split("\n")[Integer.parseInt(line_number) - 1]);
                 //Cleanup our broken shader
                 GL43.glDeleteShader(shader_id);
 
@@ -242,5 +279,9 @@ public class ShaderManager {
         for(Uniform uniform : this.uniforms.values()){
             uniform.bind();
         }
+    }
+
+    public int getNextAvailableSSBOLocation() {
+        return next_available_location++;
     }
 }

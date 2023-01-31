@@ -22,8 +22,8 @@ public class Apiary {
 
     // The window handle
     private static long window;
-    private static int window_width = 1920;
-    private static int window_height = 1080;
+    private static int window_width = 2560;
+    private static int window_height = 1440;
     private static float aspect_ratio = (float)window_width / (float)window_height;
 
     // Variables used
@@ -55,9 +55,16 @@ public class Apiary {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ShaderManager.GL_MAJOR_VERSION);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ShaderManager.GL_MINOR_VERSION);
+        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
+        //Figure out the monitor size
+        GLFWVidMode video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+        window_width = video_mode.width();
+        window_height = video_mode.height();
+        aspect_ratio = (float)window_width / (float)window_height;
 
         // Create the window
         window = glfwCreateWindow(window_width, window_height, "Apiary Simulation Engine", NULL, NULL);

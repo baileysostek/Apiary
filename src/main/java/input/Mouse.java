@@ -33,8 +33,15 @@ public class Mouse {
     // Uniform variables
     private Uniform u_mouse_pos_pixels = ShaderManager.getInstance().createUniform("u_mouse_pos_pixels", GLDataType.VEC2);
     private Uniform u_mouse_scroll = ShaderManager.getInstance().createUniform("u_mouse_scroll", GLDataType.VEC2);
+    private Uniform u_mouse_pressed = ShaderManager.getInstance().createUniform("u_mouse_pressed", GLDataType.VEC4);
 
     private Mouse(){
+        // Init our keymap
+        mouseKeys.put(0, false);
+        mouseKeys.put(1, false);
+        mouseKeys.put(2, false);
+        mouseKeys.put(3, false);
+
         GLFW.glfwSetMouseButtonCallback(Apiary.getWindowPointer(), (long window, int button, int action, int mods) -> {
             processMouse(button, action);
         });
@@ -46,7 +53,6 @@ public class Mouse {
             mouse_scroll_y += (float) yoffset;
             mouse_scroll_y = Math.max(mouse_scroll_y, 1f);
         });
-
     }
 
     private void processMouse(int button, int action){
@@ -84,8 +90,22 @@ public class Mouse {
 //        ray = calculateMouseRay();
 
         // Update our mouse pos uniform
-        u_mouse_pos_pixels.set(mouse_x, (Apiary.getWindowHeight() - mouse_y));
+        float screen_pos_normalized_device_coords_x = (((mouse_x / (float)Apiary.getWindowWidth()) * 2.0f) - 1.0f);
+        float screen_pos_normalized_device_coords_y = (((((float)Apiary.getWindowHeight() - mouse_y) / (float)Apiary.getWindowHeight()) * 2.0f) - 1.0f);
+        // Scale by the zoom level
+        // Convert back to screenspace.
+        screen_pos_normalized_device_coords_x = (((screen_pos_normalized_device_coords_x / mouse_scroll_y) + 1.0f) / 2.0f) * Apiary.getWindowWidth();
+        screen_pos_normalized_device_coords_y = (((screen_pos_normalized_device_coords_y / mouse_scroll_y) + 1.0f) / 2.0f) * Apiary.getWindowHeight();
+        u_mouse_pos_pixels.set((int)screen_pos_normalized_device_coords_x, (int)screen_pos_normalized_device_coords_y);
+
         u_mouse_scroll.set(mouse_scroll_x, mouse_scroll_y);
+
+        u_mouse_pressed.set(
+            mouseKeys.get(0) ? 1.0f : 0.0f,
+            mouseKeys.get(1) ? 1.0f : 0.0f,
+            mouseKeys.get(2) ? 1.0f : 0.0f,
+            mouseKeys.get(3) ? 1.0f : 0.0f
+        );
     }
 
     public void bindUniforms(){

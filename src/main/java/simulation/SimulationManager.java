@@ -2,7 +2,6 @@ package simulation;
 
 import com.google.gson.JsonObject;
 import graphics.GLDataType;
-import graphics.Shader;
 import graphics.ShaderManager;
 import graphics.Uniform;
 import org.lwjgl.opengl.GL43;

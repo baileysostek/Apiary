@@ -8,15 +8,31 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+/**
+ * SSBOs are shared memory buffers that are able to be accessed from the GPU and CPU.
+ * This SSBO class makes several assumptions as to how a user wants to interface with GPU memory.
+ * This class sets up two SSBOs with very similar names.
+ * One is named {{agent_name}}_read and the other is {{agent_name}}_write
+ * This sets up two buffers in GPU memory. Since we are using Compute shaders to access the contents of this SSBO,
+ * there is no guarantee as to when specific areas of this SSBO are accessed. This can create race cibTo fix this we disallow the program to
+ * continue until all Compute shaders have finished.
+ */
 public class SSBO extends GLStruct{
+    private final int id_read;  // GL provided instance ID used to reference where in memory this is stored.
+    private final int id_write; // GL provided instance ID used to reference where in memory this is stored.
 
-    private static int next_available_location = 0;
+    // Binding locations for the read and write portions of this SSBO
+    private final int location_read;  // Sequential integer representing the location where this SSBO is bound.
+    private final int location_write; // Sequential integer representing the location where this SSBO is bound.
 
-    private final int id;  // GL provided instance ID used to reference where in memory this is stored.
-    private final int id_copy;
-    private final int location; // Sequential integer representing the location where this SSBO is bound.
+    // Constants used
+    private final static String READ_NAME  = "_read";
+    private final static String WRITE_NAME = "_write";
+
+    // The starting capacity.
     private int capacity = 1;
 
+    // This is a byte buffer representing the content stored in our SSBO.
     private ByteBuffer buffer;
 
     public SSBO (String name, LinkedHashMap<String, GLDataType> attributes){
@@ -29,19 +45,19 @@ public class SSBO extends GLStruct{
 
         // Locations of SSBOs are determined when SSBOs are generated.
         // These are globally unique and constant.
-        this.location = next_available_location;
-        next_available_location+=2; // Double Buffer
+        this.location_read  = ShaderManager.getInstance().getNextAvailableSSBOLocation();
+        this.location_write = ShaderManager.getInstance().getNextAvailableSSBOLocation();
 
         // Now we ask GL for an ID to use for the SSBO
-        this.id = GL43.glGenBuffers();
+        this.id_read = GL43.glGenBuffers();
         this.bind();
-        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, location, id);
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, location_read, id_read);
         // Load data based on our initial capacity
         this.unbind();
 
-        this.id_copy = GL43.glGenBuffers();
-        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_copy);
-        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, location + 1, id_copy);
+        this.id_write = GL43.glGenBuffers();
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_write);
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, location_write, id_write);
         // Load data based on our initial capacity
         this.unbind();
     }
@@ -53,7 +69,7 @@ public class SSBO extends GLStruct{
         bind();
         GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.buffer, GL43.GL_DYNAMIC_DRAW);
         unbind();
-        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_copy);
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_write);
         GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.buffer, GL43.GL_DYNAMIC_DRAW);
         // Load data based on our initial capacity
         this.unbind();
@@ -71,8 +87,8 @@ public class SSBO extends GLStruct{
     }
 
     private void bind(){
-        if(id >= 0) {
-            GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id);
+        if(id_read >= 0) {
+            GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_read);
         }else{
             System.out.println("Error tried to bind SSBO before id was assigned.");
             System.exit(1);
@@ -91,9 +107,11 @@ public class SSBO extends GLStruct{
 
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("version", ShaderManager.getInstance().getGLTargetVersion());
-        substitutions.put("binding_location", this.location);
-        substitutions.put("binding_location_second_buffer", this.location + 1);
+        substitutions.put("binding_location", this.location_read);
+        substitutions.put("binding_location_second_buffer", this.location_read + 1);
         substitutions.put("struct_name", this.getName());
+        substitutions.put("read_name", READ_NAME);
+        substitutions.put("write_name", WRITE_NAME);
 
         // Compute how to represent our attributes
         String attribute_definitions = "";
@@ -110,12 +128,50 @@ public class SSBO extends GLStruct{
             "};\n" +
             "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
             "{{struct_name}} agent[];\n" +
-            "} all_{{struct_name}};\n"+
+            "} all_{{struct_name}}{{read_name}};\n"+
             "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
             "{{struct_name}} agent[];\n" +
-            "} all_{{struct_name}}_2;\n",
+            "} all_{{struct_name}}{{write_name}};\n",
             substitutions
         );
+    }
+
+    public String generateAlternateGLSL(){
+
+        HashMap<String, Object> substitutions = new HashMap<>();
+        substitutions.put("version", ShaderManager.getInstance().getGLTargetVersion());
+        substitutions.put("binding_location", this.location_write);
+        substitutions.put("binding_location_second_buffer", this.location_read);
+        substitutions.put("struct_name", this.getName());
+        substitutions.put("read_name", READ_NAME);
+        substitutions.put("write_name", WRITE_NAME);
+
+        // Compute how to represent our attributes
+        String attribute_definitions = "";
+        for(String attribute_name : this.getAttributes().keySet()){
+            GLDataType type = this.getAttributes().get(attribute_name);
+            attribute_definitions += String.format("\t%s %s;\n", type.getGLSL(), attribute_name);
+        }
+        substitutions.put("attributes", attribute_definitions);
+
+        return StringUtils.format(
+                "struct {{struct_name}}\n" +
+                        "{\n" +
+                        "{{attributes}}"+
+                        "};\n" +
+                        "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
+                        "{{struct_name}} agent[];\n" +
+                        "} all_{{struct_name}}{{read_name}};\n"+
+                        "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
+                        "{{struct_name}} agent[];\n" +
+                        "} all_{{struct_name}}{{write_name}};\n",
+                substitutions
+        );
+    }
+
+    // Convenient strings used to help generate references.
+    public String read(String index){
+        return String.format("");
     }
 
     /**
@@ -123,7 +179,7 @@ public class SSBO extends GLStruct{
      */
     public void cleanup(){
         MemoryUtil.memFree(this.buffer);
-        GL43.glDeleteBuffers(id);
+        GL43.glDeleteBuffers(id_read);
     }
 
     public int getCapacity() {

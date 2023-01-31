@@ -24,6 +24,7 @@ public class Simulation {
     private final int program_id;
     private final int initialize_id;
     private final int compute_id;
+    private final int compute_id_2;
     private final int copy_id; // Double buffer copy.
     private final VAO vao;
 
@@ -58,6 +59,7 @@ public class Simulation {
 
     private float delta_over_time = 0;
     private boolean initialized = false;
+    private int frame = 0;
 
     /**
      * We use constructor overloading
@@ -121,8 +123,8 @@ public class Simulation {
                 }
             }
 
-//            agent_ssbo.allocate(Integer.MAX_VALUE / 32);
-            agent_ssbo.allocate(Apiary.getWindowWidth() * Apiary.getWindowHeight());
+            agent_ssbo.allocate(Integer.MAX_VALUE / 32);
+//            agent_ssbo.allocate(Apiary.getWindowWidth() * Apiary.getWindowHeight());
             agent_ssbo.flush();
 
             // Add agent to sim.
@@ -166,9 +168,9 @@ public class Simulation {
                         "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
                         "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
                         "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-                        "out_color = vec4(all_cell.agent[fragment_index].color , 1.0);\n" +
-//                        "if (all_cell.agent[fragment_index].alive) {\n" +
-//                        "    out_color = vec4(all_cell.agent[fragment_index].color , 1.0);\n" +
+                        "out_color = vec4(all_cell_read.agent[fragment_index].color , 1.0);\n" +
+//                        "if (all_cell_read.agent[fragment_index].alive) {\n" +
+//                        "    out_color = vec4(all_cell_read.agent[fragment_index].color , 1.0);\n" +
 ////                        "    out_color = vec4(1.0);\n" +
 //                        "} else {\n" +
 //                        "    out_color = vec4(0.0 , 0.0 , 0.0 , 1.0);\n" +
@@ -192,46 +194,13 @@ public class Simulation {
         String compute_source =
             "#version 430 core\n" +
             "\n" +
+            "uniform vec2 u_mouse_scroll;\n" +
             "uniform vec2 u_mouse_pos_pixels;\n" +
+            "uniform vec4 u_mouse_pressed;\n" +
             "uniform float u_time_seconds;\n" +
             "uniform vec2 u_window_size;\n" +
             "layout (local_size_x = 1, local_size_y = 1) in;\n" +
-            "// A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm.\n" +
-            "uint hash( uint x ) {\n" +
-            "    x += ( x << 10u );\n" +
-            "    x ^= ( x >>  6u );\n" +
-            "    x += ( x <<  3u );\n" +
-            "    x ^= ( x >> 11u );\n" +
-            "    x += ( x << 15u );\n" +
-            "    return x;\n" +
-            "}\n" +
-            "\n" +
-            "\n" +
-            "\n" +
-            "// Compound versions of the hashing algorithm I whipped together.\n" +
-            "uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }\n" +
-            "uint hash( uvec3 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z)             ); }\n" +
-            "uint hash( uvec4 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z) ^ hash(v.w) ); }\n" +
-            "\n" +
-            "\n" +
-            "\n" +
-            "// Construct a float with half-open range [0:1] using low 23 bits.\n" +
-            "// All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.\n" +
-            "float floatConstruct( uint m ) {\n" +
-            "    const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask\n" +
-            "    const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32\n" +
-            "\n" +
-            "    m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)\n" +
-            "    m |= ieeeOne;                          // Add fractional part to 1.0\n" +
-            "\n" +
-            "    float  f = uintBitsToFloat( m );       // Range [1:2]\n" +
-            "    return f - 1.0;                        // Range [0:1]\n" +
-            "}\n" +
-            "// Pseudo-random value in half-open range [0:1].\n" +
-            "float random( float x ) { return floatConstruct(hash(floatBitsToUint(x))); }\n" +
-            "float random( vec2  v ) { return floatConstruct(hash(floatBitsToUint(v))); }\n" +
-            "float random( vec3  v ) { return floatConstruct(hash(floatBitsToUint(v))); }\n" +
-            "float random( vec4  v ) { return floatConstruct(hash(floatBitsToUint(v))); }\n" +
+            "#include noise\n" +
             agents.get("cell").generateGLSL() +
             "void main() {\n" +
             "int x_pos = int(gl_GlobalInvocationID.x);\n" +
@@ -240,88 +209,99 @@ public class Simulation {
             "int window_height_pixels = int(u_window_size.y);\n" +
             "int fragment_index = x_pos + (y_pos * window_width_pixels);\n" +
             "int neighbors = 0;\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top left\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top middle\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top right\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid left\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid right\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom left\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom mid\n" +
-            "neighbors += all_cell.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom right\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top left\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top middle\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top right\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid left\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid right\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom left\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom mid\n" +
+            "neighbors += all_cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom right\n" +
             "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
             "float rand   = random( inputs );              // Random per-pixel value\n" +
 //            "vec3 color = rand > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n" +
-            "if(all_cell.agent[fragment_index].alive){\n" +
-            "all_cell_2.agent[fragment_index].alive = (neighbors == 2 || neighbors == 3);\n" +
+            "if(all_cell_read.agent[fragment_index].alive){\n" +
+            "all_cell_write.agent[fragment_index].alive = (neighbors == 2 || neighbors == 3);\n" +
             "}else{\n" +
-            "all_cell_2.agent[fragment_index].alive = (neighbors == 3);\n" +
+            "all_cell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
             "}\n" +
 
-            "vec3 color = all_cell.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : all_cell.agent[fragment_index].color * 0.99;\n" +
-            "all_cell_2.agent[fragment_index].color = color;\n" +
-
+            "vec3 color = all_cell_read.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : all_cell_read.agent[fragment_index].color * 0.99;\n" +
+            "all_cell_write.agent[fragment_index].color = color;\n" +
+            "if(u_mouse_pressed.x > 0.0){\n"+
             "int mouse_index = int(clamp(u_mouse_pos_pixels.x, 0, u_window_size.x)) + (int(clamp(u_mouse_pos_pixels.y, 0, u_window_size.y)) * window_width_pixels);\n" +
-            "all_cell_2.agent[mouse_index].alive = true;\n" +
-
+            "all_cell_write.agent[mouse_index].alive = true;\n" +
+            "}\n"+
             "}\n";
 
         int compute   = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, compute_source);
         this.compute_id = ShaderManager.getInstance().linkShader(compute);
 
-        String initialize_source =
+        String compute_2_source =
                 "#version 430 core\n" +
-                        "\n" +
-                        "uniform float u_time_seconds;\n" +
-                        "uniform vec2 u_window_size;\n" +
-                        "layout (local_size_x = 1, local_size_y = 1) in;\n" +
-                        agents.get("cell").generateGLSL() +
-                        "// A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm.\n" +
-                        "uint hash( uint x ) {\n" +
-                        "    x += ( x << 10u );\n" +
-                        "    x ^= ( x >>  6u );\n" +
-                        "    x += ( x <<  3u );\n" +
-                        "    x ^= ( x >> 11u );\n" +
-                        "    x += ( x << 15u );\n" +
-                        "    return x;\n" +
-                        "}\n" +
-                        "\n" +
-                        "\n" +
-                        "\n" +
-                        "// Compound versions of the hashing algorithm I whipped together.\n" +
-                        "uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }\n" +
-                        "uint hash( uvec3 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z)             ); }\n" +
-                        "uint hash( uvec4 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z) ^ hash(v.w) ); }\n" +
-                        "\n" +
-                        "\n" +
-                        "\n" +
-                        "// Construct a float with half-open range [0:1] using low 23 bits.\n" +
-                        "// All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.\n" +
-                        "float floatConstruct( uint m ) {\n" +
-                        "    const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask\n" +
-                        "    const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32\n" +
-                        "\n" +
-                        "    m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)\n" +
-                        "    m |= ieeeOne;                          // Add fractional part to 1.0\n" +
-                        "\n" +
-                        "    float  f = uintBitsToFloat( m );       // Range [1:2]\n" +
-                        "    return f - 1.0;                        // Range [0:1]\n" +
-                        "}\n" +
-                        "// Pseudo-random value in half-open range [0:1].\n" +
-                        "float random( float x ) { return floatConstruct(hash(floatBitsToUint(x))); }\n" +
-                        "float random( vec2  v ) { return floatConstruct(hash(floatBitsToUint(v))); }\n" +
-                        "float random( vec3  v ) { return floatConstruct(hash(floatBitsToUint(v))); }\n" +
-                        "float random( vec4  v ) { return floatConstruct(hash(floatBitsToUint(v))); }\n" +
-                        "void main() {\n" +
-                        "int x_pos = int(gl_GlobalInvocationID.x);\n" +
-                        "int y_pos = int(gl_GlobalInvocationID.y);\n" +
-                        "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
-                        "float rand   = random( inputs );              // Random per-pixel value\n" +
-                        "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-                        "all_cell.agent[fragment_index].alive = (rand <= 0.12);\n" +
-                        "all_cell.agent[fragment_index].color = vec3(rand, random(vec3(x_pos, y_pos, u_time_seconds - 1.0)), random(vec3(x_pos, y_pos, u_time_seconds + 1.0)));\n" +
-                        "all_cell_2.agent[fragment_index].alive = all_cell.agent[fragment_index].alive;\n" +
-                        "all_cell_2.agent[fragment_index].color = all_cell.agent[fragment_index].color;\n" +
-                        "}";
+                "\n" +
+                "uniform vec2 u_mouse_scroll;\n" +
+                "uniform vec2 u_mouse_pos_pixels;\n" +
+                "uniform vec4 u_mouse_pressed;\n" +
+                "uniform float u_time_seconds;\n" +
+                "uniform vec2 u_window_size;\n" +
+                "layout (local_size_x = 1, local_size_y = 1) in;\n" +
+                "#include noise\n" +
+                agents.get("cell").generateAlternateGLSL() +
+                "void main() {\n" +
+                "int x_pos = int(gl_GlobalInvocationID.x);\n" +
+                "int y_pos = int(gl_GlobalInvocationID.y);\n" +
+                "int window_width_pixels = int(u_window_size.x);\n" +
+                "int window_height_pixels = int(u_window_size.y);\n" +
+                "int fragment_index = x_pos + (y_pos * window_width_pixels);\n" +
+                "int neighbors = 0;\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top left\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top middle\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top right\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid left\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid right\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom left\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom mid\n" +
+                "neighbors += all_cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom right\n" +
+                "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
+                "float rand   = random( inputs );              // Random per-pixel value\n" +
+//            "vec3 color = rand > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n" +
+                "if(all_cell_read.agent[fragment_index].alive){\n" +
+                "all_cell_write.agent[fragment_index].alive = (neighbors == 2 || neighbors == 3);\n" +
+                "}else{\n" +
+                "all_cell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
+                "}\n" +
+
+                "vec3 color = all_cell_read.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : all_cell_read.agent[fragment_index].color * 0.99;\n" +
+                "all_cell_write.agent[fragment_index].color = color;\n" +
+                "if(u_mouse_pressed.x > 0.0){\n"+
+                "int mouse_index = int(clamp(u_mouse_pos_pixels.x, 0, u_window_size.x)) + (int(clamp(u_mouse_pos_pixels.y, 0, u_window_size.y)) * window_width_pixels);\n" +
+                "all_cell_write.agent[mouse_index].alive = true;\n" +
+                "}\n"+
+                "}\n";
+
+        int compute_2   = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, compute_2_source);
+        this.compute_id_2 = ShaderManager.getInstance().linkShader(compute_2);
+
+        String initialize_source =
+            "#version 430 core\n" +
+            "\n" +
+            "uniform float u_time_seconds;\n" +
+            "uniform vec2 u_window_size;\n" +
+            "layout (local_size_x = 1, local_size_y = 1) in;\n" +
+            agents.get("cell").generateGLSL() +
+            "#include noise\n" +
+            "void main() {\n" +
+            "int x_pos = int(gl_GlobalInvocationID.x);\n" +
+            "int y_pos = int(gl_GlobalInvocationID.y);\n" +
+            "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
+            "float rand   = random( inputs );              // Random per-pixel value\n" +
+            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
+            "all_cell_read.agent[fragment_index].alive = (rand <= 0.12);\n" +
+            "all_cell_read.agent[fragment_index].color = vec3(rand, random(vec3(x_pos, y_pos, u_time_seconds - 1.0)), random(vec3(x_pos, y_pos, u_time_seconds + 1.0)));\n" +
+            "all_cell_write.agent[fragment_index].alive = all_cell_read.agent[fragment_index].alive;\n" +
+            "all_cell_write.agent[fragment_index].color = all_cell_read.agent[fragment_index].color;\n" +
+            "}";
 
         int initialize   = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, initialize_source);
         this.initialize_id = ShaderManager.getInstance().linkShader(initialize);
@@ -336,8 +316,8 @@ public class Simulation {
             "int x_pos = int(gl_GlobalInvocationID.x);\n" +
             "int y_pos = int(gl_GlobalInvocationID.y);\n" +
             "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-            "all_cell.agent[fragment_index].alive = all_cell_2.agent[fragment_index].alive;\n" +
-            "all_cell.agent[fragment_index].color = all_cell_2.agent[fragment_index].color;\n" +
+            "all_cell_read.agent[fragment_index].alive = all_cell_write.agent[fragment_index].alive;\n" +
+            "all_cell_read.agent[fragment_index].color = all_cell_write.agent[fragment_index].color;\n" +
             "}";
 
         int copy   = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, copy_source);
@@ -356,6 +336,8 @@ public class Simulation {
     }
 
     public void update(double delta){
+        frame++;
+        frame%=2;
 
         // Initialize Data
         if(!initialized) {
@@ -370,14 +352,9 @@ public class Simulation {
         // Execute compute
         if(simulation_time >= simulation_target_time) {
             simulation_time -= simulation_target_time;
-            ShaderManager.getInstance().bind(compute_id);
-            Mouse.getInstance().bindUniforms();
-            ShaderManager.getInstance().bindUniforms();
-            GL43.glDispatchCompute(Apiary.getWindowWidth(), Apiary.getWindowHeight(), 1);
-            GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
-
-            // Copy buffers over
-            ShaderManager.getInstance().bind(copy_id);
+            // Logic needs to be done with a set of two buffers and frame counting.
+            // Instead of buffer copying we are just going to generate two separate shaders where the buffers locations are swapped.
+            ShaderManager.getInstance().bind(frame%2 == 0 ? compute_id : compute_id_2);
             Mouse.getInstance().bindUniforms();
             ShaderManager.getInstance().bindUniforms();
             GL43.glDispatchCompute(Apiary.getWindowWidth(), Apiary.getWindowHeight(), 1);
@@ -395,17 +372,9 @@ public class Simulation {
     }
 
     public void render(){
-        // Now we try to step the simulation
-//        for(Step step : pipeline){
-//            for(String agent_name : step.getAgents()){
-//
-//            }
-//        }
-
+        // Clear the Screen
         GL43.glClearColor(1f, 1f, 1f, 1.0f);
         GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
-
-//        this.agents.get("cell").flush();
 
         // This stage renders an input image to the screen.
         this.vao.bind();
