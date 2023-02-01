@@ -14,6 +14,8 @@ import pegs.math.PegGreater;
 import pegs.math.PegLess;
 import pegs.random.PegRandomFloat;
 import pegs.simulation.PegAgentCount;
+import pegs.simulation.PegAgentRead;
+import pegs.simulation.PegAgentWrite;
 import pegs.simulation.PegGetAgentAtIndex;
 import pegs.variables.PegDefine;
 import pegs.variables.PegSet;
@@ -56,6 +58,8 @@ public class PegManager {
         // Simulation
         instance.registerPeg(new PegAgentCount());
         instance.registerPeg(new PegGetAgentAtIndex());
+        instance.registerPeg(new PegAgentRead());
+        instance.registerPeg(new PegAgentWrite());
 
         // Variables
         instance.registerPeg(new PegDefine());

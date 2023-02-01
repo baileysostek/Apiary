@@ -25,10 +25,6 @@ public class SSBO extends GLStruct{
     private final int location_read;  // Sequential integer representing the location where this SSBO is bound.
     private final int location_write; // Sequential integer representing the location where this SSBO is bound.
 
-    // Constants used
-    private final static String READ_NAME  = "_read";
-    private final static String WRITE_NAME = "_write";
-
     // The starting capacity.
     private int capacity = 1;
 
@@ -110,8 +106,8 @@ public class SSBO extends GLStruct{
         substitutions.put("binding_location", this.location_read);
         substitutions.put("binding_location_second_buffer", this.location_read + 1);
         substitutions.put("struct_name", this.getName());
-        substitutions.put("read_name", READ_NAME);
-        substitutions.put("write_name", WRITE_NAME);
+        substitutions.put("read_name", ShaderManager.getInstance().getSSBOReadIdentifier());
+        substitutions.put("write_name", ShaderManager.getInstance().getSSBOWriteIdentifier());
 
         // Compute how to represent our attributes
         String attribute_definitions = "";
@@ -128,10 +124,10 @@ public class SSBO extends GLStruct{
             "};\n" +
             "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
             "{{struct_name}} agent[];\n" +
-            "} all_{{struct_name}}{{read_name}};\n"+
+            "}{{struct_name}}{{read_name}};\n"+
             "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
             "{{struct_name}} agent[];\n" +
-            "} all_{{struct_name}}{{write_name}};\n",
+            "}{{struct_name}}{{write_name}};\n",
             substitutions
         );
     }
@@ -143,8 +139,8 @@ public class SSBO extends GLStruct{
         substitutions.put("binding_location", this.location_write);
         substitutions.put("binding_location_second_buffer", this.location_read);
         substitutions.put("struct_name", this.getName());
-        substitutions.put("read_name", READ_NAME);
-        substitutions.put("write_name", WRITE_NAME);
+        substitutions.put("read_name", ShaderManager.getInstance().getSSBOReadIdentifier());
+        substitutions.put("write_name", ShaderManager.getInstance().getSSBOWriteIdentifier());
 
         // Compute how to represent our attributes
         String attribute_definitions = "";
@@ -155,22 +151,22 @@ public class SSBO extends GLStruct{
         substitutions.put("attributes", attribute_definitions);
 
         return StringUtils.format(
-                "struct {{struct_name}}\n" +
-                        "{\n" +
-                        "{{attributes}}"+
-                        "};\n" +
-                        "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
-                        "{{struct_name}} agent[];\n" +
-                        "} all_{{struct_name}}{{read_name}};\n"+
-                        "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
-                        "{{struct_name}} agent[];\n" +
-                        "} all_{{struct_name}}{{write_name}};\n",
-                substitutions
+    "struct {{struct_name}}\n" +
+            "{\n" +
+            "{{attributes}}"+
+            "};\n" +
+            "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
+            "{{struct_name}} agent[];\n" +
+            "}{{struct_name}}{{read_name}};\n"+
+            "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
+            "{{struct_name}} agent[];\n" +
+            "}{{struct_name}}{{write_name}};\n",
+            substitutions
         );
     }
 
     // Convenient strings used to help generate references.
-    public String read(String index){
+    public String generateReadString(String index){
         return String.format("");
     }
 

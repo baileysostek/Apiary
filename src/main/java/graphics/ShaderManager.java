@@ -17,8 +17,11 @@ public class ShaderManager {
     public final byte ALIGNMENT = 4;
     private final String GLSL_VERSION;
 
+    // Constants used
     public static final int GL_MAJOR_VERSION = 4;
     public static final int GL_MINOR_VERSION = 3;
+    private static final String READ_NAME  = "_read";
+    private static final String WRITE_NAME = "_write";
 
     private int bound_shader = -1;
 
@@ -283,5 +286,17 @@ public class ShaderManager {
 
     public int getNextAvailableSSBOLocation() {
         return next_available_location++;
+    }
+
+    public String getSSBOReadIdentifier() {
+        return READ_NAME;
+    }
+
+    public String getSSBOWriteIdentifier() {
+        return WRITE_NAME;
+    }
+
+    public String generateVersionString() {
+        return String.format("#version %s core\n", getGLTargetVersion());
     }
 }
