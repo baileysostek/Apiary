@@ -225,7 +225,7 @@ public class Simulation {
             "uniform vec4 u_mouse_pressed;\n" +
             "uniform float u_time_seconds;\n" +
             "uniform vec2 u_window_size;\n" +
-            "layout (local_size_x = 1, local_size_y = 1) in;\n" +
+            "layout (local_size_x = 32, local_size_y = 48) in;\n" +
             "#include noise\n" +
             agents.get("cell").generateGLSL() +
             "void main() {\n" +
@@ -270,7 +270,7 @@ public class Simulation {
                 "uniform vec4 u_mouse_pressed;\n" +
                 "uniform float u_time_seconds;\n" +
                 "uniform vec2 u_window_size;\n" +
-                "layout (local_size_x = 1, local_size_y = 1) in;\n" +
+                "layout (local_size_x = 32, local_size_y = 48) in;\n" +
                 "#include noise\n" +
                 agents.get("cell").generateAlternateGLSL() +
                 "void main() {\n" +
@@ -321,9 +321,6 @@ public class Simulation {
     }
 
     public void update(double delta){
-        frame++;
-        frame%=2;
-
         // Initialize Data
         if(!initialized) {
             ShaderManager.getInstance().bind(initialize_id);
@@ -342,8 +339,12 @@ public class Simulation {
             ShaderManager.getInstance().bind(frame%2 == 0 ? compute_id : compute_id_2);
             Mouse.getInstance().bindUniforms();
             ShaderManager.getInstance().bindUniforms();
-            GL43.glDispatchCompute(Apiary.getWindowWidth(), Apiary.getWindowHeight(), 1);
+            GL43.glDispatchCompute(1, 1, 1);
             GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
+
+            // Increment the frame
+            frame++;
+            frame%=2;
         }
 
         if(program_id > -1){
