@@ -1,10 +1,7 @@
 {
   "world":{
     "name":"Conway's Game of Life",
-    "type":"AgentGrid",
-    "parameters":{
-      "agent":"cell"
-    }
+    "type":"AgentGrid"
   },
   "agents":{
     "cell":{
@@ -15,7 +12,7 @@
         },
         "alive":{
           "type":"bool",
-          "default_value":["@random_bool"]
+          "default_value":["@random_float", "0.33", "@greater"]
         }
       }
     }
@@ -23,7 +20,7 @@
   "steps":[
     {
       "agents":["cell"],
-      "logic":[ "cell", "@agent_count", [["current_cell", "cell", "cell", "0", "@get_agent_at_index", "@define"], ["cell", "@agent_count"], ["cell", "@agent_count"], ["cell", "@agent_count"], "@conditional"], "@for_each"]
+      "logic":[ "cell", "@agent_count", [["current_cell", "cell", "cell", "@random_float", "@get_agent_at_index", "@define"], ["cell", "@agent_count"], ["cell", "@agent_count"], ["cell", "@agent_count"], "@conditional"], "@for_each"]
     },
     {
       "agents":["cell"],

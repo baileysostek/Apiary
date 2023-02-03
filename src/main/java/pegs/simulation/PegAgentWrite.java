@@ -18,11 +18,6 @@ public class PegAgentWrite extends Peg {
     }
 
     @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-        //TODO
-    }
-
-    @Override
     protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
 
         HashMap<String, Object> substitutions = new HashMap<>();

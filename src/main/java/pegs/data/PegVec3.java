@@ -6,9 +6,9 @@ import pegs.PegManager;
 
 import java.util.Stack;
 
-public class PegVec4 extends Peg {
-    public PegVec4() {
-        super("@vec4", 4);
+public class PegVec3 extends Peg {
+    public PegVec3() {
+        super("@vec3", 3);
     }
 
     @Override
@@ -16,8 +16,7 @@ public class PegVec4 extends Peg {
         String par_0 = PegManager.getInstance().transpile(params[0]);
         String par_1 = PegManager.getInstance().transpile(params[1]);
         String par_2 = PegManager.getInstance().transpile(params[2]);
-        String par_3 = PegManager.getInstance().transpile(params[3]);
 
-        return String.format("vec4(%s , %s , %s , %s)", par_0, par_1, par_2, par_3);
+        return String.format("vec3(%s , %s , %s)", par_0, par_1, par_2);
     }
 }

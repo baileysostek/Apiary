@@ -1,8 +1,6 @@
 package pegs.controlflow;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import graphics.ShaderManager;
 import pegs.Peg;
 import pegs.PegManager;
 import util.StringUtils;
@@ -18,11 +16,6 @@ import java.util.Stack;
 public class PegForEach extends Peg {
     public PegForEach() {
         super("@for_each", 2);
-    }
-
-    @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-        //TODO error throw here
     }
 
     @Override

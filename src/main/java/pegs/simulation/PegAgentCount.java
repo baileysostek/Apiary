@@ -7,17 +7,11 @@ import pegs.PegManager;
 import simulation.Simulation;
 import simulation.SimulationManager;
 
-import java.util.LinkedList;
 import java.util.Stack;
 
 public class PegAgentCount extends Peg {
     public PegAgentCount() {
         super("@agent_count", 1);
-    }
-
-    @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-        //TODO
     }
 
     @Override

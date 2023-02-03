@@ -1,10 +1,14 @@
 package pegs;
 
 import com.google.gson.*;
+import graphics.ShaderManager;
+import graphics.Uniform;
 import pegs.code.PegCode;
 import pegs.controlflow.PegConditional;
 import pegs.controlflow.PegForEach;
 import pegs.controlflow.PegOutColor;
+import pegs.data.PegVec2;
+import pegs.data.PegVec3;
 import pegs.data.PegVec4;
 import pegs.logic.PegAnd;
 import pegs.logic.PegNot;
@@ -12,6 +16,7 @@ import pegs.logic.PegOr;
 import pegs.logic.PegXor;
 import pegs.math.PegGreater;
 import pegs.math.PegLess;
+import pegs.random.PegRandomBool;
 import pegs.random.PegRandomFloat;
 import pegs.simulation.PegAgentCount;
 import pegs.simulation.PegAgentRead;
@@ -20,8 +25,10 @@ import pegs.simulation.PegGetAgentAtIndex;
 import pegs.variables.PegDefine;
 import pegs.variables.PegSet;
 import util.JsonUtils;
+import util.StringUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -31,8 +38,9 @@ public class PegManager {
     static{
         instance = new PegManager();
 
-        // Reigster all of our pegs
+        // Random
         instance.registerPeg(new PegRandomFloat());
+        instance.registerPeg(new PegRandomBool());
 
         // Code
         instance.registerPeg(new PegCode());
@@ -44,6 +52,9 @@ public class PegManager {
 
         // Data
         instance.registerPeg(new PegVec4());
+        instance.registerPeg(new PegVec3());
+        instance.registerPeg(new PegVec2());
+
 
         // Boolean Logic
         instance.registerPeg(new PegAnd());
@@ -68,8 +79,9 @@ public class PegManager {
     // Holds all pegs that our system knows about.
     private HashMap<String, Peg> pegs = new HashMap<>();
 
-    // When parsing we need to know our scope depth so that we can name variables correctly.
-    private static int scope_depth = 0;
+    // Required uniforms
+    private HashSet<String> required_uniforms = new HashSet<>();
+    private HashSet<String> required_imports = new HashSet<>();
 
     public static PegManager getInstance(){
         return instance;
@@ -85,52 +97,37 @@ public class PegManager {
         }
     }
 
-    public JsonElement parse(String data){
-        // Turn our input string into a json array and enqueue them on the stack
-        JsonElement element = JsonUtils.getInstance().getParser().parse(data);
-        return parse(element);
-    }
+    public String generateGLSL(JsonElement element){
+        // First thing we want to do is clear the set of requirements that was generated the last time this method was called.
+        required_uniforms.clear();
+        required_imports.clear();
 
-    public JsonElement parse(JsonElement element){
-        // Clear the stack.
-        Stack<JsonElement> stack = new Stack<>();
+        HashMap<String, Object> substitutions = new HashMap<>();
+        substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
+        substitutions.put("main_method", transpile(element));
 
-        if(element.isJsonArray()){
-            JsonArray array = element.getAsJsonArray();
-            for(int i = 0; i < array.size(); i++){
-                JsonElement top = array.get(i);
-                if(!top.isJsonObject() && !top.isJsonNull() && !top.isJsonArray()) {
-                    try {
-                        String instruction = top.getAsString();
-                        if (instruction.startsWith("@")) {
-                            if (pegs.containsKey(instruction)) {
-                                Peg action = pegs.get(instruction);
-                                action.performAction(stack);
-                                continue;
-                            }else{
-                                System.err.println("Unknown instruction:"+instruction);
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                // We have interpreted a literal and we just want to push it onto the stack.
-                pushElementOntoStack(top, stack);
+        // Determine the uniforms that we need to include
+        String uniforms = "";
+        for(String uniform_name : required_uniforms){
+            if(ShaderManager.getInstance().hasUniform(uniform_name)) {
+                Uniform uniform = ShaderManager.getInstance().getUniform(uniform_name);
+                uniforms += String.format("uniform %s %s;\n", uniform.getTypeName(), uniform.getName());
             }
-        }else{
-            pushElementOntoStack(element, stack);
         }
+        substitutions.put("required_uniforms", uniforms);
 
-        JsonElement top = stack.size() > 0 ? stack.peek() : new JsonNull();
-
-        return top;
+        return StringUtils.format("" +
+            "{{shader_version}}" +
+            "{{required_uniforms}}" +
+            "{{required_imports}}" +
+            "{{main_method}}" +
+            "", substitutions);
     }
 
     public String transpile(String data){
-        // Turn our input string into a json array and enqueue them on the stack
         return transpile(JsonUtils.getInstance().getParser().parse(data));
     }
+
     public String transpile(JsonElement element){
 
         LinkedList<LinkedList<String>> glsl = new LinkedList<>();
@@ -146,7 +143,19 @@ public class PegManager {
                         String instruction = top.getAsString();
                         if (instruction.startsWith("@")) {
                             if (pegs.containsKey(instruction)) {
+                                // Determine what peg we are trying to reference.
                                 Peg action = pegs.get(instruction);
+
+                                // Now that we have our peg lets figure out the requirements.
+                                for(String uniform_name : action.getRequiredUniforms()){
+                                    this.required_uniforms.add(uniform_name);
+                                }
+
+                                // Now that we have our peg lets figure out the requirements.
+                                for(String import_name : action.getRequiredImports()){
+                                    this.required_imports.add(import_name);
+                                }
+
                                 action.transpile(stack);
                                 continue;
                             }else{

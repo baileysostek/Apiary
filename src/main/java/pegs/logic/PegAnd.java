@@ -1,36 +1,14 @@
 package pegs.logic;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import pegs.Peg;
 import pegs.PegManager;
 
-import java.util.LinkedList;
 import java.util.Stack;
 
 public class PegAnd extends Peg {
     public PegAnd() {
         super("@and", 2);
-    }
-
-    @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-
-        boolean par_0 = false;
-        try{
-            par_0 =  params[0].getAsBoolean();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        boolean par_1 = false;
-        try{
-            par_1 =  params[1].getAsBoolean();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        stack.push(new JsonPrimitive(par_0 && par_1));
     }
 
     @Override

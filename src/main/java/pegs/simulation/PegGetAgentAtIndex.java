@@ -1,23 +1,16 @@
 package pegs.simulation;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import pegs.Peg;
 import pegs.PegManager;
 import simulation.Simulation;
 import simulation.SimulationManager;
 
-import java.util.LinkedList;
 import java.util.Stack;
 
 public class PegGetAgentAtIndex extends Peg {
     public PegGetAgentAtIndex() {
         super("@get_agent_at_index", 2);
-    }
-
-    @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-        //TODO
     }
 
     @Override

@@ -13,60 +13,49 @@ import pegs.PegManager;
 import simulation.world.World;
 import simulation.world.World2D;
 import util.JsonUtils;
+import util.StringUtils;
 
-import java.nio.FloatBuffer;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 
 public class Simulation {
 
+    // This is derived from the simulation world. We need a way to map agent to world.
     private final int program_id;
+    private final VAO vao;
+    float vertices[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f, 0.0f
+    };
+
+    // This is a core part of a simulation. It represents how we initialize agents.
     private final int initialize_id;
+
+    // This is the logic that we will compute each frame of simulation.
     private final int compute_id;
     private final int compute_id_2;
-    private final VAO vao;
 
     private float simulation_time = 0;
     private float simulation_updates_per_second = 4000.0f;
     private float simulation_target_time = ( 1.0f / simulation_updates_per_second);
 
-    float vertices[] = {
-        -1.0f, -1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f, 0.0f
-    };
-
-//    float vertices[] = {
-//        -0.5f, -0.5f, 0.0f,
-//        0.5f, -0.5f, 0.0f,
-//        0.0f,  0.5f, 0.0f
-//    };
-
-
-
-
     private String name;
-    private World simulation_world; // The simulation world is used as the tempalte for the worldstate during simulation.
+    private World simulation_world; // The simulation world is used as the template for the worldstate during simulation.
     // We have 2D and 3D worlds ready for simulations.
     private LinkedHashMap<String, SSBO> agents = new LinkedHashMap<>();
 
     private LinkedHashSet<Step> pipeline = new LinkedHashSet<Step>();
 
-    private float delta_over_time = 0;
     private boolean initialized = false;
-    private int frame = 0;
 
-    /**
-     * We use constructor overloading
-     * @param path
-     */
-    protected Simulation(String path) {
-        this(JsonUtils.loadJson(path));
-    }
+    // It is really important to count frames of simulation so we are able to read from and write to the correct buffers.
+    private int frame = 0;
 
     protected Simulation(JsonObject object){
         // First thing we do is set the active simulation to this one
@@ -79,6 +68,7 @@ public class Simulation {
             String simulation_world_name = "Default Simulation Name";
             if(simulation_world_template.has("name")){
                 simulation_world_name = simulation_world_template.get("name").getAsString();
+                this.name = simulation_world_name;
             }
             // Resolve the type
             if (simulation_world_template.has("type")) {
@@ -101,6 +91,8 @@ public class Simulation {
         // Load the agents
         JsonObject simulation_agents = object.getAsJsonObject("agents");
 
+        String agent_ssbo_glsl = "";
+        String initializer_glsl = "";
         for(String agent_name : simulation_agents.keySet()){
             JsonObject agent = simulation_agents.get(agent_name).getAsJsonObject();
 
@@ -109,6 +101,10 @@ public class Simulation {
 
             // This is where we will hold attributes for this agent.
             SSBO agent_ssbo = new SSBO(agent_name, agent_types);
+
+            // Buffer for holding strings while we are generating the agent.
+            LinkedList<String> attributes_initialization_glsl = new LinkedList<>();
+            String attributes_copy_glsl = "";
 
             JsonObject agent_attributes = agent.get("attributes").getAsJsonObject();
             for (String attribute_name : agent_attributes.keySet()) {
@@ -120,15 +116,63 @@ public class Simulation {
                 } else {
                     System.err.println(String.format("Unrecognised GL uniform type[%s] for agent[%s] at attribute[%s].", attribute_type_name, agent_name, attribute_name));
                 }
+                // In an attribute definition we also define the way that the data is initialized. We need to generate GLSL from these instructions and put that glsl in a compute shader.
+                if(attribute_data.has("default_value")) {
+                    String attribute_initializer_glsl = String.format("[\"%s\", \"%s\", \"%s\", \"%s\", \"@agent_write\"]", agent_name, "fragment_index", attribute_name, PegManager.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()));
+                    attributes_initialization_glsl.push(attribute_initializer_glsl);
+                    attributes_copy_glsl += String.format("%s_read.agent[fragment_index].%s = %s_write.agent[fragment_index].%s;\n", agent_name, attribute_name, agent_name, attribute_name);
+                }
             }
 
-            agent_ssbo.allocate(Integer.MAX_VALUE / 32);
-//            agent_ssbo.allocate(Apiary.getWindowWidth() * Apiary.getWindowHeight());
+//            agent_ssbo.allocate(Integer.MAX_VALUE / 32);
+            agent_ssbo.allocate(Apiary.getWindowWidth() * Apiary.getWindowHeight());
             agent_ssbo.flush();
 
             // Add agent to sim.
             agents.put(agent_name, agent_ssbo);
+
+            // Now that the agent is added, we can get the SSBO accessor code
+            agent_ssbo_glsl += agent_ssbo.generateGLSL();
+
+            // Now we need to compute the initialization data used for this agent.
+            // This code will be inserted into an initialization shader.
+            for(String attribute_initializer_glsl : attributes_initialization_glsl){
+                // Populate the write buffer
+                initializer_glsl += String.format("%s\n", PegManager.getInstance().transpile(attribute_initializer_glsl));
+            }
+            initializer_glsl += attributes_copy_glsl;
         }
+
+        // We are going to need to construct a compute shader to initialize this agent's data.
+        HashMap<String, Object> initialization_substitutions = new HashMap<>();
+        initialization_substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
+        initialization_substitutions.put("agent_ssbo_glsl", agent_ssbo_glsl);
+        initialization_substitutions.put("initializer_glsl", initializer_glsl);
+
+        // Now we are able to determine the initialization GLSL
+        String initialize_source = StringUtils.format(
+    "{{shader_version}}" +
+            //TODO make implicit for shader type.
+            "layout (local_size_x = 1, local_size_y = 1) in;\n" +
+            //TODO make uniform generation implicit
+            "uniform float u_time_seconds;\n" +
+            "uniform vec2 u_window_size;\n" +
+            "{{agent_ssbo_glsl}}" +
+            // TODO make imports implicit
+            "#include noise\n" +
+            "void main() {\n" +
+            "int x_pos = int(gl_GlobalInvocationID.x);\n" +
+            "int y_pos = int(gl_GlobalInvocationID.y);\n" +
+            "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
+            "float rand   = random( inputs );              // Random per-pixel value\n" +
+            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
+            "{{initializer_glsl}}" +
+            "}", initialization_substitutions
+        );
+
+        int initialize = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, initialize_source);
+        this.initialize_id = ShaderManager.getInstance().linkShader(initialize);
+
         // Now we are going to determine the pipeline steps used
         JsonArray simulation_steps = object.getAsJsonArray("steps");
         for(int i = 0; i < simulation_steps.size(); i++){
@@ -136,8 +180,7 @@ public class Simulation {
             // Process data about each step.
 //            if(JsonUtils.validate(step, JsonUtils.getInstance().STEP_SCHEMA)){
                 JsonArray pegs_input = step.getAsJsonArray("logic");
-                String glsl = PegManager.getInstance().transpile(pegs_input);
-                System.out.println(glsl);
+                String glsl = PegManager.getInstance().generateGLSL(pegs_input);
 //            }
             // Schema validate the step
         }
@@ -209,7 +252,7 @@ public class Simulation {
             "cell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
             "}\n" +
 
-            "vec3 color = cell_read.agent[fragment_index].alive ? vec3(1.0, 0.0, 0.0) : cell_read.agent[fragment_index].color * 0.99;\n" + // Trails
+            "vec3 color = cell_read.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : cell_read.agent[fragment_index].color * 0.99;\n" + // Trails
             "cell_write.agent[fragment_index].color = color;\n" +
             "if(u_mouse_pressed.x > 0.0){\n"+
             "int mouse_index = int(clamp(u_mouse_pos_pixels.x, 0, u_window_size.x)) + (int(clamp(u_mouse_pos_pixels.y, 0, u_window_size.y)) * window_width_pixels);\n" +
@@ -247,14 +290,14 @@ public class Simulation {
                 "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom right\n" +
                 "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
                 "float rand   = random( inputs );              // Random per-pixel value\n" +
-//            "vec3 color = rand > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n" +
+//                "vec3 color = rand > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n" +
                 "if(cell_read.agent[fragment_index].alive){\n" +
                 "cell_write.agent[fragment_index].alive = (neighbors == 2 || neighbors == 3);\n" +
                 "}else{\n" +
                 "cell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
                 "}\n" +
 
-                "vec3 color = cell_read.agent[fragment_index].alive ? vec3(0.0, 0.0, 1.0) : cell_read.agent[fragment_index].color * 0.99;\n" +
+                "vec3 color = cell_read.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : cell_read.agent[fragment_index].color * 0.99;\n" +
                 "cell_write.agent[fragment_index].color = color;\n" +
                 "if(u_mouse_pressed.x > 0.0){\n"+
                 "int mouse_index = int(clamp(u_mouse_pos_pixels.x, 0, u_window_size.x)) + (int(clamp(u_mouse_pos_pixels.y, 0, u_window_size.y)) * window_width_pixels);\n" +
@@ -264,29 +307,6 @@ public class Simulation {
 
         int compute_2   = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, compute_2_source);
         this.compute_id_2 = ShaderManager.getInstance().linkShader(compute_2);
-
-        String initialize_source =
-            "#version 430 core\n" +
-            "\n" +
-            "uniform float u_time_seconds;\n" +
-            "uniform vec2 u_window_size;\n" +
-            "layout (local_size_x = 1, local_size_y = 1) in;\n" +
-            agents.get("cell").generateGLSL() +
-            "#include noise\n" +
-            "void main() {\n" +
-            "int x_pos = int(gl_GlobalInvocationID.x);\n" +
-            "int y_pos = int(gl_GlobalInvocationID.y);\n" +
-            "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
-            "float rand   = random( inputs );              // Random per-pixel value\n" +
-            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-            "cell_read.agent[fragment_index].alive = (rand <= 0.55);\n" +
-            "cell_read.agent[fragment_index].color = vec3(rand, random(vec3(x_pos, y_pos, u_time_seconds - 1.0)), random(vec3(x_pos, y_pos, u_time_seconds + 1.0)));\n" +
-            "cell_write.agent[fragment_index].alive = cell_read.agent[fragment_index].alive;\n" +
-            "cell_write.agent[fragment_index].color = cell_read.agent[fragment_index].color;\n" +
-            "}";
-
-        int initialize = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, initialize_source);
-        this.initialize_id = ShaderManager.getInstance().linkShader(initialize);
 
         this.vao = new VAO();
         this.vao.bind();

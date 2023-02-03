@@ -12,11 +12,6 @@ public class PegDefine extends Peg {
     }
 
     @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-        //TODO: Implement
-    }
-
-    @Override
     protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
         // Input Variables
         String variable_type = PegManager.getInstance().transpile(params[0]);

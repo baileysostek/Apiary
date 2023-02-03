@@ -3,12 +3,19 @@ package pegs;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-import java.util.LinkedList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Stack;
 
 public abstract class Peg {
+
+    // This is the unique key used to create this uniform.
     private final String key;
     private final int num_params;
+
+    // In order to use some pegs we need to import uniforms or specific modules.
+    private final HashSet<String> required_uniforms = new HashSet<String>();
+    private final HashSet<String> required_imports  = new HashSet<String>();
 
     protected Peg(String key, int num_params) {
         // Ensure that the key starts with an @ symbol and is lower case
@@ -18,15 +25,17 @@ public abstract class Peg {
         this.num_params = num_params;
     }
 
-    protected final void performAction(Stack<JsonElement> stack){
-        JsonElement[] params = new JsonElement[num_params];
-        for(int i = 0; i < num_params; i++){
-            params[num_params - i - 1] = stack.pop();
-        }
-        action(stack, params);
+    protected void requiresUniform(String uniform_name){
+        this.required_uniforms.add(uniform_name);
     }
 
-    protected abstract void action(Stack<JsonElement> stack, JsonElement[] params);
+    protected void requiresInclude(String include_name){
+        this.required_imports.add(include_name);
+    }
+
+    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params){
+        return this.key;
+    }
 
     protected final String transpile(Stack<JsonElement> stack){
         JsonElement[] params = new JsonElement[num_params];
@@ -37,11 +46,16 @@ public abstract class Peg {
         stack.push(new JsonPrimitive(out));
         return out;
     }
-    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params){
-        return this.key;
-    };
 
     public String getKey() {
         return this.key;
+    }
+
+    public Collection<String> getRequiredUniforms() {
+        return this.required_uniforms;
+    }
+
+    public Collection<String> getRequiredImports() {
+        return this.required_imports;
     }
 }

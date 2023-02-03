@@ -12,11 +12,6 @@ public class PegOutColor extends Peg {
     }
 
     @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-       //TODO
-    }
-
-    @Override
     protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
         String return_value = PegManager.getInstance().transpile(params[0]);
         return String.format("out_color = %s;\n", return_value);

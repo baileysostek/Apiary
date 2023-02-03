@@ -23,7 +23,7 @@
   "steps":[
     {
       "agents":["cell"],
-      "logic":["cell", "0", "alive", "cell", "0", "alive", "@agent_read", "@agent_write", "out_color", "cell","0","color","@agent_read","@set"]
+      "logic":["@random_float", "@random_float", "@random_float", "@vec3", "cell", "0", "alive", "cell", "0", "alive", "@agent_read", "@agent_write", "out_color", "cell","0","color","@agent_read","@set"]
     }
   ]
 }

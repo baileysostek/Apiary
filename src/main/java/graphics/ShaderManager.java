@@ -299,4 +299,12 @@ public class ShaderManager {
     public String generateVersionString() {
         return String.format("#version %s core\n", getGLTargetVersion());
     }
+
+    public boolean hasUniform(String uniform_name) {
+        return this.uniforms.containsKey(uniform_name);
+    }
+
+    public Uniform getUniform(String uniform_name) {
+        return this.uniforms.get(uniform_name);
+    }
 }

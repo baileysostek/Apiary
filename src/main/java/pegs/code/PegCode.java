@@ -1,7 +1,6 @@
 package pegs.code;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import pegs.Peg;
 import pegs.PegManager;
 
@@ -10,11 +9,6 @@ import java.util.Stack;
 public class PegCode extends Peg {
     public PegCode() {
         super("@code", 1);
-    }
-
-    @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-       //TODO
     }
 
     @Override

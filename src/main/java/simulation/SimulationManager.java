@@ -92,4 +92,9 @@ public class SimulationManager {
     public Simulation getActiveSimulation() {
         return this.simulation;
     }
+
+    public String getTimeUniformName(){
+        return u_time_seconds.getName();
+    }
+
 }

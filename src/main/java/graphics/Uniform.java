@@ -78,4 +78,12 @@ public class Uniform {
             System.err.println(String.format("error : Trying to get the uniform location of uniform %s, however there is no currently bound shader program.", name));
         }
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getTypeName() {
+        return this.type.getGLSL();
+    }
 }

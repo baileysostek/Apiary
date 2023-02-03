@@ -1,7 +1,6 @@
 package pegs.simulation;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import graphics.ShaderManager;
 import pegs.Peg;
 import pegs.PegManager;
@@ -10,18 +9,12 @@ import simulation.SimulationManager;
 import util.StringUtils;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Stack;
 
 public class PegAgentRead extends Peg {
 
     public PegAgentRead() {
         super("@agent_read", 3);
-    }
-
-    @Override
-    protected void action(Stack<JsonElement> stack, JsonElement[] params) {
-        //TODO
     }
 
     @Override
