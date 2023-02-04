@@ -7,15 +7,12 @@ import pegs.code.PegCode;
 import pegs.controlflow.PegConditional;
 import pegs.controlflow.PegForEach;
 import pegs.controlflow.PegOutColor;
+import pegs.controlflow.PegTernary;
 import pegs.data.PegVec2;
 import pegs.data.PegVec3;
 import pegs.data.PegVec4;
-import pegs.logic.PegAnd;
-import pegs.logic.PegNot;
-import pegs.logic.PegOr;
-import pegs.logic.PegXor;
-import pegs.math.PegGreater;
-import pegs.math.PegLess;
+import pegs.logic.*;
+import pegs.math.*;
 import pegs.random.PegRandomBool;
 import pegs.random.PegRandomFloat;
 import pegs.simulation.PegAgentCount;
@@ -23,6 +20,7 @@ import pegs.simulation.PegAgentRead;
 import pegs.simulation.PegAgentWrite;
 import pegs.simulation.PegGetAgentAtIndex;
 import pegs.variables.PegDefine;
+import pegs.variables.PegGet;
 import pegs.variables.PegSet;
 import util.JsonUtils;
 import util.StringUtils;
@@ -49,6 +47,7 @@ public class PegManager {
         instance.registerPeg(new PegConditional());
         instance.registerPeg(new PegForEach());
         instance.registerPeg(new PegOutColor());
+        instance.registerPeg(new PegTernary());
 
         // Data
         instance.registerPeg(new PegVec4());
@@ -58,13 +57,22 @@ public class PegManager {
 
         // Boolean Logic
         instance.registerPeg(new PegAnd());
+        instance.registerPeg(new PegEquals());
         instance.registerPeg(new PegNot());
         instance.registerPeg(new PegOr());
         instance.registerPeg(new PegXor());
 
-        // Math
+        // Math opperations
+        instance.registerPeg(new PegAbs());
+        instance.registerPeg(new PegAdd());
+        instance.registerPeg(new PegDiv());
         instance.registerPeg(new PegGreater());
+        instance.registerPeg(new PegIncrementBy());
         instance.registerPeg(new PegLess());
+        instance.registerPeg(new PegMod());
+        instance.registerPeg(new PegMul());
+        instance.registerPeg(new PegSub());
+        instance.registerPeg(new PegXYToScreenIndex());
 
         // Simulation
         instance.registerPeg(new PegAgentCount());
@@ -74,6 +82,7 @@ public class PegManager {
 
         // Variables
         instance.registerPeg(new PegDefine());
+        instance.registerPeg(new PegGet());
         instance.registerPeg(new PegSet());
     }
     // Holds all pegs that our system knows about.
@@ -82,6 +91,7 @@ public class PegManager {
     // Required uniforms
     private HashSet<String> required_uniforms = new HashSet<>();
     private HashSet<String> required_imports = new HashSet<>();
+    private HashSet<String> requried_agents = new HashSet<>();
 
     public static PegManager getInstance(){
         return instance;
@@ -101,6 +111,7 @@ public class PegManager {
         // First thing we want to do is clear the set of requirements that was generated the last time this method was called.
         required_uniforms.clear();
         required_imports.clear();
+        requried_agents.clear();
 
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
@@ -119,6 +130,7 @@ public class PegManager {
         return StringUtils.format("" +
             "{{shader_version}}" +
             "{{required_uniforms}}" +
+            "{{required_agents}}" +
             "{{required_imports}}" +
             "{{main_method}}" +
             "", substitutions);
@@ -185,6 +197,9 @@ public class PegManager {
                         if (array.size() == 1) {
                             test.push(array.get(0).getAsString());
                             break loop;
+                        }else{
+                            test.push(transpile(array));
+                            break loop;
                         }
                     }
                     test.push(top.getAsString());
@@ -212,5 +227,9 @@ public class PegManager {
             }
         }
         stack.push(element);
+    }
+
+    public void requireAgent(String agent_type) {
+        this.requried_agents.add(agent_type);
     }
 }

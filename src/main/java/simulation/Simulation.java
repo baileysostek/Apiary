@@ -8,11 +8,12 @@ import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.VAO;
 import input.Mouse;
+import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
 import pegs.PegManager;
 import simulation.world.World;
 import simulation.world.World2D;
-import util.JsonUtils;
+import util.MathUtil;
 import util.StringUtils;
 
 import java.util.HashMap;
@@ -42,19 +43,18 @@ public class Simulation {
     private final int compute_id_2;
 
     private float simulation_time = 0;
-    private float simulation_updates_per_second = 4000.0f;
+    private float simulation_updates_per_second = -1f;
     private float simulation_target_time = ( 1.0f / simulation_updates_per_second);
 
     private String name;
     private World simulation_world; // The simulation world is used as the template for the worldstate during simulation.
     // We have 2D and 3D worlds ready for simulations.
-    private LinkedHashMap<String, SSBO> agents = new LinkedHashMap<>();
 
     private LinkedHashSet<Step> pipeline = new LinkedHashSet<Step>();
 
     private boolean initialized = false;
 
-    // It is really important to count frames of simulation so we are able to read from and write to the correct buffers.
+    // Variables used in simulation
     private int frame = 0;
 
     protected Simulation(JsonObject object){
@@ -129,7 +129,7 @@ public class Simulation {
             agent_ssbo.flush();
 
             // Add agent to sim.
-            agents.put(agent_name, agent_ssbo);
+            SimulationManager.getInstance().addAgent(agent_name, agent_ssbo);
 
             // Now that the agent is added, we can get the SSBO accessor code
             agent_ssbo_glsl += agent_ssbo.generateGLSL();
@@ -153,7 +153,7 @@ public class Simulation {
         String initialize_source = StringUtils.format(
     "{{shader_version}}" +
             //TODO make implicit for shader type.
-            "layout (local_size_x = 1, local_size_y = 1) in;\n" +
+            String.format("layout (local_size_x = 1, local_size_y = 1) in;\n") +
             //TODO make uniform generation implicit
             "uniform float u_time_seconds;\n" +
             "uniform vec2 u_window_size;\n" +
@@ -181,6 +181,7 @@ public class Simulation {
 //            if(JsonUtils.validate(step, JsonUtils.getInstance().STEP_SCHEMA)){
                 JsonArray pegs_input = step.getAsJsonArray("logic");
                 String glsl = PegManager.getInstance().generateGLSL(pegs_input);
+                System.out.println(glsl);
 //            }
             // Schema validate the step
         }
@@ -198,7 +199,7 @@ public class Simulation {
 
         String fragment_source =
             ShaderManager.getInstance().generateVersionString() +
-            agents.get("cell").generateGLSL() +
+            SimulationManager.getInstance().getAgent("cell").generateGLSL() +
             "in vec3 pass_position;\n" +
             "uniform vec2 u_window_size;\n" +
             "uniform vec2 u_mouse_pos_pixels;\n" +
@@ -225,32 +226,30 @@ public class Simulation {
             "uniform vec4 u_mouse_pressed;\n" +
             "uniform float u_time_seconds;\n" +
             "uniform vec2 u_window_size;\n" +
-            "layout (local_size_x = 32, local_size_y = 48) in;\n" +
+            String.format("layout (local_size_x = %s, local_size_y = %s) in;\n", ShaderManager.getInstance().getWorkGroupWidth(), ShaderManager.getInstance().getWorkGroupHeight()) +
             "#include noise\n" +
-            agents.get("cell").generateGLSL() +
+            SimulationManager.getInstance().getAgent("cell").generateGLSL() +
             "void main() {\n" +
             "int x_pos = int(gl_GlobalInvocationID.x);\n" +
             "int y_pos = int(gl_GlobalInvocationID.y);\n" +
             "int window_width_pixels = int(u_window_size.x);\n" +
             "int window_height_pixels = int(u_window_size.y);\n" +
             "int fragment_index = x_pos + (y_pos * window_width_pixels);\n" +
-            "int neighbors = 0;\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top left\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top middle\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top right\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid left\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid right\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom left\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom mid\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom right\n" +
-            "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
-            "float rand   = random( inputs );              // Random per-pixel value\n" +
-//            "vec3 color = rand > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n" +
-            "if(cell_read.agent[fragment_index].alive){\n" +
-            "cell_write.agent[fragment_index].alive = (neighbors == 2 || neighbors == 3);\n" +
-            "}else{\n" +
-            "cell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
-            "}\n" +
+
+            "int neighbors = 0 ;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos + -1, window_width_pixels)) + (int(mod(y_pos + -1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos, window_width_pixels)) + (int(mod(y_pos + -1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos + +1, window_width_pixels)) + (int(mod(y_pos + -1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos + -1, window_width_pixels)) + (int(mod(y_pos, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos + +1, window_width_pixels)) + (int(mod(y_pos, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos + -1, window_width_pixels)) + (int(mod(y_pos + +1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos, window_width_pixels)) + (int(mod(y_pos + +1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "neighbors += cell_read.agent[int(mod(x_pos + +1, window_width_pixels)) + (int(mod(y_pos + +1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+            "if (cell_read.agent[fragment_index].alive) {\n" +
+            "\tcell_write.agent[fragment_index].alive = ((neighbors == 2) || (neighbors == 3));\n" +
+            "} else {\n" +
+            "\tcell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
+            "}" +
 
             "vec3 color = cell_read.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : cell_read.agent[fragment_index].color * 0.99;\n" + // Trails
             "cell_write.agent[fragment_index].color = color;\n" +
@@ -270,32 +269,30 @@ public class Simulation {
                 "uniform vec4 u_mouse_pressed;\n" +
                 "uniform float u_time_seconds;\n" +
                 "uniform vec2 u_window_size;\n" +
-                "layout (local_size_x = 32, local_size_y = 48) in;\n" +
+                String.format("layout (local_size_x = %s, local_size_y = %s) in;\n", ShaderManager.getInstance().getWorkGroupWidth(), ShaderManager.getInstance().getWorkGroupHeight()) +
                 "#include noise\n" +
-                agents.get("cell").generateAlternateGLSL() +
+                SimulationManager.getInstance().getAgent("cell").generateAlternateGLSL() +
                 "void main() {\n" +
                 "int x_pos = int(gl_GlobalInvocationID.x);\n" +
                 "int y_pos = int(gl_GlobalInvocationID.y);\n" +
                 "int window_width_pixels = int(u_window_size.x);\n" +
                 "int window_height_pixels = int(u_window_size.y);\n" +
                 "int fragment_index = x_pos + (y_pos * window_width_pixels);\n" +
-                "int neighbors = 0;\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top left\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top middle\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top right\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid left\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid right\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom left\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom mid\n" +
-                "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom right\n" +
-                "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
-                "float rand   = random( inputs );              // Random per-pixel value\n" +
-//                "vec3 color = rand > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n" +
-                "if(cell_read.agent[fragment_index].alive){\n" +
-                "cell_write.agent[fragment_index].alive = (neighbors == 2 || neighbors == 3);\n" +
-                "}else{\n" +
-                "cell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
-                "}\n" +
+
+                "int neighbors = 0 ;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos + -1, window_width_pixels)) + (int(mod(y_pos + -1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos, window_width_pixels)) + (int(mod(y_pos + -1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos + +1, window_width_pixels)) + (int(mod(y_pos + -1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos + -1, window_width_pixels)) + (int(mod(y_pos, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos + +1, window_width_pixels)) + (int(mod(y_pos, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos + -1, window_width_pixels)) + (int(mod(y_pos + +1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos, window_width_pixels)) + (int(mod(y_pos + +1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "neighbors += cell_read.agent[int(mod(x_pos + +1, window_width_pixels)) + (int(mod(y_pos + +1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0;\n" +
+                "if (cell_read.agent[fragment_index].alive) {\n" +
+                "\tcell_write.agent[fragment_index].alive = ((neighbors == 2) || (neighbors == 3));\n" +
+                "} else {\n" +
+                "\tcell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
+                "}" +
 
                 "vec3 color = cell_read.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : cell_read.agent[fragment_index].color * 0.99;\n" +
                 "cell_write.agent[fragment_index].color = color;\n" +
@@ -321,6 +318,7 @@ public class Simulation {
     }
 
     public void update(double delta){
+
         // Initialize Data
         if(!initialized) {
             ShaderManager.getInstance().bind(initialize_id);
@@ -339,10 +337,9 @@ public class Simulation {
             ShaderManager.getInstance().bind(frame%2 == 0 ? compute_id : compute_id_2);
             Mouse.getInstance().bindUniforms();
             ShaderManager.getInstance().bindUniforms();
-            GL43.glDispatchCompute(1, 1, 1);
+            GL43.glDispatchCompute(Apiary.getWindowWidth() / ShaderManager.getInstance().getWorkGroupWidth(), Apiary.getWindowHeight() / ShaderManager.getInstance().getWorkGroupHeight(), 1);
             GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
 
-            // Increment the frame
             frame++;
             frame%=2;
         }
@@ -372,18 +369,5 @@ public class Simulation {
 
     public void cleanup(){
         // Free all allocated buffers and stuff
-    }
-
-    public boolean hasAgent(String agent_type) {
-        return this.agents.containsKey(agent_type);
-    }
-
-    //TODO: FIX
-    public int getAllocatedCapacity(String agent_type){
-        if(hasAgent(agent_type)){
-            return this.agents.get(agent_type).getCapacity();
-        }
-        // We dont have an agent of this type. So our allocated capacity is 0
-        return 0;
     }
 }

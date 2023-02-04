@@ -19,12 +19,18 @@
   },
   "steps":[
     {
-      "agents":["cell"],
-      "logic":[ "cell", "@agent_count", [["current_cell", "cell", "cell", "@random_float", "@get_agent_at_index", "@define"], ["cell", "@agent_count"], ["cell", "@agent_count"], ["cell", "@agent_count"], "@conditional"], "@for_each"]
-    },
-    {
-      "agents":["cell"],
-      "logic":["int fragment_index = int(floor((screen_pos.x * u_window_size.x) + (u_window_size.x * (screen_pos.y * u_window_size.y))));\n", "@code", ["cell", ["fragment_index", "@code"], "@get_agent_at_index", ".alive", "@code"], ["1.0", "1.0", "1.0", "1.0", "@vec4", "@out_color"], ["0.0", "0.0", "0.0", "1.0", "@vec4", "@out_color"], "@conditional"]
+      "logic":[
+        "int", "neighbors", "0", "@define", 
+        ["neighbors", "cell", ["x_pos", "-1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["neighbors", "cell", ["x_pos", "y_pos", "-1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["neighbors", "cell", ["x_pos", "+1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["neighbors", "cell", ["x_pos", "-1", "@add", "y_pos", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["neighbors", "cell", ["x_pos", "+1", "@add", "y_pos", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["neighbors", "cell", ["x_pos", "-1", "@add", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["neighbors", "cell", ["x_pos", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["neighbors", "cell", ["x_pos", "+1", "@add", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
+        ["cell", "fragment_index", "alive", "@agent_read" , ["cell", "fragment_index", "alive", ["neighbors", "2", "@is_equal_to", "neighbors", "3", "@is_equal_to", "@or"], "@agent_write"], ["cell", "fragment_index", "alive", "neighbors", "3", "@is_equal_to", "@agent_write"], "@conditional"]
+      ]
     }
   ]
 }

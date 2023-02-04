@@ -2,6 +2,7 @@ package pegs;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import graphics.Uniform;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ public abstract class Peg {
     // In order to use some pegs we need to import uniforms or specific modules.
     private final HashSet<String> required_uniforms = new HashSet<String>();
     private final HashSet<String> required_imports  = new HashSet<String>();
+    private final HashSet<String> required_imports_in_main  = new HashSet<String>();
 
     protected Peg(String key, int num_params) {
         // Ensure that the key starts with an @ symbol and is lower case
@@ -25,12 +27,20 @@ public abstract class Peg {
         this.num_params = num_params;
     }
 
+    protected void requiresUniform(Uniform uniform){
+        this.required_uniforms.add(uniform.getName());
+    }
+
     protected void requiresUniform(String uniform_name){
         this.required_uniforms.add(uniform_name);
     }
 
     protected void requiresInclude(String include_name){
         this.required_imports.add(include_name);
+    }
+
+    protected void requiresIncludeInMain(String include_name) {
+        this.required_imports_in_main.add(include_name);
     }
 
     protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params){
@@ -57,5 +67,9 @@ public abstract class Peg {
 
     public Collection<String> getRequiredImports() {
         return this.required_imports;
+    }
+
+    public Collection<String> getRequiredInMain() {
+        return this.required_imports_in_main;
     }
 }

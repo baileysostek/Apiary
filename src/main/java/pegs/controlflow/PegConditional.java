@@ -12,16 +12,16 @@ public class PegConditional extends Peg {
     }
 
     @Override
-    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
+    protected String toGLSL(Stack<JsonElement> object_stack, JsonElement[] params) {
         String conditional = PegManager.getInstance().transpile(params[0]);
-        String if_statement = PegManager.getInstance().transpile(params[1]);
-        String else_statement = PegManager.getInstance().transpile(params[2]);
+        String consequent = PegManager.getInstance().transpile(params[1]);
+        String alternate = PegManager.getInstance().transpile(params[2]);
 
         String out = "";
         out += (String.format("if (%s) {\n", conditional));
-        out += (String.format("%s", if_statement));
+        out += (String.format("\t%s", consequent));
         out += ("} else {\n");
-        out += (String.format("%s", else_statement));
+        out += (String.format("\t%s", alternate));
         out += ("}\n");
         return out;
     }

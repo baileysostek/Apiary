@@ -8,22 +8,21 @@ import simulation.SimulationManager;
 
 import java.util.Stack;
 
-public class PegGetAgentAtIndex extends Peg {
+public class PegGetAgentAtIndex extends PegAgent {
     public PegGetAgentAtIndex() {
         super("@get_agent_at_index", 2);
     }
 
     @Override
-    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
+    public String agentToGLSL(Stack<JsonElement> stack, JsonElement[] params) {
         // Here we get the type of agent we are looking for.
         String agent_type = PegManager.getInstance().transpile(params[0]);
         String agent_index = PegManager.getInstance().transpile(params[1]);
 
         // Since this is the all command, we are going to compute the number of agents of this type which have been allocated for the simulation.
         if(SimulationManager.getInstance().hasActiveSimulation()) {
-            Simulation simulation = SimulationManager.getInstance().getActiveSimulation();
-            if(simulation.hasAgent(agent_type)) {
-                int agent_count = simulation.getAllocatedCapacity(agent_type);
+            if(SimulationManager.getInstance().hasAgent(agent_type)) {
+                int agent_count = SimulationManager.getInstance().getAgent(agent_type).getCapacity();
                 try {
                     int agent_index_integer = Integer.parseInt(agent_index);
                     if (agent_index_integer >= 0 && agent_index_integer < agent_count) {

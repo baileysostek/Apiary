@@ -1,8 +1,10 @@
 package graphics;
 
 import core.Apiary;
+import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
 import simulation.world.World;
+import util.MathUtil;
 import util.StringUtils;
 
 import java.util.HashMap;
@@ -22,6 +24,9 @@ public class ShaderManager {
     public static final int GL_MINOR_VERSION = 3;
     private static final String READ_NAME  = "_read";
     private static final String WRITE_NAME = "_write";
+
+    private int work_group_width = 0;
+    private int work_group_height = 0;
 
     private int bound_shader = -1;
 
@@ -88,11 +93,21 @@ public class ShaderManager {
     public static void initialize() {
         if (singleton == null) {
             singleton = new ShaderManager();
+            singleton.onResize();
         }
     }
 
     public static ShaderManager getInstance() {
         return singleton;
+    }
+
+    public void onResize(){
+        // At the point of creating compute shaders we need to figure out the optimal tiling size for the curent resolution.
+        Vector2i optimal_tiling = MathUtil.find_optimal_tiling(Apiary.getWindowWidth(), Apiary.getWindowHeight(), ShaderManager.getInstance().getMaxWorkgroupInvocations());
+        work_group_width = optimal_tiling.x;
+        work_group_height = optimal_tiling.y;
+        System.out.println("Work Group optimization:" + (((float)work_group_width * (float) work_group_height) / (float)ShaderManager.getInstance().getMaxWorkgroupInvocations()) * 100.0f + "%");
+
     }
 
     public int loadShader(String name){
@@ -310,5 +325,13 @@ public class ShaderManager {
 
     public int getMaxWorkgroupInvocations(){
         return GL43.glGetInteger(GL43.GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS);
+    }
+
+    public int getWorkGroupWidth() {
+        return work_group_width;
+    }
+
+    public int getWorkGroupHeight() {
+        return work_group_height;
     }
 }

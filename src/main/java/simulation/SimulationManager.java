@@ -1,11 +1,17 @@
 package simulation;
 
 import com.google.gson.JsonObject;
+import core.Apiary;
 import graphics.GLDataType;
+import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.Uniform;
+import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
 import util.JsonUtils;
+import util.MathUtil;
+
+import java.util.LinkedHashMap;
 
 public class SimulationManager {
 
@@ -15,24 +21,13 @@ public class SimulationManager {
     // If we have a simulation loaded
     private Simulation simulation = null;
 
+    // All agents currently defined
+    private LinkedHashMap<String, SSBO> agents = new LinkedHashMap<>();
+
     // Here are all uniforms that every simulation has access too. Simulation Specific uniforms can be registered as well.
     private Uniform u_time_seconds = ShaderManager.getInstance().createUniform("u_time_seconds", GLDataType.FLOAT);
 
-
-    private SimulationManager() {
-
-    }
-
-    // Singleton initializer and getter
-    public static void initialize() {
-        if (singleton == null) {
-            singleton = new SimulationManager();
-        }
-    }
-
-    public static SimulationManager getInstance() {
-        return singleton;
-    }
+    private SimulationManager() {}
 
     public void load(String path){
         cleanup();
@@ -52,11 +47,6 @@ public class SimulationManager {
         System.out.println(simulation);
 
     }
-
-    protected void setActiveSimulation(Simulation simulation){
-        this.simulation = simulation;
-    }
-
 
     public void update(double delta){
         // Update our uniforms
@@ -79,6 +69,23 @@ public class SimulationManager {
         }
     }
 
+
+    // Singleton initializer and getter
+    public static void initialize() {
+        if (singleton == null) {
+            singleton = new SimulationManager();
+        }
+    }
+
+    public static SimulationManager getInstance() {
+        return singleton;
+    }
+
+    // Getters and setters
+    protected void setActiveSimulation(Simulation simulation){
+        this.simulation = simulation;
+    }
+
     public boolean hasActiveSimulation(){
         return simulation != null;
     }
@@ -97,4 +104,15 @@ public class SimulationManager {
         return u_time_seconds.getName();
     }
 
+    public void addAgent(String agent_name, SSBO agent){
+        this.agents.put(agent_name, agent);
+    }
+
+    public boolean hasAgent(String agent_name){
+        return this.agents.containsKey(agent_name);
+    }
+
+    public SSBO getAgent(String agent_name){
+        return this.agents.get(agent_name);
+    }
 }

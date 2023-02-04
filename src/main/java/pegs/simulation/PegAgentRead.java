@@ -11,14 +11,14 @@ import util.StringUtils;
 import java.util.HashMap;
 import java.util.Stack;
 
-public class PegAgentRead extends Peg {
+public class PegAgentRead extends PegAgent {
 
     public PegAgentRead() {
         super("@agent_read", 3);
     }
 
     @Override
-    protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params) {
+    public String agentToGLSL(Stack<JsonElement> stack, JsonElement[] params) {
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("agent_type", PegManager.getInstance().transpile(params[0]));
         substitutions.put("agent_index", PegManager.getInstance().transpile(params[1]));
@@ -28,7 +28,7 @@ public class PegAgentRead extends Peg {
         // Since this is the all command, we are going to compute the number of agents of this type which have been allocated for the simulation.
         if(SimulationManager.getInstance().hasActiveSimulation()) {
             Simulation simulation = SimulationManager.getInstance().getActiveSimulation();
-            if(simulation.hasAgent((String) substitutions.get("agent_type"))) {
+            if(SimulationManager.getInstance().hasAgent((String) substitutions.get("agent_type"))) {
                 return StringUtils.format("{{agent_type}}{{read_identifier}}.agent[{{agent_index}}].{{agent_property}}", substitutions);
             }else{
                 //TODO throw compilation error.

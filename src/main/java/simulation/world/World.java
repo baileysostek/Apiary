@@ -2,13 +2,18 @@ package simulation.world;
 
 import graphics.GLDataType;
 import graphics.GLStruct;
+import graphics.ShaderManager;
+import graphics.Uniform;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 public abstract class World extends GLStruct {
 
-    private LinkedHashMap<String, float[]> attribute_values = new LinkedHashMap<>();
+    private LinkedHashMap<String, Uniform> world_uniforms = new LinkedHashMap<>();
+
+    private int vertex_id;
+    private int geometry_id;
+    private int fragment_id;
 
     public World(String name) {
         super(name);
@@ -16,9 +21,7 @@ public abstract class World extends GLStruct {
 
     @Override
     public void onAddAttribute(String attribute_name, GLDataType attribute_type) {
-        float[] value = new float[attribute_type.getSizeInFloats()];
-        Arrays.fill(value, 0);
-        attribute_values.put(attribute_name, value);
+        this.world_uniforms.put(attribute_name, ShaderManager.getInstance().createUniform(attribute_name, attribute_type));
     }
 
     public void put(){
