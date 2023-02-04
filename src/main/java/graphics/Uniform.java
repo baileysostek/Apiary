@@ -86,4 +86,8 @@ public class Uniform {
     public String getTypeName() {
         return this.type.getGLSL();
     }
+
+    public String toGLSL(){
+        return String.format("uniform %s %s;\n", this.getTypeName(), this.getName());
+    }
 }

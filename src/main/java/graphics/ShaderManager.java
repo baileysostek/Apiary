@@ -1,6 +1,7 @@
 package graphics;
 
 import core.Apiary;
+import input.Mouse;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
 import simulation.world.World;
@@ -287,6 +288,8 @@ public class ShaderManager {
     public void bind(int program_id) {
         this.bound_shader = program_id;
         GL43.glUseProgram(this.bound_shader);
+        // Bind all uniforms
+        bindUniforms();
     }
 
     public int getBoundShader(){
@@ -333,5 +336,13 @@ public class ShaderManager {
 
     public int getWorkGroupHeight() {
         return work_group_height;
+    }
+
+    public void deleteShader(int id) {
+        GL43.glDeleteShader(id);
+    }
+
+    public void deleteProgram(int id) {
+        GL43.glDeleteProgram(id);
     }
 }

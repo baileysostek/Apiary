@@ -1,6 +1,7 @@
 package pegs;
 
 import com.google.gson.*;
+import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.Uniform;
 import pegs.code.PegCode;
@@ -22,13 +23,11 @@ import pegs.simulation.PegGetAgentAtIndex;
 import pegs.variables.PegDefine;
 import pegs.variables.PegGet;
 import pegs.variables.PegSet;
+import simulation.SimulationManager;
 import util.JsonUtils;
 import util.StringUtils;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Stack;
+import java.util.*;
 
 public class PegManager {
     private static PegManager instance;
@@ -91,6 +90,7 @@ public class PegManager {
     // Required uniforms
     private HashSet<String> required_uniforms = new HashSet<>();
     private HashSet<String> required_imports = new HashSet<>();
+    private HashSet<String> required_imports_in_main = new HashSet<>();
     private HashSet<String> requried_agents = new HashSet<>();
 
     public static PegManager getInstance(){
@@ -109,9 +109,7 @@ public class PegManager {
 
     public String generateGLSL(JsonElement element){
         // First thing we want to do is clear the set of requirements that was generated the last time this method was called.
-        required_uniforms.clear();
-        required_imports.clear();
-        requried_agents.clear();
+        clearPersistentData();
 
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
@@ -166,6 +164,11 @@ public class PegManager {
                                 // Now that we have our peg lets figure out the requirements.
                                 for(String import_name : action.getRequiredImports()){
                                     this.required_imports.add(import_name);
+                                }
+
+                                // Now that we have our peg lets figure out the requirements.
+                                for(String import_name : action.getRequiredInMain()){
+                                    this.required_imports_in_main.add(import_name);
                                 }
 
                                 action.transpile(stack);
@@ -231,5 +234,34 @@ public class PegManager {
 
     public void requireAgent(String agent_type) {
         this.requried_agents.add(agent_type);
+    }
+
+    public HashMap<String, SSBO> getRequiredAgents() {
+        HashMap<String, SSBO> required_agents = new HashMap<>();
+        for(String agent_name : this.requried_agents){
+            if(SimulationManager.getInstance().hasAgent(agent_name)){
+                required_agents.put(agent_name, SimulationManager.getInstance().getAgent(agent_name));
+            }
+        }
+        return required_agents;
+    }
+
+    public void clearPersistentData() {
+        this.requried_agents.clear();
+        this.required_uniforms.clear();
+        this.required_imports_in_main.clear();
+        this.required_imports.clear();
+    }
+
+    public HashSet<String> getRequiredUniforms() {
+        return this.required_uniforms;
+    }
+
+    public HashSet<String> getRequiredIncludesInMain() {
+        return this.required_imports_in_main;
+    }
+
+    public HashSet<String> getRequiredIncludes() {
+        return this.required_imports;
     }
 }

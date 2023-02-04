@@ -1,74 +1,106 @@
 package graphics;
 
 import com.google.gson.JsonElement;
+import core.Apiary;
+import org.lwjgl.opengl.GL43;
 import pegs.PegManager;
 import util.StringUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class ComputeShader {
 
-    private int primary_buffer;
-    private int secondary_buffer;
+    private int primary_buffer = -1;
+    private int secondary_buffer = -1;
 
     private final JsonElement compute_source_nodes;
+
+    private final String[] required_uniforms = new String[]{};
 
     // These are all of the computed includes and agents and buffers this simulation is referenceing.
 
     public ComputeShader(JsonElement compute_source_nodes){
         this.compute_source_nodes = compute_source_nodes;
-        PegManager.getInstance().transpile(compute_source_nodes);
+        regenerateShaders();
     }
 
-    private String generateShaderSource(){
-        HashMap<String, Object> substitutions = new HashMap<>();
-//
-//        "uniform float u_time_seconds;\n" +
-//        "uniform vec2 u_window_size;\n" +
-//
-//        "uniform vec2 u_mouse_pos_pixels;\n" +
-//        "uniform vec4 u_mouse_pressed;\n" +
+    public void regenerateShaders(){
+        if(primary_buffer >= 0) {
+            ShaderManager.getInstance().deleteProgram(primary_buffer);
+        }
+        if(secondary_buffer >= 0) {
+            ShaderManager.getInstance().deleteProgram(secondary_buffer);
+        }
 
+        int primary_shader_id = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, generateShaderSource(true));
+        primary_buffer = ShaderManager.getInstance().linkShader(primary_shader_id);
+        ShaderManager.getInstance().deleteShader(primary_shader_id);
+
+        int secondary_shader_id = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, generateShaderSource(false));
+        secondary_buffer = ShaderManager.getInstance().linkShader(secondary_shader_id);
+        ShaderManager.getInstance().deleteShader(secondary_shader_id);
+    }
+
+    private String generateShaderSource(boolean isRead){
+        // Clear the state of the required imports in the PegManager. This way we only import what is needed.
+        PegManager.getInstance().clearPersistentData();
+
+        // Define our substitutions to make to GLSL file
+        HashMap<String, Object> substitutions = new HashMap<>();
+        substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
+        substitutions.put("workgroup_width", ShaderManager.getInstance().getWorkGroupWidth());
+        substitutions.put("workgroup_height", ShaderManager.getInstance().getWorkGroupHeight());
+
+        // First thing we need to do besides mapping the current state of shader variables, is to compute our source code.
+        substitutions.put("compute_source", PegManager.getInstance().transpile(compute_source_nodes));
+        // Note this changes the state of PegManager.
+
+        // Get the Agents accessor functions.
+        String agent_ssbos = "";
+        HashMap<String, SSBO> required_agents = PegManager.getInstance().getRequiredAgents();
+        for(String agent_name : required_agents.keySet()){
+            agent_ssbos += required_agents.get(agent_name).generateGLSL(isRead);
+        }
+        substitutions.put("agents_ssbos", agent_ssbos);
+
+        // Uniforms
+        String uniforms = "";
+        HashSet<String> uniform_names = PegManager.getInstance().getRequiredUniforms();
+        for(String uniform_name : uniform_names){
+            if(ShaderManager.getInstance().hasUniform(uniform_name)) {
+                uniforms += ShaderManager.getInstance().getUniform(uniform_name).toGLSL();
+            }
+        }
+        substitutions.put("uniforms", uniforms);
+
+        // Includes
+        String includes = "";
+        HashSet<String> required_includes = PegManager.getInstance().getRequiredIncludes();
+        for(String requirement_name : required_includes){
+            includes += String.format("#include %s\n", requirement_name);
+        }
+        substitutions.put("includes", includes);
+
+        // Includes In Main
+        String include_in_main = "";
+        HashSet<String> required_to_include_in_main = PegManager.getInstance().getRequiredIncludesInMain();
+        for(String requirement_name : required_to_include_in_main){
+            include_in_main += String.format("#include %s\n", requirement_name);
+        }
+        substitutions.put("include_in_main", include_in_main);
+
+//        substitutions.put("initializer_glsl", initializer_glsl);
 
         String source =
-            ShaderManager.getInstance().generateVersionString() +
+            "{{shader_version}}" +
             "{{uniforms}}" +
-            String.format("layout (local_size_x = %s, local_size_y = %s) in;\n", ShaderManager.getInstance().getWorkGroupWidth(), ShaderManager.getInstance().getWorkGroupHeight()) +
+            "layout (local_size_x = {{workgroup_width}}, local_size_y = {{workgroup_height}}) in;\n" +
             "{{includes}}" +
             "{{agents_ssbos}}" +
             "void main() {\n" +
-
-            "int x_pos = int(gl_GlobalInvocationID.x);\n" +
-            "int y_pos = int(gl_GlobalInvocationID.y);\n" +
-            "int window_width_pixels = int(u_window_size.x);\n" +
-            "int window_height_pixels = int(u_window_size.y);\n" +
-            "int fragment_index = x_pos + (y_pos * window_width_pixels);\n" +
-
-            "int neighbors = 0;\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top left\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top middle\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos - 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //top right\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid left\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos    , window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //mid right\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos - 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom left\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos    , window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom mid\n" +
-            "neighbors += cell_read.agent[int(mod(x_pos + 1, window_width_pixels)) + (int(mod(y_pos + 1, window_height_pixels)) * window_width_pixels)].alive ? 1 : 0; //bottom right\n" +
-            "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
-            "float rand   = random( inputs );              // Random per-pixel value\n" +
-//                "vec3 color = rand > 0.5 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n" +
-            "if(cell_read.agent[fragment_index].alive){\n" +
-            "cell_write.agent[fragment_index].alive = (neighbors == 2 || neighbors == 3);\n" +
-            "}else{\n" +
-            "cell_write.agent[fragment_index].alive = (neighbors == 3);\n" +
-            "}\n" +
-
-            "vec3 color = cell_read.agent[fragment_index].alive ? vec3(1.0, 1.0, 1.0) : cell_read.agent[fragment_index].color * 0.99;\n" +
-            "cell_write.agent[fragment_index].color = color;\n" +
-            "cell_write.agent[fragment_index].color = vec3(float(x_pos) / float(window_width_pixels), float(y_pos) / float(window_height_pixels), 0.0);\n" +
-            "if(u_mouse_pressed.x > 0.0){\n"+
-            "int mouse_index = int(clamp(u_mouse_pos_pixels.x, 0, u_window_size.x)) + (int(clamp(u_mouse_pos_pixels.y, 0, u_window_size.y)) * window_width_pixels);\n" +
-            "cell_write.agent[mouse_index].alive = true;\n" +
-            "}\n"+
+            "{{include_in_main}}" +
+            "{{compute_source}}"+
             "}\n";
 
         return StringUtils.format(source, substitutions);
@@ -78,5 +110,11 @@ public class ComputeShader {
     // This gives us double buffering without a memcopy
     public int getShaderID(int current_frame){
         return (current_frame % 2 == 0) ? primary_buffer : secondary_buffer;
+    }
+
+    // Todo fix later.
+    public void computeAndWait() {
+        GL43.glDispatchCompute(Apiary.getWindowWidth() / ShaderManager.getInstance().getWorkGroupWidth(), Apiary.getWindowHeight() / ShaderManager.getInstance().getWorkGroupHeight(), 1);
+        GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
     }
 }

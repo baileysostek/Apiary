@@ -29,7 +29,8 @@
         ["neighbors", "cell", ["x_pos", "-1", "@add", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
         ["neighbors", "cell", ["x_pos", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
         ["neighbors", "cell", ["x_pos", "+1", "@add", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment_by"],
-        ["cell", "fragment_index", "alive", "@agent_read" , ["cell", "fragment_index", "alive", ["neighbors", "2", "@is_equal_to", "neighbors", "3", "@is_equal_to", "@or"], "@agent_write"], ["cell", "fragment_index", "alive", "neighbors", "3", "@is_equal_to", "@agent_write"], "@conditional"]
+        ["cell", "fragment_index", "alive", "@agent_read" , ["cell", "fragment_index", "alive", ["neighbors", "2", "@is_equal_to", "neighbors", "3", "@is_equal_to", "@or"], "@agent_write"], ["cell", "fragment_index", "alive", "neighbors", "3", "@is_equal_to", "@agent_write"], "@conditional"],
+        ["cell", "fragment_index", "color", [["cell", "fragment_index", "alive", "@agent_read"], ["1.0", "1.0", "1.0", "@vec3"], [["cell", "fragment_index", "color", "@agent_read"], "0.99", "@mul"], "@?"], "@agent_write"]
       ]
     }
   ]

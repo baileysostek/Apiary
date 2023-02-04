@@ -95,16 +95,20 @@ public class SSBO extends GLStruct{
         GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
     }
 
+    public String generateGLSL(){
+        return generateGLSL(true);
+    }
+
     /**\
      * Genreates the correct GLSL accessor for this SSBO. This function is called when a simulation is loaded per shader step that needs to access the agent this SSBO represents.
      * @return
      */
-    public String generateGLSL(){
+    public String generateGLSL(boolean isRead){
 
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("version", ShaderManager.getInstance().getGLTargetVersion());
-        substitutions.put("binding_location", this.location_read);
-        substitutions.put("binding_location_second_buffer", this.location_read + 1);
+        substitutions.put("binding_location_read", (isRead ? this.location_read : this.location_write));
+        substitutions.put("binding_location_write", (isRead ? this.location_write : this.location_read));
         substitutions.put("struct_name", this.getName());
         substitutions.put("read_name", ShaderManager.getInstance().getSSBOReadIdentifier());
         substitutions.put("write_name", ShaderManager.getInstance().getSSBOWriteIdentifier());
@@ -122,43 +126,10 @@ public class SSBO extends GLStruct{
             "{\n" +
             "{{attributes}}"+
             "};\n" +
-            "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
+            "layout(std{{version}}, binding = {{binding_location_read}}) buffer ssbo_{{struct_name}}{{read_name}}{\n" +
             "{{struct_name}} agent[];\n" +
             "}{{struct_name}}{{read_name}};\n"+
-            "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
-            "{{struct_name}} agent[];\n" +
-            "}{{struct_name}}{{write_name}};\n",
-            substitutions
-        );
-    }
-
-    public String generateAlternateGLSL(){
-
-        HashMap<String, Object> substitutions = new HashMap<>();
-        substitutions.put("version", ShaderManager.getInstance().getGLTargetVersion());
-        substitutions.put("binding_location", this.location_write);
-        substitutions.put("binding_location_second_buffer", this.location_read);
-        substitutions.put("struct_name", this.getName());
-        substitutions.put("read_name", ShaderManager.getInstance().getSSBOReadIdentifier());
-        substitutions.put("write_name", ShaderManager.getInstance().getSSBOWriteIdentifier());
-
-        // Compute how to represent our attributes
-        String attribute_definitions = "";
-        for(String attribute_name : this.getAttributes().keySet()){
-            GLDataType type = this.getAttributes().get(attribute_name);
-            attribute_definitions += String.format("\t%s %s;\n", type.getGLSL(), attribute_name);
-        }
-        substitutions.put("attributes", attribute_definitions);
-
-        return StringUtils.format(
-    "struct {{struct_name}}\n" +
-            "{\n" +
-            "{{attributes}}"+
-            "};\n" +
-            "layout(std{{version}}, binding = {{binding_location}}) buffer ssbo_{{struct_name}}{\n" +
-            "{{struct_name}} agent[];\n" +
-            "}{{struct_name}}{{read_name}};\n"+
-            "layout(std{{version}}, binding = {{binding_location_second_buffer}}) buffer ssbo_{{struct_name}}_2{\n" +
+            "layout(std{{version}}, binding = {{binding_location_write}}) buffer ssbo_{{struct_name}}{{write_name}}{\n" +
             "{{struct_name}} agent[];\n" +
             "}{{struct_name}}{{write_name}};\n",
             substitutions
