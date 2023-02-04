@@ -1,42 +1,28 @@
 {
   "world":{
-    "name":"Move towards food",
-    "type":"3D"
+    "name":"Boids",
+    "type":"2D",
+    "arguments":{}
   },
   "agents":{
-    "Sphere":{
+    "boid":{
       "attributes":{
-        "velocity":{
-          "type":"VEC3",
-          "default_value":"RANDOM"
+        "pos":{
+          "type":"vec2",
+          "default_value":["@random_float", "u_window_size.x", "@get", "@mul", "@random_float", "u_window_size.y", "@get", "@mul", "@vec2"]
         },
-        "position":{
-          "type":"VEC3",
-          "default_value":"RANDOM"
-        },
-        "color":{
-          "type":"VEC3",
-          "default_value": []
-        },
-        "sight_range":{
-          "type":"FLOAT",
-          "default_value":1.0
-        }
-      }
-    },
-    "Food":{
-      "attributes":{
-        "position":{
-          "type":"VEC3",
-          "default_value":"RANDOM"
+        "vel":{
+          "type":"vec2",
+          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
         }
       }
     }
   },
   "steps":[
     {
-      "agents":["Sphere"],
-      "logic":["Food", "@agent", "@all", "@filter", ""]
+      "logic":[
+        "int", "neighbors", "0", "@define"
+      ]
     }
   ]
 }

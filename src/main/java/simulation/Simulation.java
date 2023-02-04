@@ -8,7 +8,7 @@ import input.Mouse;
 import org.lwjgl.opengl.GL43;
 import pegs.PegManager;
 import simulation.world.World;
-import simulation.world.World2D;
+import simulation.world.DefaultWorld2D;
 import util.StringUtils;
 
 import java.util.HashMap;
@@ -18,8 +18,8 @@ import java.util.LinkedList;
 public class Simulation {
 
     // This is derived from the simulation world. We need a way to map agent to world.
-    private final int program_id;
     private final VAO vao;
+
     float vertices[] = {
         -1.0f, -1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,
@@ -32,11 +32,12 @@ public class Simulation {
     // This is a core part of a simulation. It represents how we initialize agents.
     private final int initialize_id;
 
+    // These variables are used to control the speed at which the simulation runs.
     private float simulation_time = 0;
     private float simulation_updates_per_second = -1f;
     private float simulation_target_time = ( 1.0f / simulation_updates_per_second);
 
-    private String name;
+
     private World simulation_world; // The simulation world is used as the template for the worldstate during simulation.
     // We have 2D and 3D worlds ready for simulations.
 
@@ -51,33 +52,6 @@ public class Simulation {
         // First thing we do is set the active simulation to this one
         SimulationManager.getInstance().setActiveSimulation(this);
 
-        // Determine what world template we are using
-        JsonObject simulation_world_template = object.getAsJsonObject("world");
-        resolve_world_template:{
-            // Check for a name
-            String simulation_world_name = "Default Simulation Name";
-            if(simulation_world_template.has("name")){
-                simulation_world_name = simulation_world_template.get("name").getAsString();
-                this.name = simulation_world_name;
-            }
-            // Resolve the type
-            if (simulation_world_template.has("type")) {
-                String template_identifier = simulation_world_template.get("type").getAsString();
-                //TODO: Better resolution of what template the user wants that just an IF chain here
-                if(template_identifier.toLowerCase().equals("2d")){
-                    this.simulation_world = new World2D(simulation_world_name);
-                    break resolve_world_template;
-                }
-
-                // We didnt recognise the world type
-                System.err.println(String.format("Error: Simulation:\"%s\" uses a world template that we did not recognise. Unrecognised template:\"%s\"", simulation_world_name, template_identifier));
-            } else {
-                System.err.println(String.format("Error: Simulation:\"%s\" does not specify a world template. Using default of World2D."));
-            }
-
-            // At this point we have not resolved the world template so use the default world template of World2D
-            this.simulation_world = new World2D(simulation_world_name);
-        }
         // Load the agents
         JsonObject simulation_agents = object.getAsJsonObject("agents");
 
@@ -139,6 +113,28 @@ public class Simulation {
         initialization_substitutions.put("agent_ssbo_glsl", agent_ssbo_glsl);
         initialization_substitutions.put("initializer_glsl", initializer_glsl);
 
+        // Determine what world template we are using
+        JsonObject simulation_world_template = object.getAsJsonObject("world");
+        resolve_world_template:{
+            // Check for a name
+            String simulation_world_name = "Default Simulation Name";
+            if(simulation_world_template.has("name")){
+                simulation_world_name = simulation_world_template.get("name").getAsString();
+
+            }
+            // Resolve the type
+            if (simulation_world_template.has("type")) {
+                String template_identifier = simulation_world_template.get("type").getAsString();
+                this.simulation_world = SimulationManager.getInstance().getWorldTemplate(template_identifier, simulation_world_template.get("arguments"));
+                break resolve_world_template;
+            } else {
+                System.err.println(String.format("Error: Simulation:\"%s\" does not specify a world template. Using default of World2D."));
+            }
+
+            // At this point we have not resolved the world template so use the default world template of World2D
+            this.simulation_world = new DefaultWorld2D(simulation_world_name);
+        }
+
         // TODO send to compute shader.
         // Now we are able to determine the initialization GLSL
         String initialize_source = StringUtils.format(
@@ -173,38 +169,6 @@ public class Simulation {
                 steps.push(new ComputeShader(pegs_input));
             }
         }
-
-        // TODO get from world state.
-
-        String vertex_source =
-            ShaderManager.getInstance().generateVersionString() +
-            "layout (location = 0) in vec3 position;\n" +
-            "out vec3 pass_position;\n" +
-            "void main(void){\n" +
-            "pass_position = position;\n" +
-            "gl_Position = vec4(position, 1.0);\n" +
-            "}\n";
-
-        String fragment_source =
-            ShaderManager.getInstance().generateVersionString() +
-            SimulationManager.getInstance().getAgent("cell").generateGLSL() +
-            "in vec3 pass_position;\n" +
-            "uniform vec2 u_window_size;\n" +
-            "uniform vec2 u_mouse_pos_pixels;\n" +
-            "uniform float u_time_seconds;\n" +
-            "uniform vec2 u_mouse_scroll;\n" +
-            "out vec4 out_color; \n" +
-            "void main(void){\n" +
-            "vec2 screen_pos = (pass_position.xy / vec2(u_mouse_scroll.y) + vec2(1.0)) / vec2(2.0);\n" +
-            "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
-            "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
-            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-            "out_color = vec4(cell_read.agent[fragment_index].color , 1.0);\n" +
-            "}\n";
-
-        int vertex   = ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER, vertex_source);
-        int fragment = ShaderManager.getInstance().compileShader(GL43.GL_FRAGMENT_SHADER, fragment_source);
-        this.program_id = ShaderManager.getInstance().linkShader(vertex, fragment);
 
         this.vao = new VAO();
         this.vao.bind();
@@ -245,10 +209,9 @@ public class Simulation {
             frame%=2;
         }
 
-        if(program_id > -1){
-            // Then our shader
-            ShaderManager.getInstance().bind(program_id);
-        }
+        // Then our shader
+        ShaderManager.getInstance().bind(simulation_world.getProgram());
+
         // Bind all of our uniform variable
         Mouse.getInstance().bindUniforms();
 

@@ -1,17 +1,19 @@
 package simulation;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import core.Apiary;
 import graphics.GLDataType;
 import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.Uniform;
-import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
+import simulation.world.AgentGrid2D;
+import simulation.world.World;
+import simulation.world.DefaultWorld2D;
 import util.JsonUtils;
-import util.MathUtil;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 public class SimulationManager {
 
@@ -114,5 +116,15 @@ public class SimulationManager {
 
     public SSBO getAgent(String agent_name){
         return this.agents.get(agent_name);
+    }
+
+    public World getWorldTemplate(String template_name, JsonElement arguments){
+        if(template_name.toLowerCase(Locale.ROOT).equals("agentgrid2d")){
+            return new AgentGrid2D(template_name, arguments);
+        }
+        // We didnt recognise the world type
+        System.err.println(String.format("Error: Simulation:\"%s\" uses a world template that we did not recognise. Unrecognised template:\"%s\"", template_name, template_name));
+        // Default
+        return new DefaultWorld2D(template_name);
     }
 }

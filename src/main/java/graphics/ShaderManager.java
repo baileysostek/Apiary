@@ -1,14 +1,18 @@
 package graphics;
 
+import com.google.gson.JsonElement;
 import core.Apiary;
 import input.Mouse;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
+import pegs.PegManager;
+import simulation.SimulationManager;
 import simulation.world.World;
 import util.MathUtil;
 import util.StringUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
@@ -30,6 +34,11 @@ public class ShaderManager {
     private int work_group_height = 0;
 
     private int bound_shader = -1;
+
+    // Default shader programs.
+    private final int DEFAULT_VERTEX_SHADER;
+    private final int DEFAULT_GEOMETRY_SHADER;
+    private final int DEFAULT_FRAGMENT_SHADER;
 
     // Indies used for SSBO location binding
     private static int next_available_location = 0;
@@ -88,6 +97,42 @@ public class ShaderManager {
         // Here we register our uniforms
         this.u_window_size = this.createUniform("u_window_size", GLDataType.VEC2);
         this.u_aspect_ratio = this.createUniform("u_aspect_ratio", GLDataType.FLOAT);
+
+        // Here we setup our default shaders.
+        String default_vertex_source =
+            generateVersionString() +
+            "layout (location = 0) in vec3 position;\n" +
+            "out vec3 pass_position;\n" +
+            "void main(void){\n" +
+            "pass_position = position;\n" +
+            "gl_Position = vec4(position, 1.0);\n" +
+            "}\n";
+        DEFAULT_VERTEX_SHADER = compileShader(GL43.GL_VERTEX_SHADER, default_vertex_source);
+
+        String default_geometry_source =
+            generateVersionString() +
+            "layout (location = 0) in vec3 position;\n" +
+            "out vec3 pass_position;\n" +
+            "void main(void){\n" +
+            "pass_position = position;\n" +
+            "gl_Position = vec4(position, 1.0);\n" +
+            "}\n";
+        DEFAULT_GEOMETRY_SHADER = compileShader(GL43.GL_GEOMETRY_SHADER, default_vertex_source);
+
+        String default_fragment_source =
+            generateVersionString() +
+            "in vec3 pass_position;\n" +
+            "uniform vec2 u_window_size;\n" +
+            "uniform vec2 u_mouse_scroll;\n" +
+            "out vec4 out_color; \n" +
+            "void main(void){\n" +
+            "vec2 screen_pos = (pass_position.xy / vec2(u_mouse_scroll.y) + vec2(1.0)) / vec2(2.0);\n" +
+            "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
+            "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
+            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
+            "out_color = vec4(screen_pos.xy, 0.0, 1.0);" +
+            "}\n";
+        DEFAULT_FRAGMENT_SHADER = compileShader(GL43.GL_FRAGMENT_SHADER, default_fragment_source);
     }
 
     // Singleton initializer and getter
@@ -173,6 +218,10 @@ public class ShaderManager {
             }
             case GL43.GL_COMPUTE_SHADER:{
                 shader_type_name = "Compute";
+                break;
+            }
+            case GL43.GL_GEOMETRY_SHADER:{
+                shader_type_name = "Geometry";
                 break;
             }
         }
@@ -344,5 +393,84 @@ public class ShaderManager {
 
     public void deleteProgram(int id) {
         GL43.glDeleteProgram(id);
+    }
+
+    public int generateFragmentShaderFromPegs(JsonElement pegs_data){
+        // Clear the state of the required imports in the PegManager. This way we only import what is needed.
+        PegManager.getInstance().clearPersistentData();
+
+        // Define our substitutions to make to GLSL file
+        HashMap<String, Object> substitutions = new HashMap<>();
+        substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
+
+        // First thing we need to do besides mapping the current state of shader variables, is to compute our source code.
+        substitutions.put("fragment_source", PegManager.getInstance().transpile(pegs_data));
+        // Note this changes the state of PegManager.
+
+        // Get the Agents accessor functions.
+        String agent_ssbos = "";
+        HashMap<String, SSBO> required_agents = PegManager.getInstance().getRequiredAgents();
+        for(String agent_name : required_agents.keySet()){
+            agent_ssbos += required_agents.get(agent_name).generateGLSL(true);
+        }
+        substitutions.put("agents_ssbos", agent_ssbos);
+
+        // Uniforms
+        String uniforms = "";
+        HashSet<String> uniform_names = PegManager.getInstance().getRequiredUniforms();
+        for(String uniform_name : uniform_names){
+            if(ShaderManager.getInstance().hasUniform(uniform_name)) {
+                uniforms += ShaderManager.getInstance().getUniform(uniform_name).toGLSL();
+            }
+        }
+        substitutions.put("uniforms", uniforms);
+
+        // Includes
+        String includes = "";
+        HashSet<String> required_includes = PegManager.getInstance().getRequiredIncludes();
+        for(String requirement_name : required_includes){
+            includes += String.format("#include %s\n", requirement_name);
+        }
+        substitutions.put("includes", includes);
+
+        // Includes In Main
+        String include_in_main = "";
+        HashSet<String> required_to_include_in_main = PegManager.getInstance().getRequiredIncludesInMain();
+        for(String requirement_name : required_to_include_in_main){
+            include_in_main += String.format("#include %s\n", requirement_name);
+        }
+        substitutions.put("include_in_main", include_in_main);
+
+        String source =
+            "{{shader_version}}" +
+            "in vec3 pass_position;\n" +
+            "{{uniforms}}" +
+            "uniform vec2 u_window_size;\n" +
+            "uniform vec2 u_mouse_scroll;\n" +
+            "out vec4 out_color; \n" +
+            "{{includes}}" +
+            "{{agents_ssbos}}" +
+            "void main() {\n" +
+            "vec2 screen_pos = (pass_position.xy / vec2(u_mouse_scroll.y) + vec2(1.0)) / vec2(2.0);\n" +
+            "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
+            "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
+            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
+            "{{include_in_main}}" +
+            "{{fragment_source}}"+
+            "}\n";
+
+        return ShaderManager.getInstance().compileShader(GL43.GL_FRAGMENT_SHADER, StringUtils.format(source, substitutions));
+    }
+
+    public int getDefaultVertexShader() {
+        return DEFAULT_VERTEX_SHADER;
+    }
+
+    public int getDefaultGeometryShader() {
+        return DEFAULT_GEOMETRY_SHADER;
+    }
+
+    public int getDefaultFragmentShader() {
+        return DEFAULT_FRAGMENT_SHADER;
     }
 }
