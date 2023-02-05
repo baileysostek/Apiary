@@ -49,6 +49,13 @@ public class Simulation {
     private int frame = 0;
 
     protected Simulation(JsonObject object){
+
+        int index = 0;
+        for(float vertex : vertices){
+            vertices[index] /= 2.0f;
+            index ++;
+        }
+
         // First thing we do is set the active simulation to this one
         SimulationManager.getInstance().setActiveSimulation(this);
 
@@ -225,7 +232,7 @@ public class Simulation {
 
         // This stage renders an input image to the screen.
         this.vao.bind();
-        GL43.glDrawArrays(GL43.GL_TRIANGLES, 0, vertices.length / 3);
+        GL43.glDrawArrays(GL43.GL_POINTS, 0, vertices.length / 3);
         this.vao.unbind();
         GL43.glUseProgram(0);
 

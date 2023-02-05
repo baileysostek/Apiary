@@ -124,13 +124,16 @@ public class Apiary {
         // Create our capabilities
         GL.createCapabilities();
 
+        GL43.glPointSize(24);
+
         // Initialize all of our singleton instances here
         JsonUtils.initialize();
         ShaderManager.initialize();
         SimulationManager.initialize();
         Mouse.initialize();
 
-        SimulationManager.getInstance().load("simulations/gol.json");
+//        SimulationManager.getInstance().load("simulations/gol.json");
+        SimulationManager.getInstance().load("simulations/boids.json");
 
     }
 

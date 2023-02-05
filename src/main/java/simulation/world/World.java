@@ -33,7 +33,7 @@ public abstract class World extends GLStruct {
         this.fragment_id = generateFragmentShader();
 
         // Link our shaders together into a program.
-        this.program_id = ShaderManager.getInstance().linkShader(vertex_id, fragment_id);
+        this.program_id = ShaderManager.getInstance().linkShader(vertex_id, fragment_id, geometry_id);
     }
 
     protected abstract int generateVertex();

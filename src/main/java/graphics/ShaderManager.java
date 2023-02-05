@@ -111,13 +111,17 @@ public class ShaderManager {
 
         String default_geometry_source =
             generateVersionString() +
-            "layout (location = 0) in vec3 position;\n" +
-            "out vec3 pass_position;\n" +
+            "layout (points) in;\n" +
+            "layout (points, max_vertices = 2) out;\n" +
             "void main(void){\n" +
-            "pass_position = position;\n" +
-            "gl_Position = vec4(position, 1.0);\n" +
+            "    gl_Position = gl_in[0].gl_Position; \n" +
+            "    EmitVertex();\n" +
+            "    EndPrimitive();\n" +
+            "    gl_Position = gl_in[0].gl_Position + vec4(0.1, 0.1, 0.0, 0.0); \n" +
+            "    EmitVertex();\n" +
+            "    EndPrimitive();\n" +
             "}\n";
-        DEFAULT_GEOMETRY_SHADER = compileShader(GL43.GL_GEOMETRY_SHADER, default_vertex_source);
+        DEFAULT_GEOMETRY_SHADER = compileShader(GL43.GL_GEOMETRY_SHADER, default_geometry_source);
 
         String default_fragment_source =
             generateVersionString() +
