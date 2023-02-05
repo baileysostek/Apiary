@@ -12,6 +12,7 @@ import pegs.controlflow.PegTernary;
 import pegs.data.PegVec2;
 import pegs.data.PegVec3;
 import pegs.data.PegVec4;
+import pegs.geometry.PegEmitPoint;
 import pegs.logic.*;
 import pegs.math.*;
 import pegs.random.PegRandomBool;
@@ -23,6 +24,8 @@ import pegs.simulation.PegGetAgentAtIndex;
 import pegs.variables.PegDefine;
 import pegs.variables.PegGet;
 import pegs.variables.PegSet;
+import pegs.vector.PegMix;
+import pegs.vector.PegNormalize;
 import simulation.SimulationManager;
 import util.JsonUtils;
 import util.StringUtils;
@@ -53,6 +56,8 @@ public class PegManager {
         instance.registerPeg(new PegVec3());
         instance.registerPeg(new PegVec2());
 
+        // Geometry
+        instance.registerPeg(new PegEmitPoint());
 
         // Boolean Logic
         instance.registerPeg(new PegAnd());
@@ -83,6 +88,10 @@ public class PegManager {
         instance.registerPeg(new PegDefine());
         instance.registerPeg(new PegGet());
         instance.registerPeg(new PegSet());
+
+        // Vector math
+        instance.registerPeg(new PegMix());
+        instance.registerPeg(new PegNormalize());
     }
     // Holds all pegs that our system knows about.
     private HashMap<String, Peg> pegs = new HashMap<>();

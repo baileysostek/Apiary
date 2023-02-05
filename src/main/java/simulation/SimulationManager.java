@@ -7,6 +7,7 @@ import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.Uniform;
 import org.lwjgl.opengl.GL43;
+import simulation.world.Agent2D;
 import simulation.world.AgentGrid2D;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
@@ -28,6 +29,7 @@ public class SimulationManager {
 
     // Here are all uniforms that every simulation has access too. Simulation Specific uniforms can be registered as well.
     private Uniform u_time_seconds = ShaderManager.getInstance().createUniform("u_time_seconds", GLDataType.FLOAT);
+    private Uniform u_time_delta = ShaderManager.getInstance().createUniform("u_time_delta", GLDataType.FLOAT);
 
     private SimulationManager() {}
 
@@ -53,6 +55,7 @@ public class SimulationManager {
     public void update(double delta){
         // Update our uniforms
         u_time_seconds.set((float) (u_time_seconds.get()[0] + delta));
+        u_time_delta.set((float) delta);
         // If we have a simulation update the simulation
         if(hasActiveSimulation()){
             simulation.update(delta);
@@ -121,6 +124,9 @@ public class SimulationManager {
     public World getWorldTemplate(String template_name, JsonElement arguments){
         if(template_name.toLowerCase(Locale.ROOT).equals("agentgrid2d")){
             return new AgentGrid2D(template_name, arguments);
+        }
+        if(template_name.toLowerCase(Locale.ROOT).equals("agent2d")){
+            return new Agent2D(template_name, arguments);
         }
         // We didnt recognise the world type
         System.err.println(String.format("Error: Simulation:\"%s\" uses a world template that we did not recognise. Unrecognised template:\"%s\"", template_name, template_name));

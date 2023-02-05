@@ -16,6 +16,6 @@ public class PegAdd extends Peg {
         String par_0 = PegManager.getInstance().transpile(params[0]);
         String par_1 = PegManager.getInstance().transpile(params[1]);
 
-        return String.format("%s + %s", par_0, par_1);
+        return String.format("(%s + %s)", par_0, par_1);
     }
 }

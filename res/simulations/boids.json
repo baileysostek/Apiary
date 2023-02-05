@@ -1,33 +1,55 @@
 {
   "world":{
     "name":"Boids",
-    "type":"2D",
-    "arguments":{}
+    "type":"AgentGrid2D",
+    "arguments":{
+      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix"], "@set"]
+    }
   },
   "agents":{
     "boid":{
+      "instances": 1000,
       "attributes":{
         "pos":{
           "type":"vec2",
-          "default_value":["@random_float", "u_window_size.x", "@get", "@mul", "@random_float", "u_window_size.y", "@get", "@mul", "@vec2"]
+          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
         },
         "vel":{
           "type":"vec2",
-          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
+          "default_value":["@random_float", "0.5", "@sub", "10000.0", "@div", "@random_float", "0.5", "@sub", "10000.0", "@div", "@vec2"]
         }
       }
-    }
-  },
-  "textures":{
-    "color_buffer":{
-      "width":100,
-      "height":100
+    },
+    "pheromone":{
+      "attributes":{
+        "concentration":{
+          "type":"float",
+          "default_value":["0.0"]
+        }
+      }
     }
   },
   "steps":[
     {
       "logic":[
-        "int", "neighbors", "0", "@define"
+        "boid", "fragment_index", "pos", [["boid", "fragment_index", "vel", "@agent_read"], ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@agent_write",
+        "pheromone", [["boid", "fragment_index", "pos.x", "@agent_read"], "u_window_size.x", "@get", "2.0", "@div", "@mul", ["boid", "fragment_index", "pos.y", "@agent_read"], "u_window_size.y", "@get", "2.0", "@div", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
+      ]
+    },
+    {
+      "logic":[
+        "float", "diffusion", "0.0", "@define", 
+        "float", "evaporation_constant", "0.0001", "@define", 
+        ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "y_pos", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
+        "pheromone", "fragment_index", "concentration", "diffusion", "9.0", "@div", "evaporation_constant", "@sub", "@agent_write"
       ]
     }
   ]

@@ -67,6 +67,7 @@ public class ComputeShader {
         // Uniforms
         String uniforms = "";
         HashSet<String> uniform_names = PegManager.getInstance().getRequiredUniforms();
+        uniform_names.add("u_window_size");
         for(String uniform_name : uniform_names){
             if(ShaderManager.getInstance().hasUniform(uniform_name)) {
                 uniforms += ShaderManager.getInstance().getUniform(uniform_name).toGLSL();
@@ -85,6 +86,7 @@ public class ComputeShader {
         // Includes In Main
         String include_in_main = "";
         HashSet<String> required_to_include_in_main = PegManager.getInstance().getRequiredIncludesInMain();
+        required_to_include_in_main.add("fragment_index");
         for(String requirement_name : required_to_include_in_main){
             include_in_main += String.format("#include %s\n", requirement_name);
         }

@@ -16,19 +16,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public class Simulation {
-
-    // This is derived from the simulation world. We need a way to map agent to world.
-    private final VAO vao;
-
-    float vertices[] = {
-        -1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        1.0f,  1.0f, 0.0f
-    };
-
     // This is a core part of a simulation. It represents how we initialize agents.
     private final int initialize_id;
 
@@ -49,13 +36,6 @@ public class Simulation {
     private int frame = 0;
 
     protected Simulation(JsonObject object){
-
-        int index = 0;
-        for(float vertex : vertices){
-            vertices[index] /= 2.0f;
-            index ++;
-        }
-
         // First thing we do is set the active simulation to this one
         SimulationManager.getInstance().setActiveSimulation(this);
 
@@ -95,8 +75,12 @@ public class Simulation {
                 }
             }
 
-            // TODO deteremined by the world.
-            agent_ssbo.allocate(Apiary.getWindowWidth() * Apiary.getWindowHeight());
+            // If no instances are specified, we just allocate one agent per pixel.
+            int agent_instances = Apiary.getWindowWidth() * Apiary.getWindowHeight();
+            if(agent.has("instances")){
+                agent_instances = agent.get("instances").getAsInt();
+            }
+            agent_ssbo.allocate(agent_instances);
             agent_ssbo.flush();
 
             // Add agent to sim.
@@ -176,17 +160,6 @@ public class Simulation {
                 steps.push(new ComputeShader(pegs_input));
             }
         }
-
-        this.vao = new VAO();
-        this.vao.bind();
-
-        int vbo_vertex_id = GL43.glGenBuffers();
-        GL43.glBindBuffer(GL43.GL_ARRAY_BUFFER, vbo_vertex_id);
-        GL43.glBufferData(GL43.GL_ARRAY_BUFFER, vertices, GL43.GL_STATIC_DRAW);
-        GL43.glVertexAttribPointer(0, 3, GL43.GL_FLOAT, false, 0, 0);
-        GL43.glEnableVertexAttribArray(0);
-        GL43.glBindBuffer(GL43.GL_ARRAY_BUFFER, 0);
-        this.vao.unbind();
     }
 
     public void update(double delta){
@@ -215,27 +188,12 @@ public class Simulation {
             frame++;
             frame%=2;
         }
-
-        // Then our shader
-        ShaderManager.getInstance().bind(simulation_world.getProgram());
-
-        // Bind all of our uniform variable
-        Mouse.getInstance().bindUniforms();
-
         simulation_time += delta;
     }
 
     public void render(){
-        // Clear the Screen
-        GL43.glClearColor(1f, 1f, 1f, 1.0f);
-        GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
-
-        // This stage renders an input image to the screen.
-        this.vao.bind();
-        GL43.glDrawArrays(GL43.GL_POINTS, 0, vertices.length / 3);
-        this.vao.unbind();
-        GL43.glUseProgram(0);
-
+        ShaderManager.getInstance().bind(simulation_world.getProgram());
+        simulation_world.render();
     }
 
     public void cleanup(){
