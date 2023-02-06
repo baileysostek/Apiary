@@ -46,10 +46,6 @@ public class SimulationManager {
         simulation = new Simulation(object);
 
         // Here we will parse the agent definitions and generate our SSBOs
-
-
-        System.out.println(simulation);
-
     }
 
     public void update(double delta){

@@ -3,12 +3,12 @@
     "name":"Physarum",
     "type":"AgentGrid2D",
     "arguments":{
-      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix"], "@set"]
+      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix", "vec4(1.0, 0.0, 0.0, 1.0)", ["marker", "fragment_index", "concentration", "@agent_read"], "@mix"], "@set"]
     }
   },
   "agents":{
     "boid":{
-      "instances": 10000,
+      "instances": 1000000,
       "attributes":{
         "pos":{
           "type":"vec2",
@@ -18,7 +18,7 @@
           "type":"vec2",
           "default_value":[
             "float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define", 
-            "angle", "@sin", "angle", "@cos", "@vec2", "10000", "@div"
+            "angle", "@sin", "angle", "@cos", "@vec2"
           ]
         }
       }
@@ -30,20 +30,36 @@
           "default_value":["0.0"]
         }
       }
+    },
+    "marker":{
+      "attributes":{
+        "concentration":{
+          "type":"float",
+          "default_value":["0.0"]
+        }
+      }
     }
   },
   "steps":[
     {
       "logic":[
-        "boid", "fragment_index", "pos", [["boid", "fragment_index", "vel", "@agent_read"], ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@agent_write",
-        "boid", "fragment_index", "vel", [["boid", "fragment_index", "vel", "@agent_read"], "0.0001", "@rotate_2d"], "@agent_write",
+        "boid", "fragment_index", "pos", [["boid", "fragment_index", "vel", "@agent_read"], "10000", "@div", ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@agent_write",
+        "float", "sensor_length", "5.0", "@define",
+        "float", "angle", "0.3927", "@define",
+        "vec2", "direction", ["boid", "fragment_index", "vel", "@agent_read"], "@define",
+        "vec2", "sample_pos_left", [["boid", "fragment_index", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul"], ["direction", "angle","-1.0","@mul", "@rotate_2d"], "sensor_length", "@mul", "@add", "@define",
+        "vec2", "sample_pos_right", [["boid", "fragment_index", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul"], ["direction", "angle", "@rotate_2d"], "sensor_length", "@mul", "@add", "@define",
+
+        "float", "sensor_left", ["pheromone", ["int(sample_pos_left.x)", "int(sample_pos_left.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "@define",
+        "float", "sensor_right", ["pheromone", ["int(sample_pos_right.x)", "int(sample_pos_right.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "@define",
+        ["sensor_left", "sensor_right", "@is_equal_to"], "", "boid", "fragment_index", "vel", [["boid", "fragment_index", "vel", "@agent_read"], "0.01", ["sensor_left", "sensor_right", "@greater"], "-1.0", "1.0", "@?", "@mul", "@rotate_2d"], "@agent_write", "@conditional",
         "pheromone", [["boid", "fragment_index", "pos.x", "@agent_read"], "u_window_size.x", "@get", "2.0", "@div", "@mul", ["boid", "fragment_index", "pos.y", "@agent_read"], "u_window_size.y", "@get", "2.0", "@div", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
       ]
     },
     {
       "logic":[
-        "float", "diffusion", "0.0", "@define", 
-        "float", "evaporation_constant", "0.001", "@define", 
+        "float", "diffusion", "0.0", "@define",
+        "float", "evaporation_constant", "0.1", "@define",
         ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
@@ -53,7 +69,8 @@
         ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
-        "pheromone", "fragment_index", "concentration", "diffusion", "9.0", "@div", "evaporation_constant", "@sub", "@agent_write"
+        "pheromone", "fragment_index", "concentration", "diffusion", "9.0", "@div", "evaporation_constant", "@mul", "@agent_write",
+        [["pheromone", "fragment_index", "concentration", "@agent_read"],"0.001","@less"],["pheromone", "fragment_index", "concentration", "diffusion", "0.0", "@agent_write"],"","@conditional"
       ]
     }
   ]

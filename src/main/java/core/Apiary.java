@@ -64,8 +64,11 @@ public class Apiary {
         //Figure out the monitor size
         GLFWVidMode video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-        window_width = video_mode.width();
-        window_height = video_mode.height();
+        window_width = 1024;
+        window_height = 1024;
+
+//        window_width = video_mode.width();
+//        window_height = video_mode.height();
         aspect_ratio = (float)window_width / (float)window_height;
 
         // Create the window

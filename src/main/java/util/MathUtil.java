@@ -60,8 +60,12 @@ public class MathUtil {
             }
         }
 
-        // This is the least optimal sub rectangle we could make grid with, but it ALWAYS works to fill the screen without overlap or overflow or underflow because every natural number is divisible by 1.
-        return new Vector2i(1, 1);
+        if(area_of_rect > 0 ){
+            return find_optimal_tiling(width, height, area_of_rect - 1);
+        }else{
+            // This is the least optimal sub rectangle we could make grid with, but it ALWAYS works to fill the screen without overlap or overflow or underflow because every natural number is divisible by 1.
+            return new Vector2i(1, 1);
+        }
     }
 
     /**

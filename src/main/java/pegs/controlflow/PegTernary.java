@@ -17,6 +17,6 @@ public class PegTernary extends Peg {
         String consequent = PegManager.getInstance().transpile(params[1]);
         String alternate = PegManager.getInstance().transpile(params[2]);
 
-        return String.format("%s ? %s : %s", predicate, consequent, alternate);
+        return String.format("(%s ? %s : %s)", predicate, consequent, alternate);
     }
 }

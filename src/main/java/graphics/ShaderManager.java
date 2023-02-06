@@ -154,7 +154,7 @@ public class ShaderManager {
         Vector2i optimal_tiling = MathUtil.find_optimal_tiling(Apiary.getWindowWidth(), Apiary.getWindowHeight(), ShaderManager.getInstance().getMaxWorkgroupInvocations());
         work_group_width = optimal_tiling.x;
         work_group_height = optimal_tiling.y;
-        System.out.println("Work Group optimization:" + (((float)work_group_width * (float) work_group_height) / (float)ShaderManager.getInstance().getMaxWorkgroupInvocations()) * 100.0f + "%");
+        System.out.println("Work Group optimization:" + (((float)work_group_width * (float) work_group_height) / (float)ShaderManager.getInstance().getMaxWorkgroupInvocations()) * 100.0f + "%"+String.format("[x:%s,y:%s]", work_group_width, work_group_height));
 
     }
 

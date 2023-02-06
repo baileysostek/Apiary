@@ -225,7 +225,7 @@ public class StringUtils {
             start = template.indexOf(TEMPLATE_START_STRING);
             int end = template.indexOf("}}");
             String to_substitute = template.substring(start + TEMPLATE_START_STRING.length(), end);
-            System.out.println(to_substitute);
+//            System.out.println(to_substitute);
 
             String substitution = "";
 
