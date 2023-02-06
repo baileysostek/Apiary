@@ -1,6 +1,6 @@
 {
   "world":{
-    "name":"Boids",
+    "name":"Physarum",
     "type":"AgentGrid2D",
     "arguments":{
       "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix"], "@set"]
@@ -8,7 +8,7 @@
   },
   "agents":{
     "boid":{
-      "instances": 1000,
+      "instances": 10000,
       "attributes":{
         "pos":{
           "type":"vec2",
@@ -16,7 +16,10 @@
         },
         "vel":{
           "type":"vec2",
-          "default_value":["@random_float", "0.5", "@sub", "10000.0", "@div", "@random_float", "0.5", "@sub", "10000.0", "@div", "@vec2"]
+          "default_value":[
+            "float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define", 
+            "angle", "@sin", "angle", "@cos", "@vec2", "10000", "@div"
+          ]
         }
       }
     },
@@ -33,13 +36,14 @@
     {
       "logic":[
         "boid", "fragment_index", "pos", [["boid", "fragment_index", "vel", "@agent_read"], ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@agent_write",
+        "boid", "fragment_index", "vel", [["boid", "fragment_index", "vel", "@agent_read"], "0.0001", "@rotate_2d"], "@agent_write",
         "pheromone", [["boid", "fragment_index", "pos.x", "@agent_read"], "u_window_size.x", "@get", "2.0", "@div", "@mul", ["boid", "fragment_index", "pos.y", "@agent_read"], "u_window_size.y", "@get", "2.0", "@div", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
       ]
     },
     {
       "logic":[
         "float", "diffusion", "0.0", "@define", 
-        "float", "evaporation_constant", "0.0001", "@define", 
+        "float", "evaporation_constant", "0.001", "@define", 
         ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],

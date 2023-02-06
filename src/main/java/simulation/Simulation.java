@@ -54,6 +54,7 @@ public class Simulation {
             SSBO agent_ssbo = new SSBO(agent_name, agent_types);
 
             // Buffer for holding strings while we are generating the agent.
+            String attribute_initializer_setup_data = "";
             LinkedList<String> attributes_initialization_glsl = new LinkedList<>();
             String attributes_copy_glsl = "";
 
@@ -69,7 +70,13 @@ public class Simulation {
                 }
                 // In an attribute definition we also define the way that the data is initialized. We need to generate GLSL from these instructions and put that glsl in a compute shader.
                 if(attribute_data.has("default_value")) {
-                    String attribute_initializer_glsl = String.format("[\"%s\", \"%s\", \"%s\", \"%s\", \"@agent_write\"]", agent_name, "fragment_index", attribute_name, PegManager.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()));
+                    // TODO: the transpialtion step on the line below can produce multiple lines, rather than a string substitution inject the strings onto the end of the default_value array.
+                    // This will have the effect of just adding on the setter in the correct place and let any additional logic happen as well.
+                    String[] default_value = PegManager.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()).split("\n");
+                    for(int i = 0; i < default_value.length - 1; i++){
+                        attribute_initializer_setup_data += default_value[i];
+                    }
+                    String attribute_initializer_glsl = String.format("[\"%s\", \"%s\", \"%s\", \"%s\", \"@agent_write\"]", agent_name, "fragment_index", attribute_name, default_value[default_value.length - 1]);
                     attributes_initialization_glsl.push(attribute_initializer_glsl);
                     attributes_copy_glsl += String.format("%s_read.agent[fragment_index].%s = %s_write.agent[fragment_index].%s;\n", agent_name, attribute_name, agent_name, attribute_name);
                 }
@@ -89,6 +96,7 @@ public class Simulation {
             // Now that the agent is added, we can get the SSBO accessor code
             agent_ssbo_glsl += agent_ssbo.generateGLSL();
 
+            initializer_glsl += attribute_initializer_setup_data;
             // Now we need to compute the initialization data used for this agent.
             // This code will be inserted into an initialization shader.
             for(String attribute_initializer_glsl : attributes_initialization_glsl){

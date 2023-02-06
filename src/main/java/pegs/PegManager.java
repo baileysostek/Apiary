@@ -66,16 +66,21 @@ public class PegManager {
         instance.registerPeg(new PegOr());
         instance.registerPeg(new PegXor());
 
-        // Math opperations
+        // Math operations
         instance.registerPeg(new PegAbs());
         instance.registerPeg(new PegAdd());
+        instance.registerPeg(new PegCos());
         instance.registerPeg(new PegDiv());
         instance.registerPeg(new PegGreater());
         instance.registerPeg(new PegIncrementBy());
         instance.registerPeg(new PegLess());
         instance.registerPeg(new PegMod());
         instance.registerPeg(new PegMul());
+        instance.registerPeg(new PegPI());
+        instance.registerPeg(new PegRotate2D());
+        instance.registerPeg(new PegSin());
         instance.registerPeg(new PegSub());
+        instance.registerPeg(new PegTan());
         instance.registerPeg(new PegXYToScreenIndex());
 
         // Simulation
