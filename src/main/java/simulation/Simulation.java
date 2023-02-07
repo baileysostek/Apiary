@@ -177,6 +177,8 @@ public class Simulation {
                     if(SimulationManager.getInstance().hasAgent(possible_agent_reference)){
                         // get the agent count
                         iteration_count = SimulationManager.getInstance().getAgent(possible_agent_reference).getCapacity();
+                        iteration_width  = (int) Math.sqrt(iteration_count);
+                        iteration_height = (int) Math.sqrt(iteration_count);
                     }
                 }
             }
