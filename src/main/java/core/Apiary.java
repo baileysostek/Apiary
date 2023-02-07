@@ -138,8 +138,8 @@ public class Apiary {
         SimulationManager.initialize();
         Mouse.initialize();
 
-        SimulationManager.getInstance().load("simulations/gol.json");
-//        SimulationManager.getInstance().load("simulations/boids.json");
+//        SimulationManager.getInstance().load("simulations/gol.json");
+        SimulationManager.getInstance().load("simulations/boids.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
 
     }

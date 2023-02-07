@@ -8,7 +8,7 @@
   },
   "agents":{
     "boid":{
-      "instances": 10000000,
+      "instances": 100000000,
       "attributes":{
         "pos":{
           "type":"vec2",
@@ -45,7 +45,7 @@
       "for_each": "boid",
       "logic":[
         "boid", "fragment_index", "pos", [["boid", "fragment_index", "vel", "@agent_read"], "u_time_delta", "@get", "8.0", "@div", "@mul", ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@agent_write",
-        "float", "sensor_length", "9.0", "@define",
+        "float", "sensor_length", "24.0", "@define",
         "float", "turn", "0.1", "@define",
         "float", "angle", "0.3927", "@define",
         "vec2", "direction", ["boid", "fragment_index", "vel", "@agent_read"], "@define",
@@ -60,7 +60,7 @@
     {
       "logic":[
         "float", "diffusion", "0.0", "@define",
-        "float", "evaporation_constant", "0.99", "@define",
+        "float", "evaporation_constant", "0.999", "@define",
         ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
         ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment_by"],
