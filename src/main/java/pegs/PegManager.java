@@ -77,6 +77,7 @@ public class PegManager {
         instance.registerPeg(new PegMod());
         instance.registerPeg(new PegMul());
         instance.registerPeg(new PegPI());
+        instance.registerPeg(new PegReadSensor());
         instance.registerPeg(new PegRotate2D());
         instance.registerPeg(new PegSin());
         instance.registerPeg(new PegSub());

@@ -64,11 +64,11 @@ public class Apiary {
         //Figure out the monitor size
         GLFWVidMode video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-        window_width = 1024;
-        window_height = 1024;
+//        window_width = 1024;
+//        window_height = 1024;
 
-//        window_width = video_mode.width();
-//        window_height = video_mode.height();
+        window_width = video_mode.width();
+        window_height = video_mode.height();
         aspect_ratio = (float)window_width / (float)window_height;
 
         // Create the window
@@ -138,8 +138,8 @@ public class Apiary {
         SimulationManager.initialize();
         Mouse.initialize();
 
-//        SimulationManager.getInstance().load("simulations/gol.json");
-        SimulationManager.getInstance().load("simulations/boids.json");
+        SimulationManager.getInstance().load("simulations/gol.json");
+//        SimulationManager.getInstance().load("simulations/boids.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
 
     }

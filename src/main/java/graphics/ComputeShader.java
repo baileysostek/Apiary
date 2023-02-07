@@ -14,14 +14,21 @@ public class ComputeShader {
     private int primary_buffer = -1;
     private int secondary_buffer = -1;
 
+    private int instance_width  = 0;
+    private int instance_height = 0;
+    private int workgroup_width  = 1;
+    private int workgroup_height = 1;
+
     private final JsonElement compute_source_nodes;
 
     private final String[] required_uniforms = new String[]{};
 
     // These are all of the computed includes and agents and buffers this simulation is referenceing.
 
-    public ComputeShader(JsonElement compute_source_nodes){
+    public ComputeShader(JsonElement compute_source_nodes, int instance_width, int instance_height){
         this.compute_source_nodes = compute_source_nodes;
+        this.instance_width = instance_width;
+        this.instance_height = instance_height;
         regenerateShaders();
     }
 
@@ -49,8 +56,8 @@ public class ComputeShader {
         // Define our substitutions to make to GLSL file
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
-        substitutions.put("workgroup_width", ShaderManager.getInstance().getWorkGroupWidth());
-        substitutions.put("workgroup_height", ShaderManager.getInstance().getWorkGroupHeight());
+        substitutions.put("workgroup_width", this.workgroup_width);
+        substitutions.put("workgroup_height", this.workgroup_height);
 
         // First thing we need to do besides mapping the current state of shader variables, is to compute our source code.
         substitutions.put("compute_source", PegManager.getInstance().transpile(compute_source_nodes));
@@ -114,9 +121,9 @@ public class ComputeShader {
         return (current_frame % 2 == 0) ? primary_buffer : secondary_buffer;
     }
 
-    // Todo fix later.
     public void computeAndWait() {
-        GL43.glDispatchCompute(Apiary.getWindowWidth() / ShaderManager.getInstance().getWorkGroupWidth(), Apiary.getWindowHeight() / ShaderManager.getInstance().getWorkGroupHeight(), 1);
+        // TODO, compute optimal group size
+        GL43.glDispatchCompute(this.instance_width , this.instance_height, 1);
         GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
     }
 }

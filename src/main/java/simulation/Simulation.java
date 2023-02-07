@@ -163,9 +163,26 @@ public class Simulation {
         JsonArray simulation_steps = object.getAsJsonArray("steps");
         for(int i = 0; i < simulation_steps.size(); i++){
             JsonObject step = simulation_steps.get(i).getAsJsonObject();
+            int iteration_width  = Apiary.getWindowWidth();
+            int iteration_height = Apiary.getWindowHeight();
+            int iteration_count= 0;
+            if (step.has("for_each")) {
+                // Try to get this value as a number
+                try{
+                    int possible_iteration_count = step.get("for_each").getAsInt();
+                    iteration_count = possible_iteration_count;
+                }catch(NumberFormatException e){
+                    String possible_agent_reference = step.get("for_each").getAsString();
+                    // Check if the passed string is an agent
+                    if(SimulationManager.getInstance().hasAgent(possible_agent_reference)){
+                        // get the agent count
+                        iteration_count = SimulationManager.getInstance().getAgent(possible_agent_reference).getCapacity();
+                    }
+                }
+            }
             if (step.has("logic")) {
                 JsonArray pegs_input = step.getAsJsonArray("logic");
-                steps.push(new ComputeShader(pegs_input));
+                steps.push(new ComputeShader(pegs_input, iteration_width, iteration_height));
             }
         }
     }

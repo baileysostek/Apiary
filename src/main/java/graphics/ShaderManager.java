@@ -382,11 +382,11 @@ public class ShaderManager {
     }
 
     public int getWorkGroupWidth() {
-        return work_group_width;
+        return 1;
     }
 
     public int getWorkGroupHeight() {
-        return work_group_height;
+        return 1;
     }
 
     public void deleteShader(int id) {
