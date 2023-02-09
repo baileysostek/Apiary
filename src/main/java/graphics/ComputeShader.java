@@ -20,6 +20,9 @@ public class ComputeShader {
     private int workgroup_width  = 1;
     private int workgroup_height = 1;
 
+    int invocations_width = 0;
+    int invocations_height = 0;
+
     private final JsonElement compute_source_nodes;
 
     private final String[] required_uniforms = new String[]{};
@@ -34,6 +37,9 @@ public class ComputeShader {
         Vector2i optimal = MathUtil.find_optimal_tiling(instance_width, instance_height, ShaderManager.getInstance().getMaxWorkgroupInvocations());
         workgroup_width  = optimal.x;
         workgroup_height = optimal.y;
+
+        this.invocations_width = this.instance_width / workgroup_width;
+        this.invocations_height = this.instance_height/ workgroup_height;
 
         regenerateShaders();
     }
@@ -128,7 +134,7 @@ public class ComputeShader {
     }
 
     public void computeAndWait() {
-        GL43.glDispatchCompute(this.instance_width / workgroup_width, this.instance_height/ workgroup_height, 1);
+        GL43.glDispatchCompute(invocations_width, invocations_height, 1);
         GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
     }
 }

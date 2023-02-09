@@ -67,7 +67,7 @@ public class Apiary {
 //        window_width = 1024;
 //        window_height = 1024;
 
-        window_width = video_mode.width();
+        window_width = video_mode.height();
         window_height = video_mode.height();
         aspect_ratio = (float)window_width / (float)window_height;
 
