@@ -44,7 +44,7 @@
         // Choose a random direction if we would go offscreen.
         "vec2","particle_vel", ["boid", "fragment_index", "vel", "@agent_read"], "@define",
         "vec2","particle_pos", ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@define",
-//        ["particle_pos.x", "particle_pos.y", "@on_screen"], [], ["particle_vel", [["boid", "fragment_index", "vel", "@agent_read"], "-1.0", "-1.0", "@vec2", "@mul"], "@set"],"@conditional",
+//        ["particle_pos.x", "particle_pos.y", "@on_screen"], [], ["float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define","particle_vel", ["angle", "@sin", "angle", "@cos", "@vec2"], "@set"],"@conditional",
 
         // Move particle and check if on screen
         "boid", "fragment_index", "pos",  ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@agent_write",
@@ -55,8 +55,8 @@
         "vec2", "direction", ["boid", "fragment_index", "vel", "@agent_read"], "@define",
         "vec2", "sample_pos_left", [["boid", "fragment_index", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul", "direction", "-angle", "sensor_length", "@read_sensor"], "@define",
         "vec2", "sample_pos_right", [["boid", "fragment_index", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul", "direction", "angle", "sensor_length", "@read_sensor"], "@define",
-        "float", "sensor_left", ["pheromone", ["int(sample_pos_left.x)", "int(sample_pos_left.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.01","@max", "@define",
-        "float", "sensor_right", ["pheromone", ["int(sample_pos_right.x)", "int(sample_pos_right.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.01","@max", "@define",
+        "float", "sensor_left", ["pheromone", ["int(sample_pos_left.x)", "int(sample_pos_left.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.1","@max", "@define",
+        "float", "sensor_right", ["pheromone", ["int(sample_pos_right.x)", "int(sample_pos_right.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.1","@max", "@define",
         ["sensor_left", "sensor_right", "@is_equal_to"], "", "boid", "fragment_index", "vel", [["boid", "fragment_index", "vel", "@agent_read"], "turn", ["sensor_left", "sensor_right", "@greater"], "-1.0", "1.0", "@?", "@mul", "u_time_delta","@get","@mul", "@rotate_2d"], "@agent_write", "@conditional",
         "pheromone", [["boid", "fragment_index", "pos.x", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.x", "@get", "@mul", ["boid", "fragment_index", "pos.y", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.y", "@get", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
         // change angle of agent if they would go offscreen.
