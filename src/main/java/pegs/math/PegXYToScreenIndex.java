@@ -20,5 +20,6 @@ public class PegXYToScreenIndex extends Peg {
         String y = PegManager.getInstance().transpile(params[1]);
 
         return String.format("int(mod(%s, window_width_pixels)) + (int(mod(%s, window_height_pixels)) * window_width_pixels)", x, y);
+//        return String.format("int(clamp(%s, 0, window_width_pixels)) + (int(clamp(%s, 0, window_height_pixels)) * window_width_pixels)", x, y);
     }
 }

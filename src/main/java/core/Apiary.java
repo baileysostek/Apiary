@@ -140,6 +140,7 @@ public class Apiary {
 
 //        SimulationManager.getInstance().load("simulations/gol.json");
         SimulationManager.getInstance().load("simulations/boids.json");
+//        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
 
     }

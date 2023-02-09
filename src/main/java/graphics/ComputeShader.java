@@ -1,9 +1,10 @@
 package graphics;
 
 import com.google.gson.JsonElement;
-import core.Apiary;
+import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
 import pegs.PegManager;
+import util.MathUtil;
 import util.StringUtils;
 
 import java.util.HashMap;
@@ -29,6 +30,11 @@ public class ComputeShader {
         this.compute_source_nodes = compute_source_nodes;
         this.instance_width = instance_width;
         this.instance_height = instance_height;
+
+        Vector2i optimal = MathUtil.find_optimal_tiling(instance_width, instance_height, ShaderManager.getInstance().getMaxWorkgroupInvocations());
+        workgroup_width  = optimal.x;
+        workgroup_height = optimal.y;
+
         regenerateShaders();
     }
 
@@ -122,8 +128,7 @@ public class ComputeShader {
     }
 
     public void computeAndWait() {
-        // TODO, compute optimal group size
-        GL43.glDispatchCompute(this.instance_width , this.instance_height, 1);
+        GL43.glDispatchCompute(this.instance_width / workgroup_width, this.instance_height/ workgroup_height, 1);
         GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
     }
 }

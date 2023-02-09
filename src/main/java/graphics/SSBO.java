@@ -73,7 +73,7 @@ public class SSBO extends GLStruct{
 
     public void allocate(int number_of_agents){
         this.capacity = number_of_agents; //Temp
-        int buffer_capacity = this.computeSizeInBytes() * capacity;
+        int buffer_capacity = this.computeSizeInBytes() * capacity ;
         this.buffer = MemoryUtil.memAlloc(buffer_capacity);
         for(int i = 0; i < buffer_capacity; i++){
 //            this.buffer.put((byte)(255*Math.random()));

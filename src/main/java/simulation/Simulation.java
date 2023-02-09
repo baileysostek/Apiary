@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL43;
 import pegs.PegManager;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
+import util.MathUtil;
 import util.StringUtils;
 
 import java.util.HashMap;
@@ -177,8 +178,12 @@ public class Simulation {
                     if(SimulationManager.getInstance().hasAgent(possible_agent_reference)){
                         // get the agent count
                         iteration_count = SimulationManager.getInstance().getAgent(possible_agent_reference).getCapacity();
-                        iteration_width  = (int) Math.sqrt(iteration_count);
-                        iteration_height = (int) Math.sqrt(iteration_count);
+
+                        // Now we need to figure out the grid size to represent this, we will pick them middlemost factor
+                        int[] factors = MathUtil.factor(iteration_count);
+
+                        iteration_width  = factors[(factors.length / 2) - 1];
+                        iteration_height = factors[factors.length / 2];
                     }
                 }
             }

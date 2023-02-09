@@ -74,6 +74,8 @@ public class PegManager {
         instance.registerPeg(new PegGreater());
         instance.registerPeg(new PegIncrementBy());
         instance.registerPeg(new PegLess());
+        instance.registerPeg(new PegMax());
+        instance.registerPeg(new PegMin());
         instance.registerPeg(new PegMod());
         instance.registerPeg(new PegMul());
         instance.registerPeg(new PegPI());
@@ -83,6 +85,7 @@ public class PegManager {
         instance.registerPeg(new PegSub());
         instance.registerPeg(new PegTan());
         instance.registerPeg(new PegXYToScreenIndex());
+        instance.registerPeg(new NodeIsOnScreen());
 
         // Simulation
         instance.registerPeg(new PegAgentCount());

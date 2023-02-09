@@ -131,8 +131,8 @@ public class ShaderManager {
             "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
             "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
             "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-//            "out_color = vec4(screen_pos.xy, 0.0, 1.0);" +
-            "out_color = vec4(1.0);" +
+            "out_color = vec4(screen_pos.xy, 0.0, 1.0);" +
+//            "out_color = vec4(1.0);" +
             "}\n";
         DEFAULT_FRAGMENT_SHADER = compileShader(GL43.GL_FRAGMENT_SHADER, default_fragment_source);
     }
