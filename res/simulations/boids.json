@@ -11,7 +11,7 @@
   },
   "agents":{
     "boid":{
-      "instances": 1000,
+      "instances": 100000000,
       "attributes":{
         "pos":{
           "type":"vec2",
@@ -49,7 +49,7 @@
         // Move particle and check if on screen
         "boid", "GlobalInvocationIndex", "pos",  ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["boid", "GlobalInvocationIndex", "pos", "@agent_read"], "@add"], "@agent_write",
 
-        "float", "sensor_length", "16.0", "@define",
+        "float", "sensor_length", "64.0", "@define",
         "float", "turn", "3.14", "@define",
         "float", "angle", "0.3927", "@define",
         "vec2", "direction", ["boid", "GlobalInvocationIndex", "vel", "@agent_read"], "@define",

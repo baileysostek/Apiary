@@ -12,14 +12,18 @@ import java.util.HashSet;
 
 public class ComputeShader {
 
+    // These are the program IDs for our primary and secondary buffer.
+    // All compute shaders are double buffered because they read and write from SSBOs which are double buffered
     private int primary_buffer = -1;
     private int secondary_buffer = -1;
 
+    // This represents how much work we need to do with this shader.
     private int instance_width  = 0;
     private int instance_height = 0;
     private int workgroup_width  = 1;
     private int workgroup_height = 1;
 
+    // These are some precomputed values which determine how many shader invocations we will be doing
     int invocations_width = 0;
     int invocations_height = 0;
 
@@ -134,7 +138,8 @@ public class ComputeShader {
     }
 
     public void computeAndWait() {
+        // Note invocations_width * invocations_height * workgroup_width * workgroup_height == num_allocations
         GL43.glDispatchCompute(invocations_width, invocations_height, 1);
-        GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
+        GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT); // Wait for computation to finish.
     }
 }
