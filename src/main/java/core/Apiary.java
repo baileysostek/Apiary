@@ -67,7 +67,7 @@ public class Apiary {
 //        window_width = 1024;
 //        window_height = 1024;
 
-        window_width = video_mode.height();
+        window_width = video_mode.width();
         window_height = video_mode.height();
         aspect_ratio = (float)window_width / (float)window_height;
 
@@ -139,7 +139,7 @@ public class Apiary {
         Mouse.initialize();
 
 //        SimulationManager.getInstance().load("simulations/gol.json");
-        SimulationManager.getInstance().load("simulations/boids.json");
+        SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
 

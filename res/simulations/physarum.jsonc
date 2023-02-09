@@ -5,17 +5,21 @@
     "arguments":{
 //      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "GlobalInvocationIndex", "concentration", "@agent_read", "@mix", "vec4(1.0, 0.0, 0.0, 1.0)", ["marker", "GlobalInvocationIndex", "concentration", "@agent_read"], "@mix"], "@set"]
       "fragment_logic":[
-        "out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "0.0", "1.0", "0.0", "0.1", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix"], "@set"
+        "out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "0.0", "1.0", "0.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix"], "@set"
       ]
     }
   },
   "agents":{
-    "boid":{
-      "instances": 100000000,
+    "physarum":{
+      "instances": 10000000,
       "attributes":{
         "pos":{
           "type":"vec2",
-          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
+            "default_value":[
+              "float", "direction", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define",
+              "direction", "@sin", "direction", "@cos", "@vec2", "@random_float", "@mul"
+            ]
+//          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
 //          "default_value":["float(x_pos)", "10.0", "@div", "float(y_pos)", "10.0", "@div", "@vec2"]
         },
         "vel":{
@@ -39,26 +43,27 @@
   },
   "steps":[
     {
-      "for_each": "boid",
+      "for_each": "physarum",
       "logic":[
         // Choose a random direction if we would go offscreen.
-        "vec2","particle_vel", ["boid", "GlobalInvocationIndex", "vel", "@agent_read"], "@define",
-        "vec2","particle_pos", ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["boid", "GlobalInvocationIndex", "pos", "@agent_read"], "@add"], "@define",
+        "vec2","particle_vel", ["physarum", "GlobalInvocationIndex", "vel", "@agent_read"], "@define",
+        "vec2","particle_pos", ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["physarum", "GlobalInvocationIndex", "pos", "@agent_read"], "@add"], "@define",
 //        ["particle_pos.x", "particle_pos.y", "@on_screen"], [], ["float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define","particle_vel", ["angle", "@sin", "angle", "@cos", "@vec2"], "@set"],"@conditional",
 
         // Move particle and check if on screen
-        "boid", "GlobalInvocationIndex", "pos",  ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["boid", "GlobalInvocationIndex", "pos", "@agent_read"], "@add"], "@agent_write",
+        "physarum", "GlobalInvocationIndex", "pos",  ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["physarum", "GlobalInvocationIndex", "pos", "@agent_read"], "@add"], "@agent_write",
 
-        "float", "sensor_length", "64.0", "@define",
+        // Sense what is around us.
+        "float", "sensor_length", "64.0", "u_time_seconds", "@get","@sin","32.0","@mul","@add","@define",
         "float", "turn", "3.14", "@define",
         "float", "angle", "0.3927", "@define",
-        "vec2", "direction", ["boid", "GlobalInvocationIndex", "vel", "@agent_read"], "@define",
-        "vec2", "sample_pos_left", [["boid", "GlobalInvocationIndex", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul", "direction", "-angle", "sensor_length", "@read_sensor"], "@define",
-        "vec2", "sample_pos_right", [["boid", "GlobalInvocationIndex", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul", "direction", "angle", "sensor_length", "@read_sensor"], "@define",
-        "float", "sensor_left", ["pheromone", ["int(sample_pos_left.x)", "int(sample_pos_left.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.1","@max", "@define",
-        "float", "sensor_right", ["pheromone", ["int(sample_pos_right.x)", "int(sample_pos_right.y)", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.1","@max", "@define",
-        ["sensor_left", "sensor_right", "@is_equal_to"], "", "boid", "GlobalInvocationIndex", "vel", [["boid", "GlobalInvocationIndex", "vel", "@agent_read"], "turn", ["sensor_left", "sensor_right", "@greater"], "-1.0", "1.0", "@?", "@mul", "u_time_delta","@get","@mul", "@rotate_2d"], "@agent_write", "@conditional",
-        "pheromone", [["boid", "GlobalInvocationIndex", "pos.x", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.x", "@get", "@mul", ["boid", "GlobalInvocationIndex", "pos.y", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.y", "@get", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
+        "vec2", "direction", ["physarum", "GlobalInvocationIndex", "vel", "@agent_read"], "@define",
+        "vec2", "sample_pos_left", [["physarum", "GlobalInvocationIndex", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul", "direction", "-angle", "sensor_length", "@read_sensor"], "@define",
+        "vec2", "sample_pos_right", [["physarum", "GlobalInvocationIndex", "pos", "@agent_read"], ["u_window_size", "@get", "2.0", "@div"], "@mul", "direction", "angle", "sensor_length", "@read_sensor"], "@define",
+        "float", "sensor_left", ["pheromone", ["sample_pos_left.x", "int", "@cast", "sample_pos_left.y", "int", "@cast", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.1","@max", "@define",
+        "float", "sensor_right", ["pheromone", ["sample_pos_right.x", "int", "@cast", "sample_pos_right.y", "int", "@cast", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.1","@max", "@define",
+        ["sensor_left", "sensor_right", "@is_equal_to"], "", "physarum", "GlobalInvocationIndex", "vel", [["physarum", "GlobalInvocationIndex", "vel", "@agent_read"], "turn", ["sensor_left", "sensor_right", "@greater"], "-1.0", "1.0", "@?", "@mul", "u_time_delta","@get","@mul", "@rotate_2d"], "@agent_write", "@conditional",
+        "pheromone", [["physarum", "GlobalInvocationIndex", "pos.x", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.x", "@get", "@mul", ["physarum", "GlobalInvocationIndex", "pos.y", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.y", "@get", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
         // change angle of agent if they would go offscreen.
       ]
     },

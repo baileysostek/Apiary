@@ -21,6 +21,7 @@ import pegs.simulation.PegAgentCount;
 import pegs.simulation.PegAgentRead;
 import pegs.simulation.PegAgentWrite;
 import pegs.simulation.PegGetAgentAtIndex;
+import pegs.types.NodeCast;
 import pegs.variables.PegDefine;
 import pegs.variables.PegGet;
 import pegs.variables.PegSet;
@@ -92,6 +93,9 @@ public class PegManager {
         instance.registerPeg(new PegGetAgentAtIndex());
         instance.registerPeg(new PegAgentRead());
         instance.registerPeg(new PegAgentWrite());
+
+        // Types
+        instance.registerPeg(new NodeCast());
 
         // Variables
         instance.registerPeg(new PegDefine());

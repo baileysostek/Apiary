@@ -121,9 +121,6 @@ public class SimulationManager {
         if(template_name.toLowerCase(Locale.ROOT).equals("agentgrid2d")){
             return new AgentGrid2D(template_name, arguments);
         }
-        if(template_name.toLowerCase(Locale.ROOT).equals("agent2d")){
-            return new Agent2D(template_name, arguments);
-        }
         // We didnt recognise the world type
         System.err.println(String.format("Error: Simulation:\"%s\" uses a world template that we did not recognise. Unrecognised template:\"%s\"", template_name, template_name));
         // Default
