@@ -11,13 +11,13 @@
   },
   "agents":{
     "physarum":{
-      "instances": 10000000,
+      "instances": 100000000,
       "attributes":{
         "pos":{
           "type":"vec2",
             "default_value":[
               "float", "direction", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define",
-              "direction", "@sin", "direction", "@cos", "@vec2", "@random_float", "@mul"
+              "direction", "@sin", "direction", "@cos", "@vec2", "@random_float", "@mul", "1.7777778", "1.0", "@vec2", "@div"
             ]
 //          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
 //          "default_value":["float(x_pos)", "10.0", "@div", "float(y_pos)", "10.0", "@div", "@vec2"]
@@ -47,7 +47,7 @@
       "logic":[
         // Choose a random direction if we would go offscreen.
         "vec2","particle_vel", ["physarum", "GlobalInvocationIndex", "vel", "@agent_read"], "@define",
-        "vec2","particle_pos", ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", ["physarum", "GlobalInvocationIndex", "pos", "@agent_read"], "@add"], "@define",
+        "vec2","particle_pos", ["particle_vel", "u_time_delta", "@get", "8.0", "@div", "@mul", "u_aspect_ratio", "@get", "1.0", "@vec2", "@div",["physarum", "GlobalInvocationIndex", "pos", "@agent_read"], "@add"], "@define",
 //        ["particle_pos.x", "particle_pos.y", "@on_screen"], [], ["float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define","particle_vel", ["angle", "@sin", "angle", "@cos", "@vec2"], "@set"],"@conditional",
 
         // Move particle and check if on screen

@@ -7,7 +7,6 @@ import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.Uniform;
 import org.lwjgl.opengl.GL43;
-import simulation.world.Agent2D;
 import simulation.world.AgentGrid2D;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;

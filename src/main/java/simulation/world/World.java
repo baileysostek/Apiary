@@ -19,9 +19,14 @@ public abstract class World extends GLStruct {
 
     private final int vertex_id;
     private final int geometry_id;
-    private final int fragment_id;
 
-    private final int program_id;
+    private final int fragment_id_primary;
+    private final int fragment_id_secondary;
+
+    // Double Buffering
+    private final int program_id_primary; // Primary Buffer
+    private final int program_id_secondary; // Secondary Buffer
+
 
     public World(String name, JsonElement arguments, int primitive_type) {
         super(name);
@@ -33,21 +38,26 @@ public abstract class World extends GLStruct {
         this.primitive_type = primitive_type;
 
         // Generate shaders to be linked together.
-        this.vertex_id = generateVertex();
-        this.geometry_id = generateGeometryShader();
-        this.fragment_id = generateFragmentShader();
+        this.vertex_id = generateVertex(true);
+//        this.vertex_id = generateVertex(false);
+        this.geometry_id = generateGeometryShader(true);
+//        this.geometry_id = generateGeometryShader(false);
+        this.fragment_id_primary = generateFragmentShader(true);
+        this.fragment_id_secondary = generateFragmentShader(false);
 
         // Link our shaders together into a program.\
         if(geometry_id >= 0) {
-            this.program_id = ShaderManager.getInstance().linkShader(vertex_id, geometry_id, fragment_id);
+            this.program_id_primary = ShaderManager.getInstance().linkShader(vertex_id, geometry_id, fragment_id_primary);
+            this.program_id_secondary = ShaderManager.getInstance().linkShader(vertex_id, geometry_id, fragment_id_secondary);
         }else{
-            this.program_id = ShaderManager.getInstance().linkShader(vertex_id, fragment_id);
+            this.program_id_primary = ShaderManager.getInstance().linkShader(vertex_id, fragment_id_primary);
+            this.program_id_secondary = ShaderManager.getInstance().linkShader(vertex_id, fragment_id_secondary);
         }
     }
 
-    protected abstract int generateVertex();
-    protected abstract int generateGeometryShader();
-    protected abstract int generateFragmentShader();
+    protected abstract int generateVertex(boolean is_read);
+    protected abstract int generateGeometryShader(boolean is_read);
+    protected abstract int generateFragmentShader(boolean is_read);
 
     public abstract void render();
 
@@ -56,8 +66,8 @@ public abstract class World extends GLStruct {
         this.world_uniforms.put(attribute_name, ShaderManager.getInstance().createUniform(attribute_name, attribute_type));
     }
 
-    public int getProgram() {
-        return program_id;
+    public int getProgram(int frame_number) {
+        return (frame_number & 1) == 1 ? program_id_primary : program_id_secondary;
     }
 
     public int getPrimitiveType() {

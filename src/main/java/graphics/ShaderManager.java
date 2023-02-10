@@ -397,7 +397,7 @@ public class ShaderManager {
         GL43.glDeleteProgram(id);
     }
 
-    public int generateVertexShader(JsonElement pegs_data){
+    public int generateVertexShader(JsonElement pegs_data, boolean is_read){
         // Clear the state of the required imports in the PegManager. This way we only import what is needed.
         PegManager.getInstance().clearPersistentData();
 
@@ -413,7 +413,7 @@ public class ShaderManager {
         String agent_ssbos = "";
         HashMap<String, SSBO> required_agents = PegManager.getInstance().getRequiredAgents();
         for(String agent_name : required_agents.keySet()){
-            agent_ssbos += required_agents.get(agent_name).generateGLSL(true);
+            agent_ssbos += required_agents.get(agent_name).generateGLSL(is_read);
         }
         substitutions.put("agents_ssbos", agent_ssbos);
 
@@ -462,7 +462,7 @@ public class ShaderManager {
         return ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER, StringUtils.format(source, substitutions));
     }
 
-    public int generateFragmentShaderFromPegs(JsonElement pegs_data){
+    public int generateFragmentShaderFromPegs(JsonElement pegs_data, boolean is_read){
         // Clear the state of the required imports in the PegManager. This way we only import what is needed.
         PegManager.getInstance().clearPersistentData();
 
@@ -478,7 +478,7 @@ public class ShaderManager {
         String agent_ssbos = "";
         HashMap<String, SSBO> required_agents = PegManager.getInstance().getRequiredAgents();
         for(String agent_name : required_agents.keySet()){
-            agent_ssbos += required_agents.get(agent_name).generateGLSL(true);
+            agent_ssbos += required_agents.get(agent_name).generateGLSL(is_read);
         }
         substitutions.put("agents_ssbos", agent_ssbos);
 

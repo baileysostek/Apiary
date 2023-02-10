@@ -1,6 +1,7 @@
 package core;
 
 import graphics.ShaderManager;
+import input.Keyboard;
 import input.Mouse;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
@@ -38,6 +39,12 @@ public class Apiary {
         System.out.println("LWJGL:" + Version.getVersion());
 
         init();
+
+        // Setup our exit callback
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_ESCAPE, () -> {
+            RUNNING = false;
+        });
+
         loop();
         clean();
     }
@@ -136,13 +143,14 @@ public class Apiary {
         JsonUtils.initialize();
         ShaderManager.initialize();
         SimulationManager.initialize();
+
         Mouse.initialize();
+        Keyboard.initialize();
 
 //        SimulationManager.getInstance().load("simulations/gol.json");
         SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
-
     }
 
     private void loop() {
@@ -201,6 +209,7 @@ public class Apiary {
     private void update(double delta){
         // Here we have all Singletons which need to update.
         Mouse.getInstance().update(delta);
+        Keyboard.getInstance().update(delta);
         ShaderManager.getInstance().update(delta);
 
         // Simulation manager should update last. This ensures that every other singleton which has uniforms has the chance to update those uniforms.

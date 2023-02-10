@@ -34,23 +34,23 @@ public class AgentGrid2D extends World{
     }
 
     @Override
-    public int generateVertex() {
+    public int generateVertex(boolean is_odd) {
         return ShaderManager.getInstance().getDefaultVertexShader();
     }
 
     @Override
-    public int generateGeometryShader() {
+    public int generateGeometryShader(boolean is_odd) {
         return -1;
     }
 
     @Override
-    public int generateFragmentShader() {
+    public int generateFragmentShader(boolean is_odd) {
 
         if(!this.arguments.has("fragment_logic")){
             System.err.println("Error: no member \"fragment_logic\" exists in the arguments of this simulation's definition file.");
             return ShaderManager.getInstance().getDefaultFragmentShader();
         }
-        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"));
+        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"), is_odd);
     }
 
     @Override

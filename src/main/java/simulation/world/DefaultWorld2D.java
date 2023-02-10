@@ -34,17 +34,17 @@ public class DefaultWorld2D extends World{
     }
 
     @Override
-    public int generateVertex() {
+    public int generateVertex(boolean is_odd) {
         return ShaderManager.getInstance().getDefaultVertexShader();
     }
 
     @Override
-    public int generateGeometryShader() {
+    public int generateGeometryShader(boolean is_odd) {
         return ShaderManager.getInstance().getDefaultGeometryShader();
     }
 
     @Override
-    public int generateFragmentShader() {
+    public int generateFragmentShader(boolean is_odd) {
         return ShaderManager.getInstance().getDefaultFragmentShader();
     }
 
