@@ -4,9 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import core.Apiary;
 import graphics.*;
-import input.Keyboard;
 import input.Mouse;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL43;
 import pegs.PegManager;
 import simulation.world.World;
@@ -19,27 +17,24 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public class Simulation {
+    // This is a core part of a simulation. It represents how we initialize agents.
+    private final int initialize_id;
+
     // These variables are used to control the speed at which the simulation runs.
     private float simulation_time = 0;
     private float simulation_updates_per_second = -1f;
     private float simulation_target_time = ( 1.0f / simulation_updates_per_second);
 
+
     private World simulation_world; // The simulation world is used as the template for the worldstate during simulation.
     // We have 2D and 3D worlds ready for simulations.
 
-    // This is a core part of a simulation. It represents how we initialize agents.
-    private final LinkedHashMap<String, Integer> initialization_program_ids = new LinkedHashMap<>();
-
-    // These are the steps that we walk through
     private LinkedList<ComputeShader> steps = new LinkedList<ComputeShader>();
 
     private boolean initialized = false;
 
     // Variables used in simulation
     private int frame = 0;
-
-    // Controls
-    private boolean frame_advance = false;
 
     protected Simulation(JsonObject object){
         // First thing we do is set the active simulation to this one
@@ -143,23 +138,23 @@ public class Simulation {
         // TODO send to compute shader.
         // Now we are able to determine the initialization GLSL
         String initialize_source = StringUtils.format(
-    "{{shader_version}}" +
-            //TODO make implicit for shader type.
-            String.format("layout (local_size_x = 1, local_size_y = 1) in;\n") +
-            //TODO make uniform generation implicit
-            "uniform float u_time_seconds;\n" +
-            "uniform vec2 u_window_size;\n" +
-            "{{agent_ssbo_glsl}}" +
-            // TODO make imports implicit
-            "#include noise\n" +
-            "void main() {\n" +
-            "int x_pos = int(gl_GlobalInvocationID.x);\n" +
-            "int y_pos = int(gl_GlobalInvocationID.y);\n" +
-            "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
-            "float rand   = random( inputs );              // Random per-pixel value\n" +
-            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-            "{{initializer_glsl}}" +
-            "}", initialization_substitutions
+                "{{shader_version}}" +
+                        //TODO make implicit for shader type.
+                        String.format("layout (local_size_x = 1, local_size_y = 1) in;\n") +
+                        //TODO make uniform generation implicit
+                        "uniform float u_time_seconds;\n" +
+                        "uniform vec2 u_window_size;\n" +
+                        "{{agent_ssbo_glsl}}" +
+                        // TODO make imports implicit
+                        "#include noise\n" +
+                        "void main() {\n" +
+                        "int x_pos = int(gl_GlobalInvocationID.x);\n" +
+                        "int y_pos = int(gl_GlobalInvocationID.y);\n" +
+                        "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
+                        "float rand   = random( inputs );              // Random per-pixel value\n" +
+                        "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
+                        "{{initializer_glsl}}" +
+                        "}", initialization_substitutions
         );
 
         int initialize = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, initialize_source);
@@ -197,22 +192,18 @@ public class Simulation {
                 steps.push(new ComputeShader(pegs_input, iteration_width, iteration_height));
             }
         }
-
-        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_RIGHT, () -> {
-            this.frame_advance = true;
-        });
-
-        Keyboard.getInstance().addHoldCallback(GLFW.GLFW_KEY_RIGHT, () -> {
-            if(Keyboard.getInstance().isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT)) {
-                this.frame_advance = true;
-            }
-        });
     }
 
     public void update(double delta){
 
-        if(!frame_advance){
-            return;
+        // Initialize Data
+        if(!initialized) {
+            ShaderManager.getInstance().bind(initialize_id);
+            Mouse.getInstance().bindUniforms();
+            ShaderManager.getInstance().bindUniforms();
+            GL43.glDispatchCompute(Apiary.getWindowWidth(), Apiary.getWindowHeight(), 1);
+            GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
+            initialized = true;
         }
 
         // Execute compute
@@ -230,8 +221,6 @@ public class Simulation {
             frame%=2;
         }
         simulation_time += delta;
-
-        frame_advance = false;
     }
 
     public void render(){

@@ -147,8 +147,8 @@ public class Apiary {
         Mouse.initialize();
         Keyboard.initialize();
 
-//        SimulationManager.getInstance().load("simulations/gol.json");
-        SimulationManager.getInstance().load("simulations/physarum.jsonc");
+        SimulationManager.getInstance().load("simulations/gol.json");
+//        SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
     }
