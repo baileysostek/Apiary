@@ -189,7 +189,7 @@ public class Simulation {
             }
             if (step.has("logic")) {
                 JsonArray pegs_input = step.getAsJsonArray("logic");
-                steps.push(new ComputeShader(pegs_input, iteration_width, iteration_height));
+                steps.addLast(new ComputeShader(pegs_input, iteration_width, iteration_height));
             }
         }
     }
@@ -201,7 +201,7 @@ public class Simulation {
             ShaderManager.getInstance().bind(initialize_id);
             Mouse.getInstance().bindUniforms();
             ShaderManager.getInstance().bindUniforms();
-            GL43.glDispatchCompute(Apiary.getWindowWidth(), Apiary.getWindowHeight(), 1);
+            GL43.glDispatchCompute(10000, 10000, 1);
             GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
             initialized = true;
         }
