@@ -6,6 +6,8 @@ import graphics.GLDataType;
 import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.Uniform;
+import input.Keyboard;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL43;
 import simulation.world.AgentGrid2D;
 import simulation.world.World;
@@ -30,24 +32,50 @@ public class SimulationManager {
     private Uniform u_time_seconds = ShaderManager.getInstance().createUniform("u_time_seconds", GLDataType.FLOAT);
     private Uniform u_time_delta = ShaderManager.getInstance().createUniform("u_time_delta", GLDataType.FLOAT);
 
-    private SimulationManager() {}
+    // We are going to buffer the unload request such that it does not try to unload a simulation that is being rendered.
+    private boolean unload_simulation = false;
+    private String simulation_to_load = "";
+
+    private SimulationManager() {
+
+    }
 
     public void load(String path){
-        cleanup();
+        unloadSimulation();
+        simulation_to_load = path;
+    }
 
-        // Ensure that the loaded simulation file abides by our simulation schema.
-        JsonObject object = JsonUtils.loadJson(path);
-        if(!JsonUtils.validate(object, JsonUtils.getInstance().SIMULATION_SCHEMA)){
-            return; // Not the correct format. TODO: print error.
-        }
-
-        // The object is valid
-        simulation = new Simulation(object);
-
-        // Here we will parse the agent definitions and generate our SSBOs
+    public void unloadSimulation(){
+        this.unload_simulation = true;
     }
 
     public void update(double delta){
+        // Check for unload request
+        if(unload_simulation){
+
+            // Unload
+            if(simulation != null){
+                // Cleanup the old simulation.
+                simulation.cleanup();
+                ShaderManager.getInstance().checkAllocated();
+                simulation = null;
+            }
+            // Reset our variables
+            unload_simulation = false;
+
+            // Load
+            if(!simulation_to_load.isEmpty()) {
+                // Ensure that the loaded simulation file abides by our simulation schema.
+                JsonObject object = JsonUtils.loadJson(simulation_to_load);
+                if (!JsonUtils.validate(object, JsonUtils.getInstance().SIMULATION_SCHEMA)) {
+                    return; // Not the correct format. TODO: print error.
+                }
+
+                // The object is valid
+                simulation = new Simulation(object);
+            }
+            simulation_to_load = "";
+        }
         // Update our uniforms
         u_time_seconds.set((float) (u_time_seconds.get()[0] + delta));
         u_time_delta.set((float) delta);
@@ -88,12 +116,6 @@ public class SimulationManager {
 
     public boolean hasActiveSimulation(){
         return simulation != null;
-    }
-
-    public void cleanup(){
-        if(simulation != null){
-            simulation.cleanup();
-        }
     }
 
     public Simulation getActiveSimulation() {

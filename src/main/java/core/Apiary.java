@@ -147,6 +147,11 @@ public class Apiary {
         Mouse.initialize();
         Keyboard.initialize();
 
+        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_P, () -> {
+            SimulationManager.getInstance().unloadSimulation();
+            SimulationManager.getInstance().load("simulations/gol.json");
+        });
+
 //        SimulationManager.getInstance().load("simulations/gol.json");
         SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
@@ -213,9 +218,7 @@ public class Apiary {
         ShaderManager.getInstance().update(delta);
 
         // Simulation manager should update last. This ensures that every other singleton which has uniforms has the chance to update those uniforms.
-        if(SimulationManager.getInstance().hasActiveSimulation()){
-            SimulationManager.getInstance().update(delta);
-        }
+        SimulationManager.getInstance().update(delta);
     }
 
     private void render(){

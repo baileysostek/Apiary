@@ -1,8 +1,12 @@
+import imgui.ImColor;
 import imgui.ImGui;
+import imgui.ImVec4;
 import imgui.app.Application;
 import imgui.app.Configuration;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
+import imgui.extension.imnodes.ImNodesStyle;
+import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.flag.ImGuiCond;
 import imgui.type.ImBoolean;
@@ -49,6 +53,10 @@ public class Main extends Application {
 
             ImNodes.editorContextSet(CONTEXT);
             ImNodes.beginNodeEditor();
+
+//            for(){
+//
+//            }
 
 //            for (Graph.GraphNode node : graph.nodes.values()) {
 //                ImNodes.beginNode(node.nodeId);

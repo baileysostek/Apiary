@@ -17,12 +17,6 @@ public abstract class World extends GLStruct {
 
     protected final JsonObject arguments;
 
-    private final int vertex_id;
-    private final int geometry_id;
-
-    private final int fragment_id_primary;
-    private final int fragment_id_secondary;
-
     // Double Buffering
     private final int program_id_primary; // Primary Buffer
     private final int program_id_secondary; // Secondary Buffer
@@ -38,12 +32,12 @@ public abstract class World extends GLStruct {
         this.primitive_type = primitive_type;
 
         // Generate shaders to be linked together.
-        this.vertex_id = generateVertex(true);
+        int vertex_id = generateVertex(true);
 //        this.vertex_id = generateVertex(false);
-        this.geometry_id = generateGeometryShader(true);
+        int geometry_id = generateGeometryShader(true);
 //        this.geometry_id = generateGeometryShader(false);
-        this.fragment_id_primary = generateFragmentShader(true);
-        this.fragment_id_secondary = generateFragmentShader(false);
+        int fragment_id_primary = generateFragmentShader(true);
+        int fragment_id_secondary = generateFragmentShader(false);
 
         // Link our shaders together into a program.\
         if(geometry_id >= 0) {
@@ -53,6 +47,12 @@ public abstract class World extends GLStruct {
             this.program_id_primary = ShaderManager.getInstance().linkShader(vertex_id, fragment_id_primary);
             this.program_id_secondary = ShaderManager.getInstance().linkShader(vertex_id, fragment_id_secondary);
         }
+
+        // Now we will delete all of our shaders.
+        ShaderManager.getInstance().deleteShader(vertex_id);
+        ShaderManager.getInstance().deleteShader(geometry_id);
+        ShaderManager.getInstance().deleteShader(fragment_id_primary);
+        ShaderManager.getInstance().deleteProgram(fragment_id_secondary);
     }
 
     protected abstract int generateVertex(boolean is_read);
@@ -72,5 +72,10 @@ public abstract class World extends GLStruct {
 
     public int getPrimitiveType() {
         return primitive_type;
+    }
+
+    public void destroy() {
+        ShaderManager.getInstance().deleteProgram(this.program_id_primary);
+        ShaderManager.getInstance().deleteProgram(this.program_id_secondary);
     }
 }
