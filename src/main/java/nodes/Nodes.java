@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
-import core.Apiary;
 import graphics.ShaderManager;
 import simulation.SimulationManager;
 
@@ -35,6 +34,126 @@ public enum Nodes {
         }
     ),
 
+    AGENT_WRITE("@agent_write",
+        new String[]{
+            "Type",
+            "Index",
+            "Property",
+            "Value",
+        },
+        (stack, params) -> {
+            // Since this is the all command, we are going to compute the number of agents of this type which have been allocated for the simulation.
+            if(SimulationManager.getInstance().hasActiveSimulation()) {
+                if(SimulationManager.getInstance().hasAgent(params[0])) {
+                    NodeManager.getInstance().requireAgent(params[0]);
+                    return String.format("%s%s.agent[%s].%s = %s;\n", params[0], ShaderManager.getInstance().getSSBOWriteIdentifier(),params[1],params[2],params[3]);
+                }else{
+                    //TODO throw compilation error.
+                    System.err.println("Error cannot parse properties of this agent");
+                }
+            }
+            return "";
+        },
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(0, params[2]);
+            out.set(1, params[3]);
+        }
+    ),
+
+    AGENT_READ("@agent_read",
+        new String[]{
+            "Type",
+            "Index",
+            "Property"
+        },
+        (stack, params) -> {
+            if(SimulationManager.getInstance().hasActiveSimulation()) {
+                if(SimulationManager.getInstance().hasAgent(params[0])) {
+                    NodeManager.getInstance().requireAgent(params[0]);
+                    return String.format("%s%s.agent[%s].%s", params[0], ShaderManager.getInstance().getSSBOReadIdentifier(),params[1],params[2]);
+                }else{
+                    //TODO throw compilation error.
+                    System.err.println("Error cannot parse properties of this agent");
+                }
+            }
+            return "";
+        },
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(0, params[2]);
+        }
+    ),
+
+    AND("@and",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("(%s && %s)", params[0], params[1]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+        }
+    ),
+
+    CAST("@cast",
+        new String[]{
+            "Value",
+            "Type"
+        },
+        (stack, params) -> String.format("%s(%s)", params[1], params[0]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+        }
+    ),
+
+    CONDITIONAL("@conditional",
+        new String[]{
+            "Predicate",
+            "Consequent",
+            "Alternate"
+        },
+        (stack, params) -> {
+            String conditional = params[0];
+            String consequent = params[1];
+            String alternate = params[2];
+
+            // If we do not have a consequent but do have an alternate...
+            if(consequent.isEmpty() && !alternate.isEmpty()){
+                // We are going to invert the if statement to avoid the if/else case
+                String out = "";
+                out += (String.format("if (!(%s)) {\n", conditional)); // Inverted
+                out += (String.format("\t%s", alternate.endsWith("\n") ? alternate : alternate + "\n"));
+                out += ("}\n");
+                return out;
+            }else{
+                // Default if else case
+                String out = "";
+                out += (String.format("if (%s) {\n", conditional));
+                out += (String.format("\t%s", consequent.endsWith("\n") ? consequent : consequent + "\n"));
+                if(alternate.isEmpty()) {
+                    // End the conditional.
+                    out += ("}\n");
+                } else {
+                    // Add the alternate
+                    out += ("} else {\n");
+                    out += (String.format("\t%s", alternate.endsWith("\n") ? alternate : alternate + "\n"));
+                    out += ("}\n");
+                }
+                return out;
+            }
+        },
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(2, params[2]);
+        }
+    ),
+
     COS("@cos",
         new String[]{
             "A"
@@ -42,6 +161,20 @@ public enum Nodes {
         (stack, params) -> String.format("cos(%s)", params[0]),
         (out, params) -> {
             out.set(0, params[0]);
+        }
+    ),
+
+    DEFINE("@define",
+        new String[]{
+            "Type",
+            "Name",
+            "Value"
+        },
+        (stack, params) -> String.format("%s %s = %s ;\n", params[0], params[1], params[2]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(2, params[2]);
         }
     ),
 
@@ -54,6 +187,40 @@ public enum Nodes {
         (out, params) -> {
             out.set(0, params[0]);
             out.set(1, params[1]);
+        }
+    ),
+
+    EQUALS("@equals",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("(%s == %s)", params[0], params[1]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+        }
+    ),
+
+    GET("@get",
+        new String[]{
+            "Variable"
+        },
+        (stack, params) -> {
+            if(ShaderManager.getInstance().hasUniform(params[0])){
+                NodeManager.getInstance().requireUniform(params[0]);
+            }else{
+                if(params[0].contains(".")){
+                    String base_variable = params[0].substring(0, params[0].indexOf("."));
+                    if(ShaderManager.getInstance().hasUniform(base_variable)){
+                        NodeManager.getInstance().requireUniform(base_variable);
+                    }
+                }
+            }
+            return params[0];
+        },
+        (out, params) -> {
+            out.set(0, params[0]);
         }
     ),
 
@@ -117,6 +284,20 @@ public enum Nodes {
         }
     ),
 
+    MIX("@mix",
+        new String[]{
+            "A",
+            "B",
+            "Delta"
+        },
+        (stack, params) -> String.format("mix(%s, %s, %s)", params[0], params[1], params[2]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(2, params[2]);
+        }
+    ),
+
     MOD("@mod",
         new String[]{
             "A",
@@ -134,10 +315,30 @@ public enum Nodes {
             "A",
             "B"
         },
-        (stack, params) -> String.format("mul(%s,%s)", params[0], params[1]),
+        (stack, params) -> String.format("(%s * %s)", params[0], params[1]),
         (out, params) -> {
             out.set(0, params[0]);
             out.set(1, params[1]);
+        }
+    ),
+
+    NORMALIZE("@normalize",
+        new String[]{
+            "A",
+        },
+        (stack, params) -> String.format("normalize(%s)", params[0]),
+        (out, params) -> {
+            out.set(0, params[0]);
+        }
+    ),
+
+    NOT("@not",
+        new String[]{
+            "A",
+        },
+        (stack, params) -> String.format("(!%s)", params[0]),
+        (out, params) -> {
+            out.set(0, params[0]);
         }
     ),
 
@@ -147,6 +348,18 @@ public enum Nodes {
             "B"
         },
         (stack, params) -> String.format("!(%s < -1.0 || %s > 1.0 || %s < -1.0 || %s > 1.0)", params[0], params[0], params[1], params[1]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+        }
+    ),
+
+    OR("@or",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("(%s || %s)", params[0], params[1]),
         (out, params) -> {
             out.set(0, params[0]);
             out.set(1, params[1]);
@@ -177,6 +390,22 @@ public enum Nodes {
         (out, params) -> {}
     ),
 
+    RANDOM_BOOL("@random_bool",
+        new String[]{},
+        (stack, params) -> String.format("((random(vec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, %s%sf)) > 0.5) ? true : false)", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
+        (out, params) -> {},
+        new String[]{"u_time_seconds"}, // Uniforms
+        new String[]{"noise"} // Libraries
+    ),
+
+    RANDOM_FLOAT("@random_float",
+        new String[]{},
+        (stack, params) ->   String.format("random(vec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, %s%sf))", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
+        (out, params) -> {},
+        new String[]{"u_time_seconds"}, // Uniforms
+        new String[]{"noise"} // Libraries
+    ),
+
     ROTATE_2D("@rotate_2d",
         new String[]{
             "A",
@@ -189,6 +418,18 @@ public enum Nodes {
         },
         new String[]{}, // Uniforms
         new String[]{"rotation_2d"} // Libraries
+    ),
+
+    SET("@set",
+        new String[]{
+            "Variable",
+            "Value"
+        },
+        (stack, params) -> String.format("%s = %s ;\n", params[0], params[1]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+        }
     ),
 
     SIN("@sin",
@@ -223,7 +464,75 @@ public enum Nodes {
         }
     ),
 
-    XY_TO_SCREEN_INDEX("@rotate_2d",
+    TERNARY("@?",
+        new String[]{
+            "Predicate",
+            "Consequent",
+            "Alternate"
+        },
+        (stack, params) -> String.format("(%s ? %s : %s)", params[0], params[1], params[2]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(2, params[2]);
+        }
+    ),
+
+    VEC2("@vec2",
+        new String[]{
+            "X",
+            "Y",
+        },
+        (stack, params) -> String.format("vec2(%s , %s)", params[0], params[1]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+        }
+    ),
+
+    VEC3("@vec3",
+        new String[]{
+            "X",
+            "Y",
+            "Z",
+        },
+        (stack, params) -> String.format("vec3(%s , %s , %s)", params[0], params[1], params[2]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(2, params[2]);
+        }
+    ),
+
+    VEC4("@vec4",
+        new String[]{
+            "X",
+            "Y",
+            "Z",
+            "W",
+        },
+        (stack, params) -> String.format("vec4(%s , %s , %s , %s)", params[0], params[1], params[2], params[3]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+            out.set(2, params[2]);
+            out.set(3, params[3]);
+        }
+    ),
+
+    XOR("@xor",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("(%s ^^ %s)", params[0], params[1]),
+        (out, params) -> {
+            out.set(0, params[0]);
+            out.set(1, params[1]);
+        }
+    ),
+
+    XY_TO_SCREEN_INDEX("@xy_to_screen_index",
         new String[]{
             "A",
             "B"
@@ -236,7 +545,6 @@ public enum Nodes {
         new String[]{ShaderManager.getInstance().getWindowSize().getName()}, // Uniforms
         new String[]{} // Libraries
     ),
-
     ;
 
     // Define all of our functional interfaces. These are used as abstract implementations of specific pieces of functionality.

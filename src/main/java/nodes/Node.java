@@ -42,10 +42,6 @@ public abstract class Node {
         this.required_imports.add(include_name);
     }
 
-    protected void requiresIncludeInMain(String include_name) {
-        this.required_imports_in_main.add(include_name);
-    }
-
     protected String toGLSL(Stack<JsonElement> stack, JsonElement[] params){
         return this.key;
     }

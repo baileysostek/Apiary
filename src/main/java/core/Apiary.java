@@ -5,6 +5,7 @@ import graphics.ShaderManager;
 import graphics.ui.FontLoader;
 import input.Keyboard;
 import input.Mouse;
+import nodes.NodeManager;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -68,6 +69,7 @@ public class Apiary {
         // Initialize all of our singleton instances here
         JsonUtils.initialize();
         ShaderManager.initialize();
+        NodeManager.initialize();
         SimulationManager.initialize();
         FontLoader.initialize();
         FontLoader.getInstance().loadFont("font/Roboto/Roboto-Regular.ttf", "roboto");
@@ -78,8 +80,8 @@ public class Apiary {
 
         Editor.initialize();
 
-        SimulationManager.getInstance().load("simulations/gol.json");
-//        SimulationManager.getInstance().load("simulations/physarum.jsonc");
+//        SimulationManager.getInstance().load("simulations/gol.json");
+        SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
     }
