@@ -1,6 +1,8 @@
 package core;
 
+import editor.Editor;
 import graphics.ShaderManager;
+import graphics.ui.FontLoader;
 import input.Keyboard;
 import input.Mouse;
 import org.lwjgl.*;
@@ -64,7 +66,7 @@ public class Apiary {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ShaderManager.GL_MAJOR_VERSION);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ShaderManager.GL_MINOR_VERSION);
-        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+//        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -143,17 +145,17 @@ public class Apiary {
         JsonUtils.initialize();
         ShaderManager.initialize();
         SimulationManager.initialize();
+        FontLoader.initialize();
+        FontLoader.getInstance().loadFont("font/Roboto/Roboto-Regular.ttf", "roboto");
+        FontLoader.getInstance().loadFont("font/Roboto_Mono/static/RobotoMono-Regular.ttf", "roboto_mono");
 
         Mouse.initialize();
         Keyboard.initialize();
 
-        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_P, () -> {
-            SimulationManager.getInstance().unloadSimulation();
-            SimulationManager.getInstance().load("simulations/gol.json");
-        });
+        Editor.initialize();
 
 //        SimulationManager.getInstance().load("simulations/gol.json");
-        SimulationManager.getInstance().load("simulations/physarum.jsonc");
+//        SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
     }
@@ -219,10 +221,14 @@ public class Apiary {
 
         // Simulation manager should update last. This ensures that every other singleton which has uniforms has the chance to update those uniforms.
         SimulationManager.getInstance().update(delta);
+
+        Editor.getInstance().update(delta);
     }
 
     private void render(){
         SimulationManager.getInstance().render();
+
+        Editor.getInstance().render();
     }
 
     private void shutdown(){

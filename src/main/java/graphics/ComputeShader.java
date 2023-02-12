@@ -3,7 +3,7 @@ package graphics;
 import com.google.gson.JsonElement;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
-import pegs.NodeManager;
+import nodes.NodeManager;
 import util.MathUtil;
 import util.StringUtils;
 

@@ -1,5 +1,7 @@
+import core.Apiary;
 import imgui.ImColor;
 import imgui.ImGui;
+import imgui.ImGuiIO;
 import imgui.ImVec4;
 import imgui.app.Application;
 import imgui.app.Configuration;
@@ -8,9 +10,15 @@ import imgui.extension.imnodes.ImNodesContext;
 import imgui.extension.imnodes.ImNodesStyle;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
+import imgui.extension.imnodes.flag.ImNodesPinShape;
+import imgui.flag.ImGuiBackendFlags;
 import imgui.flag.ImGuiCond;
+import imgui.flag.ImGuiConfigFlags;
+import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
+import nodes.NodeManager;
+import nodes.vector.NodeMix;
 
 import java.awt.*;
 import java.net.URI;
@@ -31,6 +39,7 @@ public class Main extends Application {
     @Override
     protected void configure(Configuration config) {
         config.setTitle("Dear ImGui is Awesome!");
+        config.setFullScreen(true);
     }
 
     @Override
@@ -54,9 +63,45 @@ public class Main extends Application {
             ImNodes.editorContextSet(CONTEXT);
             ImNodes.beginNodeEditor();
 
-//            for(){
-//
-//            }
+
+            String key = "@map";
+            int inputs = 2;
+            int outputs = 1;
+
+            // set the titlebar color of an individual node
+            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, ImColor.rgba(11, 109, 191, 255));
+            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, ImColor.rgba(81, 148, 204, 255));
+
+            ImNodes.beginNode(1);
+            // Title Bar
+            ImNodes.beginNodeTitleBar();
+            ImGui.text(key);
+            ImNodes.endNodeTitleBar();
+
+            // Input
+            ImNodes.beginInputAttribute(1, ImNodesPinShape.Quad);
+            ImGui.text("Label?");
+            ImNodes.endInputAttribute();
+            ImGui.sameLine();
+            // Output
+            ImNodes.beginOutputAttribute(3, ImNodesPinShape.Quad);
+            ImGui.text("Label?");
+            ImNodes.endOutputAttribute();
+
+            ImNodes.beginInputAttribute(2, ImNodesPinShape.Quad);
+            ImGui.text("Label?");
+            ImNodes.endInputAttribute();
+
+
+
+
+
+            ImNodes.endNode();
+
+            ImNodes.popColorStyle();
+            ImNodes.popColorStyle();
+
+//            NodeManager.getInstance().getNode("@mix").renderNode();
 
 //            for (Graph.GraphNode node : graph.nodes.values()) {
 //                ImNodes.beginNode(node.nodeId);

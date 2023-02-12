@@ -4,13 +4,24 @@ import core.Apiary;
 import graphics.GLDataType;
 import graphics.ShaderManager;
 import graphics.Uniform;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 
 import java.nio.DoubleBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Mouse {
+
+    // Functional Interfaces defined to be used in callback functions later
+    @FunctionalInterface
+    public interface MouseEventCallback<Button extends Integer, Action extends Integer, Modifiers extends Integer> {
+        void apply(Button button, Action action, Modifiers modifiers);
+    }
+
+    // Our Singleton Instance
     private static Mouse instance;
 
     // Variables used to track the mouse position
@@ -20,15 +31,13 @@ public class Mouse {
     private float mouse_scroll_x = 1f;
     private float mouse_scroll_y = 1f;
 
-    // These are the frame deltas
-    private int mouse_delta_x = 0;
-    private int mouse_delta_y = 0;
-
-    // Buffers
-
+    private final Vector2i vec_mouse_position = new Vector2i();
 
     // Map used to monitor mouse buttons
     private HashMap<Integer, Boolean> mouseKeys = new HashMap<>();
+
+    // Hold onto a set of mouse Callbacks
+    private HashSet<MouseEventCallback> mouse_event_callbacks = new HashSet<>();
 
     // Uniform variables
     private Uniform u_mouse_pos_pixels = ShaderManager.getInstance().createUniform("u_mouse_pos_pixels", GLDataType.VEC2);
@@ -43,6 +52,9 @@ public class Mouse {
         mouseKeys.put(3, false);
 
         GLFW.glfwSetMouseButtonCallback(Apiary.getWindowPointer(), (long window, int button, int action, int mods) -> {
+            for(MouseEventCallback callback : mouse_event_callbacks){
+                callback.apply(button, action, mods);
+            }
             processMouse(button, action);
         });
 
@@ -77,12 +89,6 @@ public class Mouse {
         int new_mouse_x = (int) buffer_x.get();
         int new_mouse_y = (int) buffer_y.get();
 
-        // Check if the mouse has moved
-        if(mouse_x != new_mouse_x || mouse_y != new_mouse_y){
-            mouse_delta_x = (new_mouse_x - mouse_x);
-            mouse_delta_y = (new_mouse_y - mouse_y);
-        }
-
         // Set the mouse position
         mouse_x = new_mouse_x;
         mouse_y = new_mouse_y;
@@ -96,16 +102,19 @@ public class Mouse {
         // Convert back to screenspace.
         screen_pos_normalized_device_coords_x = (((screen_pos_normalized_device_coords_x / mouse_scroll_y) + 1.0f) / 2.0f) * Apiary.getWindowWidth();
         screen_pos_normalized_device_coords_y = (((screen_pos_normalized_device_coords_y / mouse_scroll_y) + 1.0f) / 2.0f) * Apiary.getWindowHeight();
+
+        // Update our Uniform Variables
         u_mouse_pos_pixels.set((int)screen_pos_normalized_device_coords_x, (int)screen_pos_normalized_device_coords_y);
-
         u_mouse_scroll.set(mouse_scroll_x, mouse_scroll_y);
-
         u_mouse_pressed.set(
             mouseKeys.get(0) ? 1.0f : 0.0f,
             mouseKeys.get(1) ? 1.0f : 0.0f,
             mouseKeys.get(2) ? 1.0f : 0.0f,
             mouseKeys.get(3) ? 1.0f : 0.0f
         );
+
+        // Update our vector
+        vec_mouse_position.set(mouse_x, mouse_y);
     }
 
     public void bindUniforms(){
@@ -120,5 +129,13 @@ public class Mouse {
 
     public static Mouse getInstance(){
         return instance;
+    }
+
+    public Vector2i getMousePosition() {
+        return this.vec_mouse_position;
+    }
+
+    public void addMouseEventCallback(MouseEventCallback callback){
+        this.mouse_event_callbacks.add(callback);
     }
 }

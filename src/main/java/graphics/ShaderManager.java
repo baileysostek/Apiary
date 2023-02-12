@@ -3,7 +3,7 @@ package graphics;
 import com.google.gson.JsonElement;
 import core.Apiary;
 import org.lwjgl.opengl.GL43;
-import pegs.NodeManager;
+import nodes.NodeManager;
 import util.StringUtils;
 
 import java.util.HashMap;

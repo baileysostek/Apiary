@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import core.Apiary;
 import graphics.*;
-import pegs.NodeManager;
+import nodes.NodeManager;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.MathUtil;
