@@ -135,6 +135,9 @@ public class ShaderManager {
 //            "out_color = vec4(1.0);" +
             "}\n";
         DEFAULT_FRAGMENT_SHADER = compileShader(GL43.GL_FRAGMENT_SHADER, default_fragment_source);
+
+        this.u_window_size.set(Apiary.getWindowWidth(), Apiary.getWindowHeight());
+        this.u_aspect_ratio.set(Apiary.getAspectRatio());
     }
 
     // Singleton initializer and getter
@@ -328,6 +331,7 @@ public class ShaderManager {
     }
 
     public void update(double delta){
+        // TODO refactor to onResize
         this.u_window_size.set(Apiary.getWindowWidth(), Apiary.getWindowHeight());
         this.u_aspect_ratio.set(Apiary.getAspectRatio());
     }

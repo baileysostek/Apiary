@@ -4,28 +4,24 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import core.Apiary;
 import graphics.*;
-import input.Mouse;
-import org.lwjgl.opengl.GL43;
 import pegs.PegManager;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.MathUtil;
-import util.StringUtils;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public class Simulation {
     // This is a core part of a simulation. It represents how we initialize agents.
-    private final int initialize_id;
+    private final LinkedList<AgentInitializationShader> agent_initialization_shaders = new LinkedList<>();
 
     // These variables are used to control the speed at which the simulation runs.
     private float simulation_time = 0;
     private float simulation_updates_per_second = -1f;
     private float simulation_target_time = ( 1.0f / simulation_updates_per_second);
 
-
+    //TODO: Probably refactor this because it is not needed
     private World simulation_world; // The simulation world is used as the template for the worldstate during simulation.
     // We have 2D and 3D worlds ready for simulations.
 
@@ -94,6 +90,10 @@ public class Simulation {
             // Add agent to sim.
             SimulationManager.getInstance().addAgent(agent_name, agent_ssbo);
 
+            // Generate the initialization data for this agent
+            AgentInitializationShader agent_initializer = new AgentInitializationShader(agent_name, agent_attributes);
+            this.agent_initialization_shaders.addLast(agent_initializer);
+
             // Now that the agent is added, we can get the SSBO accessor code
             agent_ssbo_glsl += agent_ssbo.generateGLSL();
 
@@ -106,12 +106,6 @@ public class Simulation {
             }
             initializer_glsl += attributes_copy_glsl;
         }
-
-        // We are going to need to construct a compute shader to initialize this agent's data.
-        HashMap<String, Object> initialization_substitutions = new HashMap<>();
-        initialization_substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
-        initialization_substitutions.put("agent_ssbo_glsl", agent_ssbo_glsl);
-        initialization_substitutions.put("initializer_glsl", initializer_glsl);
 
         // Determine what world template we are using
         JsonObject simulation_world_template = object.getAsJsonObject("world");
@@ -134,31 +128,6 @@ public class Simulation {
             // At this point we have not resolved the world template so use the default world template of World2D
             this.simulation_world = new DefaultWorld2D(simulation_world_name);
         }
-
-        // TODO send to compute shader.
-        // Now we are able to determine the initialization GLSL
-        String initialize_source = StringUtils.format(
-                "{{shader_version}}" +
-                        //TODO make implicit for shader type.
-                        String.format("layout (local_size_x = 1, local_size_y = 1) in;\n") +
-                        //TODO make uniform generation implicit
-                        "uniform float u_time_seconds;\n" +
-                        "uniform vec2 u_window_size;\n" +
-                        "{{agent_ssbo_glsl}}" +
-                        // TODO make imports implicit
-                        "#include noise\n" +
-                        "void main() {\n" +
-                        "int x_pos = int(gl_GlobalInvocationID.x);\n" +
-                        "int y_pos = int(gl_GlobalInvocationID.y);\n" +
-                        "vec3  inputs = vec3( x_pos, y_pos, u_time_seconds ); // Spatial and temporal inputs\n" +
-                        "float rand   = random( inputs );              // Random per-pixel value\n" +
-                        "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-                        "{{initializer_glsl}}" +
-                        "}", initialization_substitutions
-        );
-
-        int initialize = ShaderManager.getInstance().compileShader(GL43.GL_COMPUTE_SHADER, initialize_source);
-        this.initialize_id = ShaderManager.getInstance().linkShader(initialize);
 
         // Now we are going to determine the pipeline steps used
         JsonArray simulation_steps = object.getAsJsonArray("steps");
@@ -192,20 +161,14 @@ public class Simulation {
                 steps.addLast(new ComputeShader(pegs_input, iteration_width, iteration_height));
             }
         }
+
+        // Now we will initialize the world state
+        for(AgentInitializationShader initializer : agent_initialization_shaders){
+            initializer.initialize();
+        }
     }
 
     public void update(double delta){
-
-        // Initialize Data
-        if(!initialized) {
-            ShaderManager.getInstance().bind(initialize_id);
-            Mouse.getInstance().bindUniforms();
-            ShaderManager.getInstance().bindUniforms();
-            GL43.glDispatchCompute(10000, 10000, 1);
-            GL43.glMemoryBarrier(GL43.GL_SHADER_STORAGE_BARRIER_BIT);
-            initialized = true;
-        }
-
         // Execute compute
         if(simulation_time >= simulation_target_time) {
             simulation_time -= simulation_target_time;

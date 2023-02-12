@@ -39,9 +39,9 @@ public class MathUtil {
         int[] height_factors = factor(height);
         int[] area_factors = factor(area_of_rect);
         // Now we look through all factors of the area_of_rect
-        for(int i = 0; i < area_factors.length; i++){
-            int lesser_factor = area_factors[i];
-            int greater_factor = area_factors[area_factors.length - 1 - i];
+        for(int i = 0; i < area_factors.length / 2; i++){
+            int lesser_factor = area_factors[area_factors.length / 2 - 1 - i];
+            int greater_factor = area_factors[area_factors.length / 2 + i];
             if(indexOf(width_factors, lesser_factor) >=0 && indexOf(height_factors, greater_factor) >= 0){
                 // If this condition is met we have found an optimal rectangle to fill our grid with.
                 return new Vector2i(lesser_factor, greater_factor);
