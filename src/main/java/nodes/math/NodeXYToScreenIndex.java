@@ -9,9 +9,7 @@ import java.util.Stack;
 public class NodeXYToScreenIndex extends Node {
     public NodeXYToScreenIndex() {
         super("@xy_to_screen_index", 2);
-
         this.requiresUniform("u_window_size");
-        this.requiresIncludeInMain("fragment_index");
     }
 
     @Override

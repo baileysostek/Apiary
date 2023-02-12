@@ -29,7 +29,7 @@ public class NodeGet extends Node {
             }
         }
 
-        // Must be a locally scoped variabel we dont know about... maybe we throw an exception here in the future if we also capture variable generation.
+        // Must be a locally scoped variable we dont know about... maybe we throw an exception here in the future if we also capture variable generation.
 
         return String.format("%s", variable_name);
     }

@@ -28,14 +28,10 @@ public abstract class Node {
 
     protected Node(String key, int num_params) {
         // Ensure that the key starts with an @ symbol and is lower case
-        this.key = (key.startsWith("@") ? key : "@" + key).toLowerCase();
+            this.key = (key.startsWith("@") ? key : "@" + key).toLowerCase();
 
         // This is the number of parameters that this peg expects to be on the stack to consume.
         this.num_params = num_params;
-    }
-
-    protected void requiresUniform(Uniform uniform){
-        this.required_uniforms.add(uniform.getName());
     }
 
     protected void requiresUniform(String uniform_name){

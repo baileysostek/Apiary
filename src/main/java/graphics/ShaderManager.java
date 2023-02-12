@@ -352,6 +352,14 @@ public class ShaderManager {
         return this.uniforms.get(uniform_name);
     }
 
+    public Uniform getWindowSize(){
+        return this.u_window_size;
+    }
+
+    public Uniform getAspectRatio(){
+        return this.u_aspect_ratio;
+    }
+
     public int getMaxWorkgroupInvocations(){
         return GL43.glGetInteger(GL43.GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS);
     }

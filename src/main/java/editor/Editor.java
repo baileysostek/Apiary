@@ -17,7 +17,9 @@ import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 import input.Mouse;
 import nodes.Node;
+import nodes.NodeInstance;
 import nodes.NodeManager;
+import nodes.Nodes;
 
 import java.awt.*;
 import java.net.URI;
@@ -42,6 +44,9 @@ public class Editor {
 
     //This is used for ID information
     private int imgui_element_id = 0;
+
+    NodeInstance test_0 = new NodeInstance(Nodes.ADD);
+    NodeInstance test_1 = new NodeInstance(Nodes.ON_SCREEN);
 
     private Editor(){
         // When we initialize the editor we want to inject into the current window.
@@ -169,8 +174,12 @@ public class Editor {
             ImNodes.editorContextSet(CONTEXT);
             ImNodes.beginNodeEditor();
 
-            for(Node node : NodeManager.getInstance().getAllNodes()){
-                node.renderNode();
+            test_0.renderNode();
+            test_1.renderNode();
+
+            if(ImGui.button("to IR")){
+                test_0.toIR();
+                test_1.toIR();
             }
 
 //            NodeManager.getInstance().getNode("@mix").renderNode();
