@@ -1,6 +1,7 @@
 package nodes;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
 import editor.Editor;
 import imgui.ImColor;
@@ -18,8 +19,9 @@ public class Node{
 
     private final int id;
     private final Nodes node_type;
-    private final LinkedHashMap<String, JsonPrimitive> parameter_values = new LinkedHashMap<>();
-    private final LinkedHashMap<String, JsonPrimitive> output_values    = new LinkedHashMap<>();
+    private final LinkedHashMap<String, JsonElement> parameter_values = new LinkedHashMap<>();
+    private final LinkedHashMap<String, JsonElement> output_values    = new LinkedHashMap<>();
+
     private final LinkedHashMap<String, Integer> attribute_ids = new LinkedHashMap<>();
     private final LinkedHashMap<Integer, String> inverse_attribute_ids = new LinkedHashMap<>();
 
@@ -32,10 +34,10 @@ public class Node{
 
         // Populate our parameter map based off our our template.
         for(String param_name : this.node_type.getParameterNames()){
-            this.parameter_values.put(param_name, new JsonPrimitive(""));
+            this.parameter_values.put(param_name, null);
         }
         for(String output_name : this.node_type.getOutputNames()){
-            this.output_values.put(output_name, new JsonPrimitive(""));
+            this.output_values.put(output_name, null);
         }
     }
 
@@ -71,17 +73,17 @@ public class Node{
         ImGui.text(this.node_type.getNodeID());
         ImNodes.endNodeTitleBar();
 
-        // Input
+
         int index = 0;
         Object[] out_names = this.node_type.getOutputNames().toArray();
         for(String param_name : this.node_type.getParameterNames()){
-            ImNodes.beginInputAttribute(attribute_ids.get(param_name), ImNodesPinShape.Triangle);
+            ImNodes.beginInputAttribute(attribute_ids.get(param_name), ImNodesPinShape.Circle);
             ImGui.text(param_name+ " " + this.getParameterValue(param_name));
             ImNodes.endInputAttribute();
             if(index < this.node_type.getOutputNames().size()){
                 String out_name = (String) out_names[index];
                 ImGui.sameLine();
-                ImNodes.beginOutputAttribute(attribute_ids.get(out_name), ImNodesPinShape.Triangle);
+                ImNodes.beginOutputAttribute(attribute_ids.get(out_name), ImNodesPinShape.Circle);
                 ImGui.text(out_name);
                 ImNodes.endOutputAttribute();
             }
@@ -90,7 +92,7 @@ public class Node{
         int output_index = 0;
         for(String output_name : this.node_type.getOutputNames()){
             if(output_index >= index) {
-                ImNodes.beginOutputAttribute(attribute_ids.get(output_name), ImNodesPinShape.Triangle);
+                ImNodes.beginOutputAttribute(attribute_ids.get(output_name), ImNodesPinShape.Circle);
                 ImGui.text(output_name);
                 ImNodes.endOutputAttribute();
             }
@@ -132,11 +134,13 @@ public class Node{
         return -1;
     }
 
+    public String getPinNameFromID(Integer pin_id){
+        return this.inverse_attribute_ids.getOrDefault(pin_id, null);
+    }
+
     public int getID() {
         return id;
     }
 
-    public String getPinNameFromID(int pin_id){
-        return inverse_attribute_ids.getOrDefault(pin_id, null);
-    }
+
 }
