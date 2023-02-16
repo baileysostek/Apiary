@@ -36,14 +36,14 @@ public class Window {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, ShaderManager.GL_MAJOR_VERSION);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ShaderManager.GL_MINOR_VERSION);
-//        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         //Figure out the monitor size
         GLFWVidMode video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-        width = video_mode.width();
+        width = video_mode.height();
         height = video_mode.height();
         aspect_ratio = (float)width / (float)height;
 

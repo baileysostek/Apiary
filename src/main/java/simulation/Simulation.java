@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import core.Apiary;
 import graphics.*;
+import input.Keyboard;
 import nodes.NodeManager;
+import org.lwjgl.glfw.GLFW;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.MathUtil;
@@ -166,6 +168,17 @@ public class Simulation {
         for(AgentInitializationShader initializer : agent_initialization_shaders){
             initializer.initialize();
         }
+
+        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_UP, ()->{
+            simulation_updates_per_second++;
+            simulation_target_time = ( 1.0f / simulation_updates_per_second);
+            simulation_time = 0;
+        });
+        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_DOWN, ()->{
+            simulation_updates_per_second--;
+            simulation_target_time = ( 1.0f / simulation_updates_per_second);
+            simulation_time = 0;
+        });
     }
 
     public void update(double delta){

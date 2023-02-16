@@ -11,22 +11,21 @@
   },
   "agents":{
     "physarum":{
-      "instances": 10000000,
+      "instances": 1000000,
       "attributes":{
         "pos":{
           "type":"vec2",
 //             "default_value":[
 //               "float", "direction", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define",
-//               "direction", "@sin", "direction", "@cos", "@vec2", "@random_float", "@mul", "u_aspect_ratio", "@get", "1.0", "@vec2", "@div"
+//               "direction", "@sin", "direction", "@cos", "@vec2", "@random_float", "@mul", "u_aspect_ratio", "@get", "1.0", "@vec2", "@div", "0.3", "@mul"
 //             ]
          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
-//          "default_value":["float(x_pos)", "10.0", "@div", "float(y_pos)", "10.0", "@div", "@vec2"]
         },
         "vel":{
           "type":"vec2",
           "default_value":[
             "float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define",
-            "angle", "@sin", "angle", "@cos", "@vec2"
+            "angle", "@sin", "angle", "@cos", "@vec2", "2.0", "@mul"
 //            "vec2(-1.0,0.0)"
           ]
         }
@@ -36,7 +35,7 @@
       "attributes":{
         "concentration":{
           "type":"float",
-          "default_value":["0.0"]
+          "default_value":["@random_float"]
         }
       }
     }
@@ -45,7 +44,7 @@
       {
         "logic":[
           "float", "diffusion", "0.0", "@define",
-          "float", "evaporation_constant", "0.9999", "@define",
+          "float", "evaporation_constant", "0.001", "@define",
           ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
           ["diffusion", "pheromone", ["x_pos", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
           ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
@@ -55,7 +54,7 @@
           ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
           ["diffusion", "pheromone", ["x_pos", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
           ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
-          "pheromone", ["x_pos", "y_pos", "@xy_to_screen_index"], "concentration",["diffusion", "9.0", "@div","evaporation_constant","@mul"],"@agent_write"
+          "pheromone", ["x_pos", "y_pos", "@xy_to_screen_index"], "concentration",["diffusion", "9.0", "@div","evaporation_constant","@sub"],"@agent_write"
         ]
       },
     {
@@ -71,7 +70,7 @@
 
         // Sense what is around us.
 //         "float", "sensor_length", "64.0", "u_time_seconds", "@get","@sin","32.0","@mul","@add","@define",
-        "float", "sensor_length", "24.0","@define",
+        "float", "sensor_length", "64.0", "@define",
         "float", "turn", "6.28", "@define",
         "float", "angle", "0.3927", "@define",
         "vec2", "direction", ["physarum", "fragment_index", "vel", "@agent_read"], "@define",

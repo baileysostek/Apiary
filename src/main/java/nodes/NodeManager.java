@@ -1,34 +1,12 @@
 package nodes;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import graphics.SSBO;
 import graphics.ShaderManager;
 import graphics.Uniform;
-import nodes.code.NodeCode;
-import nodes.controlflow.NodeConditional;
-import nodes.controlflow.NodeForEach;
-import nodes.controlflow.NodeOutColor;
-import nodes.controlflow.NodeTernary;
-import nodes.data.NodeVec2;
-import nodes.data.NodeVec3;
-import nodes.data.NodeVec4;
-import nodes.geometry.NodeEmitPoint;
-import nodes.logic.*;
-import nodes.math.*;
-import nodes.random.NodeRandomBool;
-import nodes.random.NodeRandomFloat;
-import nodes.simulation.NodeAgentCount;
-import nodes.simulation.NodeAgentRead;
-import nodes.simulation.NodeAgentWrite;
-import nodes.simulation.NodeGetAgentAtIndex;
-import nodes.types.NodeCast;
-import nodes.variables.NodeDefine;
-import nodes.variables.NodeGet;
-import nodes.variables.NodeSet;
-import nodes.vector.NodeMix;
-import nodes.vector.NodeNormalize;
 import simulation.SimulationManager;
-import simulation.world.World;
 import util.JsonUtils;
 import util.StringUtils;
 

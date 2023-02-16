@@ -1,24 +1,15 @@
-import core.Apiary;
 import imgui.ImColor;
 import imgui.ImGui;
-import imgui.ImGuiIO;
-import imgui.ImVec4;
 import imgui.app.Application;
 import imgui.app.Configuration;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
-import imgui.extension.imnodes.ImNodesStyle;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
-import imgui.flag.ImGuiBackendFlags;
 import imgui.flag.ImGuiCond;
-import imgui.flag.ImGuiConfigFlags;
-import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
-import nodes.NodeManager;
-import nodes.vector.NodeMix;
 
 import java.awt.*;
 import java.net.URI;

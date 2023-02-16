@@ -1,29 +1,19 @@
 package editor;
 
 import core.Apiary;
-import imgui.ImColor;
-import imgui.ImFont;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
-import imgui.extension.imnodes.flag.ImNodesPinShape;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
-import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImBoolean;
-import imgui.type.ImInt;
 import input.Mouse;
 import nodes.Node;
-import nodes.NodeInstance;
-import nodes.NodeManager;
+import nodes.NodeAttributePair;
+import nodes.NodeGraph;
 import nodes.Nodes;
-
-import java.awt.*;
-import java.net.URI;
-import java.util.LinkedList;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
@@ -45,8 +35,12 @@ public class Editor {
     //This is used for ID information
     private int imgui_element_id = 0;
 
-    NodeInstance test_0 = new NodeInstance(Nodes.ADD);
-    NodeInstance test_1 = new NodeInstance(Nodes.ON_SCREEN);
+    NodeGraph graph = new NodeGraph();
+
+    Node test_0 = new Node(Nodes.ON_SCREEN);
+    Node test_1 = new Node(Nodes.CONDITIONAL);
+
+    NodeAttributePair link = null;
 
     private Editor(){
         // When we initialize the editor we want to inject into the current window.
@@ -124,7 +118,36 @@ public class Editor {
             if (!io.getWantCaptureMouse() && mouseDown[1]) {
                 ImGui.setWindowFocus(null);
             }
+
+            if (button == GLFW_MOUSE_BUTTON_1) {
+                if(action == GLFW_PRESS) {
+                    System.out.println("Pin:" + ImNodes.getHoveredPin());
+                    System.out.println("Link:" + ImNodes.getHoveredLink());
+                    System.out.println("Node:" + ImNodes.getHoveredNode());
+                    this.link = graph.getNodeAndPinFromID(ImNodes.getHoveredPin());
+                }
+                if(action == GLFW_RELEASE) {
+                    System.out.println("Pin:" + ImNodes.getHoveredPin());
+                    System.out.println("Link:" + ImNodes.getHoveredLink());
+                    System.out.println("Node:" + ImNodes.getHoveredNode());
+                    if(link != null){
+                        NodeAttributePair destination_node_pin = graph.getNodeAndPinFromID(ImNodes.getHoveredPin());
+                        if(destination_node_pin != null) {
+                            this.link.node.link(this.link.attribute, destination_node_pin.node, destination_node_pin.attribute);
+                        }
+                    }
+                    link = null;
+                }
+            }
         });
+
+        graph.addNode(this.test_0);
+        graph.addNode(this.test_1);
+        for(int i = 0; i < 10; i++){
+            graph.addNode(new Node(Nodes.values()[i]));
+        }
+
+        this.test_0.link("out", this.test_1, "Predicate");
 
     }
 
@@ -153,106 +176,24 @@ public class Editor {
     }
 
     public void render(){
+
         ImGui.newFrame();
 
         ImGui.setNextWindowSize(500, 400, ImGuiCond.Once);
         ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (ImGui.begin("ImNodes Demo", SHOW)) {
-            ImGui.text("This a demo graph editor for ImNodes");
-
-            ImGui.alignTextToFramePadding();
-            ImGui.text("Repo:");
-            ImGui.sameLine();
-            if (ImGui.button(URL)) {
-                try {
-                    Desktop.getDesktop().browse(new URI(URL));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+        if (ImGui.begin("Apiary Node Editor", SHOW)) {
 
             ImNodes.editorContextSet(CONTEXT);
             ImNodes.beginNodeEditor();
 
-            test_0.renderNode();
-            test_1.renderNode();
+            graph.render();
 
-            if(ImGui.button("to IR")){
-                test_0.toIR();
-                test_1.toIR();
-            }
 
-//            NodeManager.getInstance().getNode("@mix").renderNode();
-
-//            for (Graph.GraphNode node : graph.nodes.values()) {
-//                ImNodes.beginNode(node.nodeId);
-//
-//                ImNodes.beginNodeTitleBar();
-//                ImGui.text(node.getName());
-//                ImNodes.endNodeTitleBar();
-//
-//                ImNodes.beginInputAttribute(node.getInputPinId(), ImNodesPinShape.CircleFilled);
-//                ImGui.text("In");
-//                ImNodes.endInputAttribute();
-//
-//                ImGui.sameLine();
-//
-//                ImNodes.beginOutputAttribute(node.getOutputPinId());
-//                ImGui.text("Out");
-//                ImNodes.endOutputAttribute();
-//
-//                ImNodes.endNode();
-//            }
-//
-//            int uniqueLinkId = 1;
-//            for (Graph.GraphNode node : graph.nodes.values()) {
-//                if (graph.nodes.containsKey(node.outputNodeId)) {
-//                    ImNodes.link(uniqueLinkId++, node.getOutputPinId(), graph.nodes.get(node.outputNodeId).getInputPinId());
-//                }
-//            }
-//
             final boolean isEditorHovered = ImNodes.isEditorHovered();
 //
             ImNodes.miniMap(0.2f, ImNodesMiniMapLocation.BottomRight);
             ImNodes.endNodeEditor();
-//
-//            if (ImNodes.isLinkCreated(LINK_A, LINK_B)) {
-//                final Graph.GraphNode source = graph.findByOutput(LINK_A.get());
-//                final Graph.GraphNode target = graph.findByInput(LINK_B.get());
-//                if (source != null && target != null && source.outputNodeId != target.nodeId) {
-//                    source.outputNodeId = target.nodeId;
-//                }
-//            }
-////
-//            if (ImGui.isMouseClicked(ImGuiMouseButton.Right)) {
-//                final int hoveredNode = ImNodes.getHoveredNode();
-//                if (hoveredNode != -1) {
-//                    ImGui.openPopup("node_context");
-//                    ImGui.getStateStorage().setInt(ImGui.getID("delete_node_id"), hoveredNode);
-//                } else if (isEditorHovered) {
-//                    ImGui.openPopup("node_editor_context");
-//                }
-//            }
-//
-//            if (ImGui.isPopupOpen("node_context")) {
-//                final int targetNode = ImGui.getStateStorage().getInt(ImGui.getID("delete_node_id"));
-//                if (ImGui.beginPopup("node_context")) {
-//                    if (ImGui.button("Delete " + graph.nodes.get(targetNode).getName())) {
-//                        graph.nodes.remove(targetNode);
-//                        ImGui.closeCurrentPopup();
-//                    }
-//                    ImGui.endPopup();
-//                }
-//            }
-//
-//            if (ImGui.beginPopup("node_editor_context")) {
-//                if (ImGui.button("Create New Node")) {
-//                    final Graph.GraphNode node = graph.createGraphNode();
-//                    ImNodes.setNodeScreenSpacePos(node.nodeId, ImGui.getMousePosX(), ImGui.getMousePosY());
-//                    ImGui.closeCurrentPopup();
-//                }
-//                ImGui.endPopup();
-//            }
+
         }
         ImGui.end();
 
@@ -269,7 +210,7 @@ public class Editor {
         ImGui.destroyContext();
     }
 
-    public int nextID(){
+    public int getNextAvailableID(){
         return ++imgui_element_id;
     }
 }
