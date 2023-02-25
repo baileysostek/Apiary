@@ -3,17 +3,22 @@ package editor;
 import core.Apiary;
 import imgui.ImGui;
 import imgui.ImGuiIO;
+import imgui.ImGuiTextFilter;
+import imgui.ImGuiViewport;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
+import imgui.type.ImString;
 import input.Mouse;
 import nodes.Node;
 import nodes.NodeAttributePair;
 import nodes.NodeGraph;
 import nodes.Nodes;
+import org.lwjgl.opengl.GL43;
+import simulation.SimulationManager;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
@@ -41,6 +46,10 @@ public class Editor {
     Node test_1 = new Node(Nodes.CONDITIONAL);
 
     NodeAttributePair link = null;
+
+    // IDS of popups and stuff
+    String ADD_NODE_POPUP = "Add Node";
+    boolean should_open_popup = false;
 
     private Editor(){
         // When we initialize the editor we want to inject into the current window.
@@ -119,7 +128,7 @@ public class Editor {
                 ImGui.setWindowFocus(null);
             }
 
-            if (button == GLFW_MOUSE_BUTTON_1) {
+            if (button == GLFW_MOUSE_BUTTON_LEFT) {
                 if(action == GLFW_PRESS) {
                     System.out.println("Pin:" + ImNodes.getHoveredPin());
                     System.out.println("Link:" + ImNodes.getHoveredLink());
@@ -139,13 +148,14 @@ public class Editor {
                     link = null;
                 }
             }
+
+            if(button == GLFW_MOUSE_BUTTON_RIGHT){
+                onRightClick();
+            }
         });
 
         graph.addNode(this.test_0);
         graph.addNode(this.test_1);
-        for(int i = 0; i < 10; i++){
-            graph.addNode(new Node(Nodes.values()[i]));
-        }
 
         this.test_0.link("out", this.test_1, "Predicate");
 
@@ -159,6 +169,21 @@ public class Editor {
 
     public static Editor getInstance(){
         return instance;
+    }
+
+    // Mouse methids
+    private void onRightClick(){
+        // Check if anything is hovered
+        int pin = ImNodes.getHoveredPin();
+        int link = ImNodes.getHoveredLink();
+        int node = ImNodes.getHoveredNode();
+
+        if(pin < 0 && link < 0 && node < 0){
+            should_open_popup = true;
+        }else{
+            should_open_popup = false;
+        }
+
     }
 
     public void update(double delta){
@@ -175,27 +200,63 @@ public class Editor {
         glfwSetInputMode(Apiary.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
-    public void render(){
+    private void renderAddNodePopup(){
+        if(ImGui.beginPopup(ADD_NODE_POPUP)){
+            ImString seachData = new ImString();
+            ImGui.inputText("Search", seachData);
+            ImGui.beginChildFrame(getNextAvailableID(), 256, 512);
+            for(Nodes node : Nodes.values()){
+                if(node.name().contains(seachData.get())) {
+                    ImGui.text(node.name());
+                    ImGui.newLine();
+                }
+            }
+            ImGui.endChildFrame();
+            ImGui.endPopup();
+        }
+    }
 
+    public void render(){
         ImGui.newFrame();
 
-        ImGui.setNextWindowSize(500, 400, ImGuiCond.Once);
-        ImGui.setNextWindowPos(ImGui.getMainViewport().getPosX() + 100, ImGui.getMainViewport().getPosY() + 100, ImGuiCond.Once);
-        if (ImGui.begin("Apiary Node Editor", SHOW)) {
+        GL43.glClearColor(0f, 0f, 0f, 1.0f);
+        GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
+
+
+        ImGuiViewport viewport = ImGui.getMainViewport();
+        ImGui.setNextWindowPos(viewport.getWorkPosX(), viewport.getWorkPosY());
+        ImGui.setNextWindowSize(viewport.getWorkSizeX(), viewport.getWorkSizeY());
+        ImGui.setNextWindowViewport(viewport.getParentViewportId());
+
+//        ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
+        if (ImGui.begin("Apiary Node Editor", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus)) {
 
             ImNodes.editorContextSet(CONTEXT);
             ImNodes.beginNodeEditor();
 
             graph.render();
 
-
             final boolean isEditorHovered = ImNodes.isEditorHovered();
-//
+
             ImNodes.miniMap(0.2f, ImNodesMiniMapLocation.BottomRight);
             ImNodes.endNodeEditor();
 
         }
+
+        renderAddNodePopup();
+
+        if(should_open_popup){
+            ImGui.openPopup(ADD_NODE_POPUP);
+        }
+
         ImGui.end();
+
+        if (ImGui.begin("Test", SHOW)) {
+            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), 512, 512);
+        }
+        ImGui.end();
+
+        ImGui.showDemoWindow();
 
         ImGui.render();
         imgui_impl.renderDrawData(ImGui.getDrawData());

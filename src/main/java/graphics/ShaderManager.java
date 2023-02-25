@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import core.Apiary;
 import org.lwjgl.opengl.GL43;
 import nodes.NodeManager;
+import simulation.SimulationManager;
 import util.StringUtils;
 
 import java.util.HashMap;
@@ -123,6 +124,7 @@ public class ShaderManager {
 
         this.u_window_size.set(Apiary.getWindowWidth(), Apiary.getWindowHeight());
         this.u_aspect_ratio.set(Apiary.getAspectRatio());
+
     }
 
     // Singleton initializer and getter
@@ -303,8 +305,18 @@ public class ShaderManager {
 
     public void update(double delta){
         // TODO refactor to onResize
-        this.u_window_size.set(Apiary.getWindowWidth(), Apiary.getWindowHeight());
-        this.u_aspect_ratio.set(Apiary.getAspectRatio());
+        has_sim:{
+            if (SimulationManager.getInstance() != null) {
+                if (SimulationManager.getInstance().hasActiveSimulation()) {
+                    this.u_window_size.set(SimulationManager.getInstance().getActiveSimulation().getWorldWidth(), SimulationManager.getInstance().getActiveSimulation().getWorldHeight());
+                    this.u_aspect_ratio.set((float) SimulationManager.getInstance().getActiveSimulation().getWorldWidth() / (float) SimulationManager.getInstance().getActiveSimulation().getWorldHeight());
+                    break has_sim;
+                }
+            }
+
+            this.u_window_size.set(Apiary.getWindowWidth(), Apiary.getWindowHeight());
+            this.u_aspect_ratio.set(Apiary.getAspectRatio());
+        }
     }
 
     public String getGLSLVersion(){

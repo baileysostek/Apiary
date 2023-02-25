@@ -29,7 +29,8 @@ public class Simulation {
 
     private LinkedList<ComputeShader> steps = new LinkedList<ComputeShader>();
 
-    private boolean initialized = false;
+    private int world_width;
+    private int world_height;
 
     // Variables used in simulation
     private int frame = 0;
@@ -37,6 +38,19 @@ public class Simulation {
     protected Simulation(JsonObject object){
         // First thing we do is set the active simulation to this one
         SimulationManager.getInstance().setActiveSimulation(this);
+
+        // Get refernce to our world template
+        JsonObject simulation_world_template = object.getAsJsonObject("world");
+        world_width  = Apiary.getWindowWidth();
+        world_height = Apiary.getWindowHeight();
+
+        if (simulation_world_template.has("width")) {
+            world_width = simulation_world_template.get("width").getAsInt();
+        }
+
+        if (simulation_world_template.has("height")) {
+            world_height = simulation_world_template.get("height").getAsInt();
+        }
 
         // Load the agents
         JsonObject simulation_agents = object.getAsJsonObject("agents");
@@ -82,7 +96,7 @@ public class Simulation {
             }
 
             // If no instances are specified, we just allocate one agent per pixel.
-            int agent_instances = Apiary.getWindowWidth() * Apiary.getWindowHeight();
+            int agent_instances = world_width * world_height;
             if(agent.has("instances")){
                 agent_instances = agent.get("instances").getAsInt();
             }
@@ -110,7 +124,6 @@ public class Simulation {
         }
 
         // Determine what world template we are using
-        JsonObject simulation_world_template = object.getAsJsonObject("world");
         resolve_world_template:{
             // Check for a name
             String simulation_world_name = "Default Simulation Name";
@@ -135,8 +148,8 @@ public class Simulation {
         JsonArray simulation_steps = object.getAsJsonArray("steps");
         for(int i = 0; i < simulation_steps.size(); i++){
             JsonObject step = simulation_steps.get(i).getAsJsonObject();
-            int iteration_width  = Apiary.getWindowWidth();
-            int iteration_height = Apiary.getWindowHeight();
+            int iteration_width  = world_width;
+            int iteration_height = world_height;
             int iteration_count= 0;
             if (step.has("for_each")) {
                 // Try to get this value as a number
@@ -179,6 +192,14 @@ public class Simulation {
             simulation_target_time = ( 1.0f / simulation_updates_per_second);
             simulation_time = 0;
         });
+    }
+
+    public int getWorldWidth() {
+        return world_width;
+    }
+
+    public int getWorldHeight() {
+        return world_height;
     }
 
     public void update(double delta){

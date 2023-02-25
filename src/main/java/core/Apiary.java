@@ -2,6 +2,7 @@ package core;
 
 import editor.Editor;
 import graphics.ShaderManager;
+import graphics.texture.TextureManager;
 import graphics.ui.FontLoader;
 import input.Keyboard;
 import input.Mouse;
@@ -11,9 +12,13 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.*;
+import org.lwjgl.util.nfd.NFDPathSet;
+import org.lwjgl.util.nfd.NativeFileDialog;
+import org.lwjgl.util.nfd.NativeFileDialog.*;
 import simulation.SimulationManager;
 import util.JsonUtils;
 import util.StringUtils;
+import util.ThreadUtils;
 
 import java.nio.*;
 
@@ -50,6 +55,8 @@ public class Apiary {
     }
 
     private void init() {
+
+//        openSingle();
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
@@ -69,6 +76,7 @@ public class Apiary {
         // Initialize all of our singleton instances here
         JsonUtils.initialize();
         ShaderManager.initialize();
+        TextureManager.initialize();
         NodeManager.initialize();
         SimulationManager.initialize();
         FontLoader.initialize();
@@ -80,7 +88,7 @@ public class Apiary {
 
         Editor.initialize();
 
-//        SimulationManager.getInstance().load("simulations/gol.json");
+        SimulationManager.getInstance().load("simulations/gol.json");
 //        SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
@@ -139,10 +147,42 @@ public class Apiary {
 
     }
 
+    private static void openSingle() {
+        try (MemoryStack stack = stackPush()) {
+            PointerBuffer pp = stack.mallocPointer(1);
+
+            String filterList = "png,jpg";
+            String defaultPath = "";
+
+            checkResult(NativeFileDialog.NFD_OpenDialog(filterList, defaultPath, pp), pp);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void checkResult(int result, PointerBuffer path) {
+        switch (result) {
+            case NativeFileDialog.NFD_OKAY:
+                System.out.println("Success!");
+                System.out.println(path.getStringUTF8(0));
+//                NativeFileDialog.NFD_FreePath(path.get(0));
+                break;
+            case NativeFileDialog.NFD_CANCEL:
+                System.out.println("User pressed cancel.");
+                break;
+            default: // NFD_ERROR
+                System.err.format("Error: %s\n", NativeFileDialog.NFD_GetError());
+        }
+    }
+
     private void update(double delta){
         // Here we have all Singletons which need to update.
         Mouse.getInstance().update(delta);
         Keyboard.getInstance().update(delta);
+
+        // Process all tasks enqueued from other threads
+        ThreadUtils.update(delta);
+
         ShaderManager.getInstance().update(delta);
 
         // Simulation manager should update last. This ensures that every other singleton which has uniforms has the chance to update those uniforms.

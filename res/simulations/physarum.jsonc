@@ -2,6 +2,8 @@
   "world":{
     "name":"Physarum",
     "type":"AgentGrid2D",
+    "width": 7680,
+    "height": 4320,
     "arguments":{
 //      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix", "vec4(1.0, 0.0, 0.0, 1.0)", ["marker", "fragment_index", "concentration", "@agent_read"], "@mix"], "@set"]
       "fragment_logic":[
@@ -11,7 +13,7 @@
   },
   "agents":{
     "physarum":{
-      "instances": 1000000,
+      "instances": 10000000,
       "attributes":{
         "pos":{
           "type":"vec2",
