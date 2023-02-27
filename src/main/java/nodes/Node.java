@@ -1,8 +1,6 @@
 package nodes;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
 import editor.Editor;
 import imgui.ImColor;
 import imgui.ImGui;
@@ -18,7 +16,7 @@ public class Node{
     private static int next_id = 0;
 
     private final int id;
-    private final Nodes node_type;
+    private final NodeTemplates node_type;
     private final LinkedHashMap<String, JsonElement> parameter_values = new LinkedHashMap<>();
     private final LinkedHashMap<String, JsonElement> output_values    = new LinkedHashMap<>();
 
@@ -27,7 +25,7 @@ public class Node{
 
     private LinkedHashSet<Link> links = new LinkedHashSet<>();
 
-    public Node(Nodes node_type){
+    public Node(NodeTemplates node_type){
         this.node_type = node_type;
         // Set the ID
         this.id = ++next_id;

@@ -11,6 +11,8 @@ import simulation.world.AgentGrid2D;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.JsonUtils;
+import util.Promise;
+import util.ThreadUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -96,9 +98,11 @@ public class SimulationManager {
         fbo = new FBO(simulation.getWorldWidth(), simulation.getWorldHeight());
         fbo.unbindFrameBuffer();
 
+        // SCREENSHOT
         Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_INSERT, () -> {
             if(hasActiveSimulation()){
-                TextureManager.getInstance().saveTextureToFile(fbo.getTextureID(), "screen.png");
+                System.out.println("Start");
+                TextureManager.getInstance().saveTextureToFile(fbo.getTextureID(), String.format("screenshot_%s.png", (System.currentTimeMillis()+"")));
             }
         });
     }

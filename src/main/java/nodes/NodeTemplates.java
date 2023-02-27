@@ -9,7 +9,7 @@ import simulation.SimulationManager;
 import java.util.LinkedHashSet;
 import java.util.Stack;
 
-public enum Nodes {
+public enum NodeTemplates {
 
     // Math opperations
     ABS("@abs",
@@ -423,11 +423,11 @@ public enum Nodes {
     // These are our Abstract Methods
     private ToGLSLCallback toGLSLCallback;
 
-    Nodes(String node_id, String[] params, ToGLSLCallback toGLSLCallback){
+    NodeTemplates(String node_id, String[] params, ToGLSLCallback toGLSLCallback){
         this(node_id, params, new String[]{}, toGLSLCallback, new String[]{}, new String[]{});
     }
 
-    Nodes(String node_id, String[] params, String[] output, ToGLSLCallback toGLSLCallback, String[] required_uniforms, String[] required_libraries){
+    NodeTemplates(String node_id, String[] params, String[] output, ToGLSLCallback toGLSLCallback, String[] required_uniforms, String[] required_libraries){
         this.node_id = (node_id.startsWith("@") ? node_id : "@" + node_id).toLowerCase();
         for(String param_name : params){
             this.parameter_names.add(param_name);

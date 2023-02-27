@@ -16,6 +16,7 @@ import org.lwjgl.util.nfd.NFDPathSet;
 import org.lwjgl.util.nfd.NativeFileDialog;
 import org.lwjgl.util.nfd.NativeFileDialog.*;
 import simulation.SimulationManager;
+import util.FileManager;
 import util.JsonUtils;
 import util.StringUtils;
 import util.ThreadUtils;
@@ -74,6 +75,7 @@ public class Apiary {
         GL.createCapabilities();
 
         // Initialize all of our singleton instances here
+        FileManager.initialize();
         JsonUtils.initialize();
         ShaderManager.initialize();
         TextureManager.initialize();
@@ -88,8 +90,8 @@ public class Apiary {
 
         Editor.initialize();
 
-        SimulationManager.getInstance().load("simulations/gol.json");
-//        SimulationManager.getInstance().load("simulations/physarum.jsonc");
+//        SimulationManager.getInstance().load("simulations/gol.json");
+        SimulationManager.getInstance().load("simulations/physarum.jsonc");
 //        SimulationManager.getInstance().load("simulations/screen_test.json");
 //        SimulationManager.getInstance().load("simulations/3boids.json");
     }
@@ -145,34 +147,6 @@ public class Apiary {
             shutdown();
         }
 
-    }
-
-    private static void openSingle() {
-        try (MemoryStack stack = stackPush()) {
-            PointerBuffer pp = stack.mallocPointer(1);
-
-            String filterList = "png,jpg";
-            String defaultPath = "";
-
-            checkResult(NativeFileDialog.NFD_OpenDialog(filterList, defaultPath, pp), pp);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private static void checkResult(int result, PointerBuffer path) {
-        switch (result) {
-            case NativeFileDialog.NFD_OKAY:
-                System.out.println("Success!");
-                System.out.println(path.getStringUTF8(0));
-//                NativeFileDialog.NFD_FreePath(path.get(0));
-                break;
-            case NativeFileDialog.NFD_CANCEL:
-                System.out.println("User pressed cancel.");
-                break;
-            default: // NFD_ERROR
-                System.err.format("Error: %s\n", NativeFileDialog.NFD_GetError());
-        }
     }
 
     private void update(double delta){

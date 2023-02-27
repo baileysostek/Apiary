@@ -1,9 +1,11 @@
 package editor;
 
 import core.Apiary;
+import graphics.Uniform;
+import graphics.texture.FilterOption;
+import graphics.texture.TextureManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
-import imgui.ImGuiTextFilter;
 import imgui.ImGuiViewport;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
@@ -16,9 +18,12 @@ import input.Mouse;
 import nodes.Node;
 import nodes.NodeAttributePair;
 import nodes.NodeGraph;
-import nodes.Nodes;
+import nodes.NodeTemplates;
 import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
+import util.Promise;
+import util.FileManager;
+import util.StringUtils;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
@@ -34,16 +39,16 @@ public class Editor {
     private final ImGuiImplGl3 imgui_impl;
 
     private final ImNodesContext CONTEXT = new ImNodesContext();
-    private static final String URL = "https://github.com/Nelarius/imnodes/tree/857cc86";
     private static final ImBoolean SHOW = new ImBoolean(true);
+    private int test = 0;
 
     //This is used for ID information
     private int imgui_element_id = 0;
 
     NodeGraph graph = new NodeGraph();
 
-    Node test_0 = new Node(Nodes.ON_SCREEN);
-    Node test_1 = new Node(Nodes.CONDITIONAL);
+    Node test_0 = new Node(NodeTemplates.ON_SCREEN);
+    Node test_1 = new Node(NodeTemplates.CONDITIONAL);
 
     NodeAttributePair link = null;
 
@@ -51,10 +56,20 @@ public class Editor {
     String ADD_NODE_POPUP = "Add Node";
     boolean should_open_popup = false;
 
+    boolean initialize = true;
+
+    final int APIARY_TEXTURE_ID;
+
     private Editor(){
+        // Initialize the other singletons that we need
+        UniformManager.initialize();
+
         // When we initialize the editor we want to inject into the current window.
         ImGui.createContext();
         ImNodes.createContext();
+
+        // Load our textures
+        APIARY_TEXTURE_ID = TextureManager.getInstance().load(StringUtils.getPathToResources() + "/textures/" + "apiary.png", FilterOption.NEAREST);
 
         //Now that we have our instance
         // Initialize ImGuiIO config
@@ -111,7 +126,6 @@ public class Editor {
         MOUSE_CURSORS[ImGuiMouseCursor.ResizeNWSE]  = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
         MOUSE_CURSORS[ImGuiMouseCursor.Hand]        = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
         MOUSE_CURSORS[ImGuiMouseCursor.NotAllowed]  = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
-
 
         Mouse.getInstance().addMouseEventCallback((button, action, mods) -> {
             final boolean[] mouseDown = new boolean[5];
@@ -205,7 +219,7 @@ public class Editor {
             ImString seachData = new ImString();
             ImGui.inputText("Search", seachData);
             ImGui.beginChildFrame(getNextAvailableID(), 256, 512);
-            for(Nodes node : Nodes.values()){
+            for(NodeTemplates node : NodeTemplates.values()){
                 if(node.name().contains(seachData.get())) {
                     ImGui.text(node.name());
                     ImGui.newLine();
@@ -222,48 +236,87 @@ public class Editor {
         GL43.glClearColor(0f, 0f, 0f, 1.0f);
         GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
 
+        renderEditorWindow();
 
-        ImGuiViewport viewport = ImGui.getMainViewport();
-        ImGui.setNextWindowPos(viewport.getWorkPosX(), viewport.getWorkPosY());
-        ImGui.setNextWindowSize(viewport.getWorkSizeX(), viewport.getWorkSizeY());
-        ImGui.setNextWindowViewport(viewport.getParentViewportId());
-
-//        ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
-        if (ImGui.begin("Apiary Node Editor", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus)) {
-
-            ImNodes.editorContextSet(CONTEXT);
-            ImNodes.beginNodeEditor();
-
-            graph.render();
-
-            final boolean isEditorHovered = ImNodes.isEditorHovered();
-
-            ImNodes.miniMap(0.2f, ImNodesMiniMapLocation.BottomRight);
-            ImNodes.endNodeEditor();
-
-        }
-
-        renderAddNodePopup();
-
-        if(should_open_popup){
-            ImGui.openPopup(ADD_NODE_POPUP);
-        }
-
-        ImGui.end();
-
-        if (ImGui.begin("Test", SHOW)) {
-            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), 512, 512);
-        }
-        ImGui.end();
-
-        ImGui.showDemoWindow();
-
+        // Actually render the frame
         ImGui.render();
         imgui_impl.renderDrawData(ImGui.getDrawData());
 
         ImGui.updatePlatformWindows();
         ImGui.renderPlatformWindowsDefault();
         imgui_element_id = 0;
+
+        initialize = false;
+    }
+
+    private void renderEditorWindow(){
+        ImGuiViewport viewport = ImGui.getMainViewport();
+        ImGui.setNextWindowPos(viewport.getWorkPosX(), viewport.getWorkPosY());
+        ImGui.setNextWindowSize(viewport.getWorkSizeX(), viewport.getWorkSizeY());
+        ImGui.setNextWindowViewport(viewport.getParentViewportId());
+
+//        ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
+        if (ImGui.begin("Apiary", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus)) {
+
+            ImGui.columns(2, "Editor");
+            ImGui.setColumnWidth(0, Math.max(256, ImGui.getColumnWidth()));
+            if(initialize){
+                ImGui.setColumnWidth(0, 256);
+            }
+            ImGui.beginChild("Simulation Editor", -1, viewport.getWorkSizeY(), false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse| ImGuiWindowFlags.AlwaysAutoResize);
+            renderSimulationEditor();
+            ImGui.endChild();
+            ImGui.nextColumn();
+            ImGui.beginChild("Node Editor", -1, viewport.getWorkSizeY(), false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
+//            renderNodeEditor();
+            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
+            ImGui.endChild();
+
+            ImGui.end();
+        }
+    }
+
+    private void renderSimulationEditor(){
+//        renderNodeEditor();
+        // First we have the Apiary logo and some file options.
+        ImGui.image(APIARY_TEXTURE_ID, 32, 32);
+        if(ImGui.button("Open File")){
+            Promise promise = new Promise(() -> {
+                String resource = FileManager.getInstance().openFilePicker("", new String[]{"png", "jpg"});
+                this.test = TextureManager.getInstance().load(resource);
+            });
+        }
+        ImGui.separator();
+        // Next we have a
+        ImGui.image(test, 256, 256);
+        // Render our uniforms
+        UniformManager.getInstance().render(null);
+    }
+
+    private void renderNodeEditor(){
+        ImNodes.editorContextSet(CONTEXT);
+        ImNodes.beginNodeEditor();
+
+        graph.render();
+
+        final boolean isEditorHovered = ImNodes.isEditorHovered();
+
+        ImNodes.miniMap(0.2f, ImNodesMiniMapLocation.BottomRight);
+        ImNodes.endNodeEditor();
+
+        renderAddNodePopup();
+
+        if(should_open_popup){
+            ImGui.openPopup(ADD_NODE_POPUP);
+        }
+    }
+
+    public void load(String file_path){
+
+    }
+
+    public void save(String file_path){
+
     }
 
     public void onShutdown() {

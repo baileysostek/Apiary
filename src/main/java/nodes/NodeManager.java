@@ -15,12 +15,12 @@ import java.util.*;
 public class NodeManager {
     private static NodeManager instance;
     private NodeManager(){
-        for(Nodes nodes : Nodes.values()){
+        for(NodeTemplates nodes : NodeTemplates.values()){
             registerNode(nodes);
         }
     }
     // Holds all nodes that our system knows about.
-    private HashMap<String, Nodes> nodes = new HashMap<>();
+    private HashMap<String, NodeTemplates> nodes = new HashMap<>();
 
     // Required uniforms
     private HashSet<String> required_uniforms = new HashSet<>();
@@ -39,7 +39,7 @@ public class NodeManager {
     }
 
     // TODO: Maybe make an API that can be called into here.
-    private void registerNode(Nodes node){
+    private void registerNode(NodeTemplates node){
         String key = node.getNodeID();
         if(!this.nodes.containsKey(key)){
             this.nodes.put(key, node);
@@ -95,7 +95,7 @@ public class NodeManager {
                         if (instruction.startsWith("@")) {
                             if (nodes.containsKey(instruction)) {
                                 // Determine what node we are trying to reference.
-                                Nodes action = nodes.get(instruction);
+                                NodeTemplates action = nodes.get(instruction);
 
                                 // Now that we have our node lets figure out the requirements.
                                 for(String uniform_name : action.getRequiredUniforms()){
@@ -207,11 +207,11 @@ public class NodeManager {
         return this.required_imports;
     }
 
-    public Nodes getNode(String node_identifier) {
+    public NodeTemplates getNode(String node_identifier) {
         return this.nodes.getOrDefault(node_identifier, null);
     }
 
-    public Collection<Nodes> getAllNodes() {
+    public Collection<NodeTemplates> getAllNodes() {
         return this.nodes.values();
     }
 

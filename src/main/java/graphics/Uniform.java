@@ -83,6 +83,10 @@ public class Uniform {
         return name;
     }
 
+    public GLDataType getType() {
+        return this.type;
+    }
+
     public String getTypeName() {
         return this.type.getGLSL();
     }

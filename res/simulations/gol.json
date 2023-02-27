@@ -2,10 +2,8 @@
   "world":{
     "name":"Conway's Game of Life",
     "type":"AgentGrid2D",
-    "width": 10000,
-    "height": 10000,
     "arguments":{
-      "fragment_logic":["out_color", ["vec4(", "cell", "fragment_index", "color", "@agent_read", ", 1.0)"], "@set"]
+      "fragment_logic":["out_color", ["vec4(", "cell", "fragment_index", "color", "@agent_read", " * ", "Test", "@get",", 1.0)"], "@set"]
     }
   },
   "agents":{
