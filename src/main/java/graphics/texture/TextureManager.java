@@ -148,6 +148,7 @@ public class TextureManager {
 
                 try {
                     ImageIO.write(image, "PNG", new File(file_name));
+                    System.out.println("Done.");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -85,6 +85,15 @@ public enum NodeTemplates {
         (stack, params) -> String.format("%s(%s)", params[1], params[0])
     ),
 
+    CLAMP("@clamp",
+            new String[]{
+                    "value",
+                    "min",
+                    "max"
+            },
+            (stack, params) -> String.format("clamp(%s, %s, %s)", params[0], params[1], params[2])
+    ),
+
     CONDITIONAL("@conditional",
         new String[]{
             "Predicate",

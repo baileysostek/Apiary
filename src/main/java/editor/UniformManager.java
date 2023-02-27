@@ -14,8 +14,8 @@ public class UniformManager {
     private LinkedList<ConstraintedUniform> uniforms = new LinkedList<>();
 
     private UniformManager() {
-        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("Test"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER, new HashMap<>()));
-        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("sensor", GLDataType.FLOAT), UniformRenderer.DRAG, new HashMap<>()));
+        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("Test"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER));
+        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("sensor", GLDataType.FLOAT), UniformRenderer.DRAG));
         HashMap<UniformConstraint, Float> turn_constraints = new HashMap<>();
         turn_constraints.put(UniformConstraint.MIN, 0f);
         turn_constraints.put(UniformConstraint.MAX, 3.14159f * 2f);
@@ -26,8 +26,9 @@ public class UniformManager {
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("angle" , GLDataType.FLOAT), UniformRenderer.SLIDER, angle_constraints));
         HashMap<UniformConstraint, Float> evaporation_constraints = new HashMap<>();
         evaporation_constraints.put(UniformConstraint.MIN, 0f);
-        evaporation_constraints.put(UniformConstraint.MAX, 0.3f);
+        evaporation_constraints.put(UniformConstraint.MAX, 0.05f);
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("evaporation_constant" , GLDataType.FLOAT), UniformRenderer.SLIDER, evaporation_constraints));
+        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("speed" , GLDataType.FLOAT), UniformRenderer.DRAG));
     }
 
     public static void initialize() {
@@ -51,6 +52,10 @@ public class UniformManager {
         Uniform uniform;
         UniformRenderer renderer;
         HashMap<UniformConstraint, Float> constraints;
+
+        public ConstraintedUniform(Uniform uniform, UniformRenderer renderer) {
+            this(uniform, renderer, new HashMap<>());
+        }
 
         public ConstraintedUniform(Uniform uniform, UniformRenderer renderer, HashMap<UniformConstraint, Float> constraints) {
             this.uniform = uniform;

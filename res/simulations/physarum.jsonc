@@ -2,8 +2,8 @@
   "world":{
     "name":"Physarum",
     "type":"AgentGrid2D",
-    "width": 8192,
-    "height": 8192,
+    "width": 16384,
+    "height": 16384,
     "arguments":{
 //      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix", "vec4(1.0, 0.0, 0.0, 1.0)", ["marker", "fragment_index", "concentration", "@agent_read"], "@mix"], "@set"]
       "fragment_logic":[
@@ -14,7 +14,7 @@
   },
   "agents":{
     "physarum":{
-      "instances": 100000000,
+      "instances": 1000000,
       "attributes":{
         "pos":{
           "type":"vec2",
@@ -57,14 +57,14 @@
           ["diffusion", "pheromone", ["x_pos", "-1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
           ["diffusion", "pheromone", ["x_pos", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
           ["diffusion", "pheromone", ["x_pos", "1", "@add", "y_pos", "1", "@add", "@xy_to_screen_index"], "concentration", "@agent_read", "@increment"],
-          "pheromone", ["x_pos", "y_pos", "@xy_to_screen_index"], "concentration",["diffusion", "9.0", "@div","evaporation_constant", "@get","@sub"],"@agent_write"
+          "pheromone", ["x_pos", "y_pos", "@xy_to_screen_index"], "concentration",["diffusion", "9.0", "@div","evaporation_constant", "@get","@sub", "0.0", "1.0", "@clamp"],"@agent_write"
         ]
       },
     {
       "for_each": "physarum",
       "logic":[
         // Choose a random direction if we would go offscreen.
-        "vec2","particle_vel", ["physarum", "fragment_index", "vel", "@agent_read","2.0", "@div","u_aspect_ratio", "@get", "1.0", "@vec2", "@div"], "@define",
+        "vec2","particle_vel", ["physarum", "fragment_index", "vel", "@agent_read","u_time_delta", "@get", "@mul","u_aspect_ratio", "@get", "1.0", "@vec2", "@div", "speed", "@get", "@mul"], "@define",
         "vec2","particle_pos", ["particle_vel",["physarum", "fragment_index", "pos", "@agent_read"], "@add"], "@define",
 //        ["particle_pos.x", "particle_pos.y", "@on_screen"], [], ["float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define","particle_vel", ["angle", "@sin", "angle", "@cos", "@vec2"], "@set"],"@conditional",
 
@@ -83,6 +83,8 @@
         "float", "sensor_right", ["pheromone", ["sample_pos_right.x", "int", "@cast", "sample_pos_right.y", "int", "@cast", "@xy_to_screen_index"], "concentration", "@agent_read"], "0.1","@max", "@define",
         ["sensor_left", "sensor_right", "@equals"], "", "physarum", "fragment_index", "vel", [["physarum", "fragment_index", "vel", "@agent_read"], "turn", "@get", ["sensor_left", "sensor_right", "@greater"], "-1.0", "1.0", "@?", "@mul", "u_time_delta","@get","@mul", "@rotate_2d"], "@agent_write", "@conditional",
         "pheromone", [["physarum", "fragment_index", "pos.x", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.x", "@get", "@mul", ["physarum", "fragment_index", "pos.y", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.y", "@get", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
+//         "pheromone", [["physarum", "fragment_index", "pos.x", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.x", "@get", "@mul", ["physarum", "fragment_index", "pos.y", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.y", "@get", "@mul", "@xy_to_screen_index"], "concentration", "0.01", ["pheromone", [["physarum", "fragment_index", "pos.x", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.x", "@get", "@mul", ["physarum", "fragment_index", "pos.y", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.y", "@get", "@mul", "@xy_to_screen_index"], "concentration", "@agent_read"], "@add", "evaporation_constant", "@get", "@add", "@agent_write"
+
       ]
     }
   ]
