@@ -1,7 +1,6 @@
 package editor;
 
 import core.Apiary;
-import graphics.Uniform;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
 import imgui.ImGui;
@@ -15,12 +14,8 @@ import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import input.Mouse;
-import nodes.Node;
-import nodes.NodeAttributePair;
-import nodes.NodeGraph;
-import nodes.NodeTemplates;
+import nodes.*;
 import org.lwjgl.opengl.GL43;
-import simulation.SimulationManager;
 import util.Promise;
 import util.FileManager;
 import util.StringUtils;
@@ -47,8 +42,8 @@ public class Editor {
 
     NodeGraph graph = new NodeGraph();
 
-    Node test_0 = new Node(NodeTemplates.ON_SCREEN);
-    Node test_1 = new Node(NodeTemplates.CONDITIONAL);
+    Node test_0 = new TemplateNode(NodeTemplates.ON_SCREEN);
+    Node test_1 = new TemplateNode(NodeTemplates.CONDITIONAL);
 
     NodeAttributePair link = null;
 
@@ -171,6 +166,8 @@ public class Editor {
         graph.addNode(this.test_0);
         graph.addNode(this.test_1);
 
+        graph.addNode(new AgentNode("Cell"));
+
         this.test_0.link("out", this.test_1, "Predicate");
 
     }
@@ -221,7 +218,10 @@ public class Editor {
             ImGui.beginChildFrame(getNextAvailableID(), 256, 512);
             for(NodeTemplates node : NodeTemplates.values()){
                 if(node.name().contains(seachData.get())) {
-                    ImGui.text(node.name());
+                    if(ImGui.button(node.name())){
+                        graph.addNode(new TemplateNode(NodeTemplates.valueOf(node.name())));
+                        ImGui.closeCurrentPopup();
+                    }
                     ImGui.newLine();
                 }
             }
@@ -256,7 +256,7 @@ public class Editor {
         ImGui.setNextWindowViewport(viewport.getParentViewportId());
 
 //        ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
-        if (ImGui.begin("Apiary", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus)) {
+        if (ImGui.begin("Apiary", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize)) {
 
             ImGui.columns(2, "Editor");
             ImGui.setColumnWidth(0, Math.max(256, ImGui.getColumnWidth()));
@@ -268,8 +268,8 @@ public class Editor {
             ImGui.endChild();
             ImGui.nextColumn();
             ImGui.beginChild("Node Editor", -1, viewport.getWorkSizeY(), false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
-//            renderNodeEditor();
-            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
+            renderNodeEditor();
+//            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
 
             ImGui.end();
@@ -308,6 +308,7 @@ public class Editor {
 
         if(should_open_popup){
             ImGui.openPopup(ADD_NODE_POPUP);
+            should_open_popup = false;
         }
     }
 

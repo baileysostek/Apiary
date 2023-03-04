@@ -424,7 +424,7 @@ public enum NodeTemplates {
     private final String node_id;
 
     // TODO make these immutable
-    private final LinkedHashSet<String> parameter_names    = new LinkedHashSet<>();
+    private final LinkedHashSet<String> input_names = new LinkedHashSet<>();
     private final LinkedHashSet<String> output_names       = new LinkedHashSet<>();
     private final LinkedHashSet<String> required_uniforms  = new LinkedHashSet<>();
     private final LinkedHashSet<String> required_libraries = new LinkedHashSet<>();
@@ -439,7 +439,7 @@ public enum NodeTemplates {
     NodeTemplates(String node_id, String[] params, String[] output, ToGLSLCallback toGLSLCallback, String[] required_uniforms, String[] required_libraries){
         this.node_id = (node_id.startsWith("@") ? node_id : "@" + node_id).toLowerCase();
         for(String param_name : params){
-            this.parameter_names.add(param_name);
+            this.input_names.add(param_name);
         }
         if(output.length > 0){
             for(String output_name : output){
@@ -460,7 +460,7 @@ public enum NodeTemplates {
     }
 
     public final String transpile(Stack<JsonElement> stack){
-        int num_inputs = this.parameter_names.size() + (this.output_names.size() == 1 ? 0 : this.output_names.size());
+        int num_inputs = this.input_names.size() + (this.output_names.size() == 1 ? 0 : this.output_names.size());
         String[] params = new String[num_inputs];
         for(int i = 0; i < num_inputs; i++){
             params[num_inputs - i - 1] = NodeManager.getInstance().transpile(stack.pop());
@@ -475,9 +475,9 @@ public enum NodeTemplates {
     }
 
     public JsonElement toIR(Node instance){
-        JsonElement[] params = new JsonElement[this.parameter_names.size()];
+        JsonElement[] params = new JsonElement[this.input_names.size()];
         int index = 0;
-        for(String param_name : parameter_names){
+        for(String param_name : input_names){
             params[index] = instance.getParameterValue(param_name);
             index++;
         }
@@ -488,7 +488,7 @@ public enum NodeTemplates {
             index++;
         }
         // Create our out array
-        int capacity = this.parameter_names.size() + this.output_names.size() + 1; // The +1 is for the name of this node it ALWAYS comes last
+        int capacity = this.input_names.size() + this.output_names.size() + 1; // The +1 is for the name of this node it ALWAYS comes last
         JsonArray output = new JsonArray(capacity);
         for(int i = 0; i < capacity; i++){
             if(i < params.length) {
@@ -508,8 +508,8 @@ public enum NodeTemplates {
         return node_id;
     }
 
-    public LinkedHashSet<String> getParameterNames() {
-        return parameter_names;
+    public LinkedHashSet<String> getInputNames() {
+        return input_names;
     }
 
     public LinkedHashSet<String> getOutputNames() {

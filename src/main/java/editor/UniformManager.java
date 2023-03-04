@@ -14,7 +14,8 @@ public class UniformManager {
     private LinkedList<ConstraintedUniform> uniforms = new LinkedList<>();
 
     private UniformManager() {
-        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("Test"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER));
+        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("bg_color"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER));
+        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("cell_color"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER));
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("sensor", GLDataType.FLOAT), UniformRenderer.DRAG));
         HashMap<UniformConstraint, Float> turn_constraints = new HashMap<>();
         turn_constraints.put(UniformConstraint.MIN, 0f);
@@ -26,7 +27,8 @@ public class UniformManager {
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("angle" , GLDataType.FLOAT), UniformRenderer.SLIDER, angle_constraints));
         HashMap<UniformConstraint, Float> evaporation_constraints = new HashMap<>();
         evaporation_constraints.put(UniformConstraint.MIN, 0f);
-        evaporation_constraints.put(UniformConstraint.MAX, 0.05f);
+        evaporation_constraints.put(UniformConstraint.MAX, 1.05f);
+        evaporation_constraints.put(UniformConstraint.DEFAULT, 1.05f);
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("evaporation_constant" , GLDataType.FLOAT), UniformRenderer.SLIDER, evaporation_constraints));
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("speed" , GLDataType.FLOAT), UniformRenderer.DRAG));
     }
@@ -61,6 +63,10 @@ public class UniformManager {
             this.uniform = uniform;
             this.renderer = renderer;
             this.constraints = constraints;
+        }
+
+        public void setDefaultValue(float[] value){
+            this.uniform.set(value);
         }
 
         public void render(){
