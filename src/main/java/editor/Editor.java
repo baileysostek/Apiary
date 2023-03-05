@@ -6,13 +6,15 @@ import graphics.texture.TextureManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImGuiViewport;
+import imgui.callback.ImStrConsumer;
+import imgui.callback.ImStrSupplier;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
-import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
+import input.Keyboard;
 import input.Mouse;
 import nodes.*;
 import org.lwjgl.opengl.GL43;
@@ -20,12 +22,17 @@ import util.Promise;
 import util.FileManager;
 import util.StringUtils;
 
+import java.util.LinkedList;
+
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
 
 public class Editor {
 
     private static Editor instance;
+
+    // We need to buffer our keypresses
+    private LinkedList<Integer> key_presses = new LinkedList<>();
 
     // Mouse cursors provided by GLFW
     private static final long[] MOUSE_CURSORS = new long[ImGuiMouseCursor.COUNT];
@@ -71,7 +78,7 @@ public class Editor {
         io = ImGui.getIO();
 
         io.setIniFilename(null); // We don't want to save .ini file
-        io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard); // Navigation with keyboard
+//        io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard); // Navigation with keyboard
         io.addConfigFlags(ImGuiConfigFlags.DockingEnable);      // Enable Docking
         io.addConfigFlags(ImGuiConfigFlags.ViewportsEnable);    // Enable Multi-Viewport / Platform Windows
         io.addConfigFlags(ImGuiConfigFlags.DpiEnableScaleFonts);
@@ -122,6 +129,26 @@ public class Editor {
         MOUSE_CURSORS[ImGuiMouseCursor.Hand]        = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
         MOUSE_CURSORS[ImGuiMouseCursor.NotAllowed]  = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
 
+        glfwSetCharCallback(Apiary.getWindowPointer(), (w, c) -> {
+            if (!((c == GLFW_KEY_DELETE))){
+                io.addInputCharacter(c);
+            }
+        });
+
+        io.setSetClipboardTextFn(new ImStrConsumer() {
+            @Override
+            public void accept(final String s) {
+                glfwSetClipboardString(Apiary.getWindowPointer(), s);
+            }
+        });
+
+        io.setGetClipboardTextFn(new ImStrSupplier() {
+            @Override
+            public String get() {
+                return glfwGetClipboardString(Apiary.getWindowPointer());
+            }
+        });
+
         Mouse.getInstance().addMouseEventCallback((button, action, mods) -> {
             final boolean[] mouseDown = new boolean[5];
 
@@ -169,6 +196,14 @@ public class Editor {
         graph.addNode(new AgentNode("Cell"));
 
         this.test_0.link("out", this.test_1, "Predicate");
+
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_F1, () -> {
+            if(this.graph.hasNodesOfType(AgentNode.class)){
+                for(Node node : this.graph.getNodesOfType(AgentNode.class)){
+                    node.serialize();
+                }
+            }
+        });
 
     }
 
@@ -233,6 +268,11 @@ public class Editor {
     public void render(){
         ImGui.newFrame();
 
+        for(int key : key_presses){
+//            io.addInputCharactersUTF8(String.valueOf((char)key));
+        }
+        key_presses.clear();
+
         GL43.glClearColor(0f, 0f, 0f, 1.0f);
         GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
 
@@ -247,6 +287,9 @@ public class Editor {
         imgui_element_id = 0;
 
         initialize = false;
+
+        // After a frame release the input keys.
+        io.clearInputKeys();
     }
 
     private void renderEditorWindow(){
@@ -271,6 +314,8 @@ public class Editor {
             renderNodeEditor();
 //            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
+
+            ImGui.showDemoWindow();
 
             ImGui.end();
         }
@@ -301,7 +346,6 @@ public class Editor {
 
         final boolean isEditorHovered = ImNodes.isEditorHovered();
 
-        ImNodes.miniMap(0.2f, ImNodesMiniMapLocation.BottomRight);
         ImNodes.endNodeEditor();
 
         renderAddNodePopup();
@@ -327,5 +371,14 @@ public class Editor {
 
     public int getNextAvailableID(){
         return ++imgui_element_id;
+    }
+
+    public void processKeyEvent(int key, int scancode, int action, int mods) {
+        io.setKeysDown(key, action == GLFW_PRESS);
+
+        io.setKeyCtrl(io.getKeysDown(GLFW_KEY_LEFT_CONTROL) || io.getKeysDown(GLFW_KEY_RIGHT_CONTROL));
+        io.setKeyShift(io.getKeysDown(GLFW_KEY_LEFT_SHIFT) || io.getKeysDown(GLFW_KEY_RIGHT_SHIFT));
+        io.setKeyAlt(io.getKeysDown(GLFW_KEY_LEFT_ALT) || io.getKeysDown(GLFW_KEY_RIGHT_ALT));
+        io.setKeySuper(io.getKeysDown(GLFW_KEY_LEFT_SUPER) || io.getKeysDown(GLFW_KEY_RIGHT_SUPER));
     }
 }

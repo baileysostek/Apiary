@@ -5,7 +5,6 @@ import imgui.app.Configuration;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
-import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
 import imgui.flag.ImGuiCond;
 import imgui.type.ImBoolean;
@@ -60,8 +59,8 @@ public class Main extends Application {
             int outputs = 1;
 
             // set the titlebar color of an individual node
-            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, ImColor.rgba(11, 109, 191, 255));
-            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, ImColor.rgba(81, 148, 204, 255));
+            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, ImColor.intToColor(11, 109, 191, 255));
+            ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, ImColor.intToColor(81, 148, 204, 255));
 
             ImNodes.beginNode(1);
             // Title Bar
@@ -123,7 +122,7 @@ public class Main extends Application {
 //
             final boolean isEditorHovered = ImNodes.isEditorHovered();
 //
-            ImNodes.miniMap(0.2f, ImNodesMiniMapLocation.BottomRight);
+//            ImNodes.miniMap(0.2f, ImNodesMiniMapLocation.BottomRight);
             ImNodes.endNodeEditor();
 //
 //            if (ImNodes.isLinkCreated(LINK_A, LINK_B)) {

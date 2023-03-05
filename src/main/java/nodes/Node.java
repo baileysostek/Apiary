@@ -1,6 +1,7 @@
 package nodes;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import editor.Editor;
 import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
@@ -107,22 +108,6 @@ public abstract class Node{
 
     public abstract void render();
 
-    public void renderLinks(){
-        // Now we can render all of our links
-        for(Link link : links){
-            link.renderLink();
-        }
-    }
-
-    //Any nodes can be linked together based on field names.
-    public int link(String element_name, Node destination, String destination_element_name){
-        // We can make this link!
-        if(this.output_values.containsKey(element_name) && destination.input_values.containsKey(destination_element_name)){
-            this.links.add(new Link(this, element_name, destination, destination_element_name));
-        }
-        return -1;
-    }
-
     public int getAttributeByName(String attribute_name){
         if(this.attribute_ids.containsKey(attribute_name)) {
             return this.attribute_ids.get(attribute_name);
@@ -200,6 +185,32 @@ public abstract class Node{
         return output_id;
     }
 
+    // Links
+    public void renderLinks(){
+        // Now we can render all of our links
+        for(Link link : links){
+            link.renderLink();
+        }
+    }
+
+    //Any nodes can be linked together based on field names.
+    public int link(String element_name, Node destination, String destination_element_name){
+        // We can make this link!
+        if(this.output_values.containsKey(element_name) && destination.input_values.containsKey(destination_element_name)){
+            this.links.add(new Link(this, element_name, destination, destination_element_name));
+        }
+        return -1;
+    }
+
+    public Node getLinkedNode(String attribute_name){
+        for (Link link : this.links) {
+            if (link.source_element_name.equals(attribute_name)) {
+                return link.dest;
+            }
+        }
+        return null;
+    }
+
     protected void renameOutput(String initial_name, String s) {
 
     }
@@ -228,4 +239,14 @@ public abstract class Node{
             }
         }
     }
+
+    public JsonElement serialize(){
+        JsonObject save_data = new JsonObject();
+        return save_data;
+    }
+
+    public Node deserialize(JsonElement element){
+        return this;
+    }
+
 }

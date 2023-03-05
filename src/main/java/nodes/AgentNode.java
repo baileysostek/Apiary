@@ -1,9 +1,15 @@
 package nodes;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.ImGuiTextFilter;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.flag.ImGuiComboFlags;
+import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImString;
 
@@ -44,10 +50,25 @@ public class AgentNode extends Node{
     private void renderAttributes(){
         for(Attribute attribute : attributes){
             super.renderOutputAttribute(attribute.id, () -> {
-                ImGui.pushItemWidth(256);
+                ImGui.pushItemWidth(128);
                 String initial_name = attribute.attribute_name.get();
-                if(ImGui.inputText("##"+attribute.id, attribute.attribute_name)){
+                if(ImGui.inputText("##"+attribute.id, attribute.attribute_name, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
                     super.renameOutput(initial_name, attribute.attribute_name.get());
+                }
+                ImGui.popItemWidth();
+                ImGui.sameLine();
+                ImGui.pushItemWidth(128);
+                if (ImGui.beginCombo("##"+attribute.id+"_type", attribute.type.getGLSL(), ImGuiComboFlags.None)){
+                    for (GLDataType type : GLDataType.values()) {
+                        boolean is_selected = attribute.type.equals(type);
+                        if (ImGui.selectable(type.getGLSL(), is_selected)){
+                            attribute.type = type;
+                        }
+                        if (is_selected) {
+                            ImGui.setItemDefaultFocus();
+                        }
+                    }
+                    ImGui.endCombo();
                 }
                 ImGui.popItemWidth();
             });
@@ -69,4 +90,37 @@ public class AgentNode extends Node{
         }
     }
 
+    @Override
+    public JsonElement serialize() {
+        JsonObject save_data = new JsonObject();
+
+        JsonObject agent_data = new JsonObject();
+
+        JsonObject attributes_data = new JsonObject();
+        // Encode all of our attributes
+        for(Attribute attribute : attributes){
+            String attribute_name = attribute.attribute_name.get();
+
+            // Create the data that goes in each attribute.
+            JsonObject attribute_data = new JsonObject();
+
+            // Add the datatype.
+            attribute_data.add("type", new JsonPrimitive(attribute.type.getGLSL()));
+
+            // Check if there is a link between this attribute and another node.
+            Node connection = this.getLinkedNode(attribute_name);
+            if(connection != null) {
+                // If there is a connection serialize that connection.
+                attributes_data.add("default_value", connection.serialize());
+            }
+
+            attributes_data.add(attribute_name, attribute_data);
+        }
+        // Attach our attributes to agent data.
+        agent_data.add("attributes", attributes_data);
+        // Add our data to the object
+        save_data.add(this.title, agent_data);
+
+        return save_data;
+    }
 }
