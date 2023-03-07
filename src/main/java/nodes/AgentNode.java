@@ -5,6 +5,7 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import graphics.GLDataType;
+import graphics.GLPrimitive;
 import imgui.ImGui;
 import imgui.ImGuiTextFilter;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AgentNode extends Node{
 
     private LinkedList<Attribute> attributes = new LinkedList<>();
+    private final LinkedList<Attribute> to_remove = new LinkedList<>();
 
     public AgentNode(String agent_name){
         this();
@@ -36,9 +38,10 @@ public class AgentNode extends Node{
     @Override
     public void render() {
         if(ImGui.button("Add Attribute")){
-            String attribute_name = attributeNameAtIndex(attributes.size() + 1);
-            attributes.addLast(new Attribute(attribute_name, attribute_name, GLDataType.FLOAT));
-            super.output_values.put(attribute_name, null);
+            String attribute_name = attributeNameAtIndex((int) System.currentTimeMillis());
+            Attribute new_attribute = new Attribute(attribute_name, attribute_name, GLDataType.FLOAT);
+            attributes.addLast(new_attribute);
+            super.addInputAttribute(attribute_name, new_attribute.type);
         }
         renderAttributes();
     }
@@ -48,21 +51,27 @@ public class AgentNode extends Node{
     }
 
     private void renderAttributes(){
+        // Remove any enqueued attributes
+        for(Attribute attribute : to_remove){
+            removeAttribute(attribute);
+        }
+        to_remove.clear();
+
         for(Attribute attribute : attributes){
-            super.renderOutputAttribute(attribute.id, () -> {
+            super.renderInputAttribute(attribute.id, () -> {
                 ImGui.pushItemWidth(128);
                 String initial_name = attribute.attribute_name.get();
                 if(ImGui.inputText("##"+attribute.id, attribute.attribute_name, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
-                    super.renameOutput(initial_name, attribute.attribute_name.get());
+                    super.renameInput(initial_name, attribute.attribute_name.get());
                 }
                 ImGui.popItemWidth();
                 ImGui.sameLine();
-                ImGui.pushItemWidth(128);
+                ImGui.pushItemWidth(96);
                 if (ImGui.beginCombo("##"+attribute.id+"_type", attribute.type.getGLSL(), ImGuiComboFlags.None)){
                     for (GLDataType type : GLDataType.values()) {
                         boolean is_selected = attribute.type.equals(type);
                         if (ImGui.selectable(type.getGLSL(), is_selected)){
-                            attribute.type = type;
+                            attribute.setType(type);
                         }
                         if (is_selected) {
                             ImGui.setItemDefaultFocus();
@@ -71,15 +80,33 @@ public class AgentNode extends Node{
                     ImGui.endCombo();
                 }
                 ImGui.popItemWidth();
+                ImGui.sameLine();
+                ImGui.pushItemWidth(96);
+                if(ImGui.imageButton(0, 16, 16)){
+                    to_remove.add(attribute);
+                }
+                if(ImGui.isItemHovered()){
+                    ImGui.beginTooltip();
+                    ImGui.setTooltip(String.format("Delete %s", attribute.attribute_name.get()));
+                    ImGui.endTooltip();
+                }
+                ImGui.popItemWidth();
+
             });
         };
     }
 
+    private void removeAttribute(Attribute to_remove){
+        super.removeAttribute(to_remove.attribute_name.get());
+        this.attributes.remove(to_remove);
+    }
+
     private class Attribute{
-        String id;
-        ImString attribute_name;
-        GLDataType type;
-        float[] value;
+        private String id;
+        private ImString attribute_name;
+        private GLDataType type;
+        private float[] value;
+
 
         public Attribute(String id, String attribute_name, GLDataType type) {
             this.id = id;
@@ -87,6 +114,13 @@ public class AgentNode extends Node{
             this.type = type;
             this.value = new float[type.getSizeInFloats()];
             Arrays.fill(value, 0);
+        }
+
+        public void setType(GLDataType type){
+            if(!this.type.equals(type)){
+                AgentNode.this.addInputAttribute(attribute_name.get(), type);
+                this.type = type;
+            }
         }
     }
 
@@ -108,11 +142,11 @@ public class AgentNode extends Node{
             attribute_data.add("type", new JsonPrimitive(attribute.type.getGLSL()));
 
             // Check if there is a link between this attribute and another node.
-            Node connection = this.getLinkedNode(attribute_name);
-            if(connection != null) {
-                // If there is a connection serialize that connection.
-                attributes_data.add("default_value", connection.serialize());
-            }
+//            Node connection = this.getLinkedNode(attribute_name);
+//            if(connection != null) {
+//                // If there is a connection serialize that connection.
+//                attributes_data.add("default_value", connection.serialize());
+//            }
 
             attributes_data.add(attribute_name, attribute_data);
         }

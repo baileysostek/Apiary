@@ -12,6 +12,7 @@ import org.lwjgl.glfw.GLFW;
 import java.nio.DoubleBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 public class Mouse {
 
@@ -19,6 +20,11 @@ public class Mouse {
     @FunctionalInterface
     public interface MouseEventCallback<Button extends Integer, Action extends Integer, Modifiers extends Integer> {
         void apply(Button button, Action action, Modifiers modifiers);
+    }
+
+    @FunctionalInterface
+    public interface MouseScrollEvent{
+        void onScroll(int scroll_x, int scroll_y);
     }
 
     // Our Singleton Instance
@@ -38,6 +44,7 @@ public class Mouse {
 
     // Hold onto a set of mouse Callbacks
     private HashSet<MouseEventCallback> mouse_event_callbacks = new HashSet<>();
+    private LinkedList<MouseScrollEvent> mouse_scroll_events = new LinkedList<>();
 
     // Uniform variables
     private Uniform u_mouse_pos_pixels = ShaderManager.getInstance().createUniform("u_mouse_pos_pixels", GLDataType.VEC2);
@@ -64,7 +71,16 @@ public class Mouse {
             mouse_scroll_x = Math.max(mouse_scroll_x, 1f);
             mouse_scroll_y += (float) yoffset;
             mouse_scroll_y = Math.max(mouse_scroll_y, 1f);
+
+            // Process our scroll events
+            for(MouseScrollEvent event : mouse_scroll_events){
+                event.onScroll((int) xoffset, (int) yoffset);
+            }
         });
+    }
+
+    public void addScrollEvent(MouseScrollEvent event){
+        this.mouse_scroll_events.add(event);
     }
 
     private void processMouse(int button, int action){

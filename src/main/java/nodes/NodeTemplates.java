@@ -86,12 +86,12 @@ public enum NodeTemplates {
     ),
 
     CLAMP("@clamp",
-            new String[]{
-                    "value",
-                    "min",
-                    "max"
-            },
-            (stack, params) -> String.format("clamp(%s, %s, %s)", params[0], params[1], params[2])
+        new String[]{
+            "value",
+            "min",
+            "max"
+        },
+        (stack, params) -> String.format("clamp(%s, %s, %s)", params[0], params[1], params[2])
     ),
 
     CONDITIONAL("@conditional",
@@ -472,36 +472,6 @@ public enum NodeTemplates {
 
     public String toGLSL(Stack<JsonElement> stack, String[] params){
         return this.toGLSLCallback.apply(stack, params);
-    }
-
-    public JsonElement toIR(Node instance){
-        JsonElement[] params = new JsonElement[this.input_names.size()];
-        int index = 0;
-        for(String param_name : input_names){
-            params[index] = instance.getParameterValue(param_name);
-            index++;
-        }
-        JsonElement[] outputs = new JsonElement[this.output_names.size()];
-        index = 0;
-        for(String output_name : output_names){
-            outputs[index] = instance.getOutputValue(output_name);
-            index++;
-        }
-        // Create our out array
-        int capacity = this.input_names.size() + this.output_names.size() + 1; // The +1 is for the name of this node it ALWAYS comes last
-        JsonArray output = new JsonArray(capacity);
-        for(int i = 0; i < capacity; i++){
-            if(i < params.length) {
-                output.add(params[i]);
-            }else{
-                if(i - outputs.length < outputs.length){
-                    output.add(params[i]);
-                }
-            }
-        }
-        output.add(this.getNodeID());
-
-        return output;
     }
 
     public String getNodeID() {

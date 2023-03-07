@@ -1,5 +1,8 @@
 package graphics;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -98,5 +101,9 @@ public abstract class GLStruct {
      */
     protected HashMap<String, GLDataType> getAttributes() {
         return attributes;
+    }
+
+    public JsonElement serialize(){
+        return new JsonObject();
     }
 }

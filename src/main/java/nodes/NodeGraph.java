@@ -47,14 +47,16 @@ public class NodeGraph {
         return out;
     }
 
-    public NodeAttributePair getNodeAndPinFromID(int pin_id){
+    public Pin getPinFromID(int hovered_pin) {
         for(Node node : nodes.values()){
-            String pin_name = node.getPinNameFromID(pin_id);
-            if(pin_name != null){
-                return new NodeAttributePair(node, pin_name, node.getID(), pin_id);
+            if(!node.hasPinWithID(hovered_pin)){
+                continue;
             }
+            // We found the node with the pin that we hovered.
+
+            return node.getPinFromID(hovered_pin);
         }
+
         return null;
     }
-
 }

@@ -1,5 +1,8 @@
 package nodes;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 
@@ -16,10 +19,10 @@ public class TemplateNode extends Node{
 
         // Populate our parameter map based off our our template.
         for(String param_name : node_type.getInputNames()){
-            super.input_values.put(param_name, null);
+            super.addInputAttribute(param_name, GLDataType.FLOAT);
         }
         for(String output_name : node_type.getOutputNames()){
-            this.output_values.put(output_name, null);
+            super.addOutputAttribute(output_name, GLDataType.VEC2);
         }
 
     }
@@ -48,6 +51,39 @@ public class TemplateNode extends Node{
         }
     }
 
+    // To IR
+    @Override
+    public JsonElement serialize() {
+        JsonElement[] inputs = new JsonElement[this.getInputNames().size()];
+        int index = 0;
+        for(String param_name : this.getInputNames()){
+            inputs[index] = super.getInputValue(param_name);
+            index++;
+        }
+        JsonElement[] outputs = new JsonElement[this.getOutputNames().size()];
+        index = 0;
+        for(String output_name : getOutputNames()){
+            outputs[index] = super.getOutputValue(output_name);
+            index++;
+        }
+        // Create our out array
+        int capacity = inputs.length + outputs.length + 1; // The +1 is for the name of this node it ALWAYS comes last
+        JsonArray output = new JsonArray(capacity);
+        for(int i = 0; i < capacity; i++){
+            if(i < inputs.length) {
+                output.add(inputs[i]);
+            }else{
+                if(i - outputs.length < outputs.length){
+                    output.add(inputs[i]);
+                }
+            }
+        }
+        // This appends the call directive to the json array after the inputs and outputs.
+        // Example for ADD
+        // in: A, B Out: NONE  Directive: @add
+        // [A, B, "@add"]
+        output.add(this.node_type.getNodeID());
 
-
+        return output;
+    }
 }

@@ -18,8 +18,6 @@ import input.Keyboard;
 import input.Mouse;
 import nodes.*;
 import org.lwjgl.opengl.GL43;
-import util.Promise;
-import util.FileManager;
 import util.StringUtils;
 
 import java.util.LinkedList;
@@ -42,7 +40,6 @@ public class Editor {
 
     private final ImNodesContext CONTEXT = new ImNodesContext();
     private static final ImBoolean SHOW = new ImBoolean(true);
-    private int test = 0;
 
     //This is used for ID information
     private int imgui_element_id = 0;
@@ -52,7 +49,8 @@ public class Editor {
     Node test_0 = new TemplateNode(NodeTemplates.ON_SCREEN);
     Node test_1 = new TemplateNode(NodeTemplates.CONDITIONAL);
 
-    NodeAttributePair link = null;
+    Pin start_pin = null;
+    Pin end_pin = null;
 
     // IDS of popups and stuff
     String ADD_NODE_POPUP = "Add Node";
@@ -78,7 +76,7 @@ public class Editor {
         io = ImGui.getIO();
 
         io.setIniFilename(null); // We don't want to save .ini file
-//        io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard); // Navigation with keyboard
+        io.addConfigFlags(ImGuiConfigFlags.NavEnableKeyboard); // Navigation with keyboard
         io.addConfigFlags(ImGuiConfigFlags.DockingEnable);      // Enable Docking
         io.addConfigFlags(ImGuiConfigFlags.ViewportsEnable);    // Enable Multi-Viewport / Platform Windows
         io.addConfigFlags(ImGuiConfigFlags.DpiEnableScaleFonts);
@@ -135,6 +133,11 @@ public class Editor {
             }
         });
 
+        Mouse.getInstance().addScrollEvent(((scroll_x, scroll_y) -> {
+            io.setMouseWheelH(io.getMouseWheelH() + scroll_x);
+            io.setMouseWheel(io.getMouseWheel() + scroll_y);
+        }));
+
         io.setSetClipboardTextFn(new ImStrConsumer() {
             @Override
             public void accept(final String s) {
@@ -169,19 +172,22 @@ public class Editor {
                     System.out.println("Pin:" + ImNodes.getHoveredPin());
                     System.out.println("Link:" + ImNodes.getHoveredLink());
                     System.out.println("Node:" + ImNodes.getHoveredNode());
-                    this.link = graph.getNodeAndPinFromID(ImNodes.getHoveredPin());
+
+                    this.start_pin = graph.getPinFromID(ImNodes.getHoveredPin());
+                    System.out.println(start_pin);
                 }
                 if(action == GLFW_RELEASE) {
                     System.out.println("Pin:" + ImNodes.getHoveredPin());
                     System.out.println("Link:" + ImNodes.getHoveredLink());
                     System.out.println("Node:" + ImNodes.getHoveredNode());
-                    if(link != null){
-                        NodeAttributePair destination_node_pin = graph.getNodeAndPinFromID(ImNodes.getHoveredPin());
-                        if(destination_node_pin != null) {
-                            this.link.node.link(this.link.attribute, destination_node_pin.node, destination_node_pin.attribute);
+                    if(start_pin != null){
+                        // Check if we are dragging onto a pin.
+                        Pin dest_pin = graph.getPinFromID(ImNodes.getHoveredPin());
+                        if(dest_pin != null) {
+                            this.start_pin.link(dest_pin);
                         }
+
                     }
-                    link = null;
                 }
             }
 
@@ -195,7 +201,9 @@ public class Editor {
 
         graph.addNode(new AgentNode("Cell"));
 
-        this.test_0.link("out", this.test_1, "Predicate");
+        graph.addNode(new StepNode());
+
+//        this.test_0.link("out", this.test_1, "Predicate");
 
         Keyboard.getInstance().addPressCallback(GLFW_KEY_F1, () -> {
             if(this.graph.hasNodesOfType(AgentNode.class)){
@@ -306,11 +314,11 @@ public class Editor {
             if(initialize){
                 ImGui.setColumnWidth(0, 256);
             }
-            ImGui.beginChild("Simulation Editor", -1, viewport.getWorkSizeY(), false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse| ImGuiWindowFlags.AlwaysAutoResize);
+            ImGui.beginChild("Simulation Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse| ImGuiWindowFlags.AlwaysAutoResize);
             renderSimulationEditor();
             ImGui.endChild();
             ImGui.nextColumn();
-            ImGui.beginChild("Node Editor", -1, viewport.getWorkSizeY(), false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
+            ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
             renderNodeEditor();
 //            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
@@ -325,15 +333,16 @@ public class Editor {
 //        renderNodeEditor();
         // First we have the Apiary logo and some file options.
         ImGui.image(APIARY_TEXTURE_ID, 32, 32);
-        if(ImGui.button("Open File")){
-            Promise promise = new Promise(() -> {
-                String resource = FileManager.getInstance().openFilePicker("", new String[]{"png", "jpg"});
-                this.test = TextureManager.getInstance().load(resource);
-            });
-        }
+//        if(ImGui.button("Open File")){
+//            Promise promise = new Promise(() -> {
+//                String resource = FileManager.getInstance().openFilePicker("", new String[]{"png", "jpg"});
+//                this.test = TextureManager.getInstance().load(resource);
+//            });
+//        }
         ImGui.separator();
-        // Next we have a
-        ImGui.image(test, 256, 256);
+        // Render All of the different Agents which we have in simulation.
+
+        ImGui.separator();
         // Render our uniforms
         UniformManager.getInstance().render(null);
     }
