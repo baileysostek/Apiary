@@ -1,3 +1,4 @@
+![Apiary](https://github.com/baileysostek/Apiary/blob/main/res/textures/apiary.png?raw=true)
 # Apiary
 Apiary is a tool for GPU accelerated Agent based Modeling
 
