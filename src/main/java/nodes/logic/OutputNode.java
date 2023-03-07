@@ -1,6 +1,8 @@
-package nodes;
+package nodes.logic;
 
-public class OutputNode extends Node{
+import nodes.Node;
+
+public class OutputNode extends Node {
 
     public OutputNode() {
 

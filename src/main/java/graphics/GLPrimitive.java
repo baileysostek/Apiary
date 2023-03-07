@@ -15,4 +15,13 @@ public class GLPrimitive extends GLStruct{
     public GLDataType getPrimitiveType(){
         return this.type;
     }
+
+    @Override
+    public boolean typeEquals(GLStruct other) {
+        if(other instanceof GLPrimitive){
+            GLPrimitive other_primitive = (GLPrimitive) other;
+            return other_primitive.type.equals(this.type);
+        }
+        return false;
+    }
 }

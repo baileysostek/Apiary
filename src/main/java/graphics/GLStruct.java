@@ -106,4 +106,17 @@ public abstract class GLStruct {
     public JsonElement serialize(){
         return new JsonObject();
     }
+
+    public boolean typeEquals(GLStruct other){
+        return false;
+    }
+
+    public boolean typeEquals(GLDataType other){
+        if(this.attributes.size() == 1){
+            GLDataType type = (GLDataType) this.attributes.values().toArray()[0];
+            return type.equals(other);
+        }
+
+        return false;
+    }
 }

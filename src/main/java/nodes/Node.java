@@ -11,6 +11,10 @@ import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
+import nodes.link.Link;
+import nodes.pin.Pin;
+import nodes.pin.PinDirection;
+import nodes.pin.PinType;
 import util.BidirectionalLinkedHashedSet;
 
 import java.util.*;
@@ -69,12 +73,10 @@ public abstract class Node{
 
     // Helper functions to add and remove attributes
     public void addInputAttribute(String name, GLStruct value){
-        if(hasAttributeWithName(name)) {
-            this.input_values.put(name, value);
+        if(!hasAttributeWithName(name)) {
             addPin(name, PinType.DATA, PinDirection.DESTINATION);
-        }else{
-            System.err.println(String.format("Error, an attribute with name %s already exists on this node.", name));
         }
+        this.input_values.put(name, value);
     }
 
     public void addInputAttribute(String name, GLDataType type){
@@ -82,12 +84,10 @@ public abstract class Node{
     }
 
     public void addOutputAttribute(String name, GLStruct value){
-        if(hasAttributeWithName(name)) {
-            this.output_values.put(name, value);
+        if(!hasAttributeWithName(name)) {
             addPin(name, PinType.DATA, PinDirection.SOURCE);
-        }else{
-            System.err.println(String.format("Error, an attribute with name %s already exists on this node.", name));
         }
+        this.output_values.put(name, value);
     }
 
     public void addOutputAttribute(String name, GLDataType type){
@@ -95,7 +95,7 @@ public abstract class Node{
     }
 
     public boolean hasAttributeWithName(String attribute_name){
-        return (!this.input_values.containsKey(attribute_name)) || (!this.output_values.containsKey(attribute_name) || RESERVED_NAMES.contains(attribute_name));
+        return (this.input_values.containsKey(attribute_name)) || (this.output_values.containsKey(attribute_name) || RESERVED_NAMES.contains(attribute_name));
     }
 
     public Collection<String> getInputNames() {
@@ -133,11 +133,25 @@ public abstract class Node{
         return new JsonNull();
     }
 
+    public GLStruct getInputType(String parameter_name) {
+        if(this.input_values.containsKey(parameter_name)){
+            return this.input_values.get(parameter_name);
+        }
+        return null;
+    }
+
     public JsonElement getOutputValue(String output_name) {
         if(this.output_values.containsKey(output_name)){
             this.output_values.get(output_name).serialize();
         }
         return new JsonNull();
+    }
+
+    public GLStruct getOutputType(String parameter_name) {
+        if(this.output_values.containsKey(parameter_name)){
+            return this.output_values.get(parameter_name);
+        }
+        return null;
     }
 
     public void applyStyle(int style, NodeColors color){
@@ -149,6 +163,12 @@ public abstract class Node{
     }
 
     public final void renderNode(){
+        // Set ourInflow and outflow IDS
+        this.inflow_id = Editor.getInstance().getNextAvailableID();
+        this.attribute_ids.add(INFLOW, inflow_id);
+        this.outflow_id = Editor.getInstance().getNextAvailableID();
+        this.attribute_ids.add(OUTFLOW, outflow_id);
+
         // First we need to allocate a bunch of IDS for the future
         for(String parameter_name : input_values.keySet()){
             int id = Editor.getInstance().getNextAvailableID(); // Fixed with ++next_id;
@@ -176,10 +196,6 @@ public abstract class Node{
         render();
 
         ImGui.endGroup();
-
-        for(Pin pin : pins.values()){
-            ImGui.text(pin.getAttributeName());
-        }
 
         ImNodes.endNode();
 
@@ -211,10 +227,7 @@ public abstract class Node{
     }
 
     public int getAttributeByName(String attribute_name){
-        if(this.attribute_ids.containsKey(attribute_name)) {
-            return this.attribute_ids.get(attribute_name);
-        }
-        return -1;
+        return this.attribute_ids.getValueOrDefault(attribute_name, -1);
     }
 
     public int getID() {
@@ -280,7 +293,6 @@ public abstract class Node{
 
     private void renderFlowControls(){
         ImGui.newLine();
-        this.inflow_id = Editor.getInstance().getNextAvailableID();
         if(input_values.size() > 0) {
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
             ImNodes.beginInputAttribute(inflow_id, ImNodesPinShape.Triangle);
@@ -290,7 +302,6 @@ public abstract class Node{
         ImGui.sameLine();
         ImGui.image(0, this.width, 0);
         ImGui.sameLine();
-        this.outflow_id = Editor.getInstance().getNextAvailableID();
         if(output_values.size() > 0) {
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
             ImNodes.beginOutputAttribute(outflow_id, ImNodesPinShape.Triangle);
@@ -312,12 +323,55 @@ public abstract class Node{
     }
 
     //TODO
-    protected void renameInput(String initial_name, String s) {
+    protected void renameAttribute(String initial_name, String new_name) {
+        // Disallow renaming names on the reserved list.
+        if(RESERVED_NAMES.contains(initial_name)){
+            // TODO: Throw error
+            System.err.println(String.format("Error: Cannot rename the reserved attribute [%s] to the new name [%s] because this name is reserved.", initial_name, new_name));
+            return;
+        }
 
-    }
+        if(RESERVED_NAMES.contains(new_name)){
+            // TODO: Throw error
+            System.err.println(String.format("Error: Cannot rename [%s] to the reserved name [%s].", initial_name, new_name));
+            return;
+        }
 
-    protected void renameOutput(String initial_name, String s) {
+        // Disallow renaming to a name we already have.
+        if(hasAttributeWithName(new_name)){
+            //TODO: Throw error
+            System.err.println(String.format("Error: Cannot rename [%s] to [%s] because an attribute with that name already exists on this node.", initial_name, new_name));
+            return;
+        }
 
+        // Get the attribute we are renaming
+        if(hasAttributeWithName(initial_name)){
+            if(input_values.containsKey(initial_name)){
+                // Rename the input
+                GLStruct type = this.input_values.get(initial_name);
+                this.input_values.remove(initial_name);
+                this.input_values.put(new_name, type);
+            }else if(output_values.containsKey(initial_name)){
+                // Rename the output
+                GLStruct type = this.output_values.get(initial_name);
+                this.output_values.remove(initial_name);
+                this.output_values.put(new_name, type);
+            }
+        }
+
+        // Rename the pin
+        if(pins.containsKey(initial_name)){
+            Pin pin = pins.get(initial_name);
+            pin.rename(new_name);
+            pins.remove(initial_name);
+            pins.put(new_name, pin);
+        }
+
+        // Update the input name
+
+        // Update the Cached ID.
+        int id = this.attribute_ids.get(initial_name);
+        this.attribute_ids.add(new_name, id);
     }
 
     // Slow, maybe a different datastructure would be better.
@@ -360,11 +414,20 @@ public abstract class Node{
     }
 
     public boolean hasPinWithID(int pin_id) {
-        return this.attribute_ids.containsValue(pin_id);
+        return this.attribute_ids.containsValue(pin_id) || inflow_id == pin_id || outflow_id == pin_id;
     }
 
     public Pin getPinFromID(int hovered_pin) {
         String pin_name = this.attribute_ids.getKeyOrDefault(hovered_pin, "");
+        if(pin_name.isEmpty()){
+            // Check if this is the inflow or outflow pin
+            if(hovered_pin == inflow_id){
+                pin_name = INFLOW;
+            }
+            if(hovered_pin == outflow_id){
+                pin_name = OUTFLOW;
+            }
+        }
         return this.pins.getOrDefault(pin_name, null);
     }
 

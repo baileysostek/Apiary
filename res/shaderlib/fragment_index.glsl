@@ -13,3 +13,4 @@ uint local_y = gl_LocalInvocationID.y * work_area_width;
 uint grid_offset_y = row_size * gl_WorkGroupID.y;
 
 uint fragment_index = (local_x + grid_offset_x) + (local_y + grid_offset_y);
+uint instance = fragment_index;

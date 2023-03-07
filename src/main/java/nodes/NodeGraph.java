@@ -1,6 +1,7 @@
 package nodes;
 
 import com.google.gson.JsonObject;
+import nodes.pin.Pin;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;

@@ -1,5 +1,6 @@
 package editor;
 
+import com.google.gson.JsonElement;
 import core.Apiary;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
@@ -17,6 +18,10 @@ import imgui.type.ImString;
 import input.Keyboard;
 import input.Mouse;
 import nodes.*;
+import nodes.logic.AgentNode;
+import nodes.logic.StepNode;
+import nodes.logic.TemplateNode;
+import nodes.pin.Pin;
 import org.lwjgl.opengl.GL43;
 import util.StringUtils;
 
@@ -184,6 +189,7 @@ public class Editor {
                         // Check if we are dragging onto a pin.
                         Pin dest_pin = graph.getPinFromID(ImNodes.getHoveredPin());
                         if(dest_pin != null) {
+                            //TODO logic
                             this.start_pin.link(dest_pin);
                         }
 
@@ -208,7 +214,8 @@ public class Editor {
         Keyboard.getInstance().addPressCallback(GLFW_KEY_F1, () -> {
             if(this.graph.hasNodesOfType(AgentNode.class)){
                 for(Node node : this.graph.getNodesOfType(AgentNode.class)){
-                    node.serialize();
+                    JsonElement element = node.serialize();
+                    System.out.println(element);
                 }
             }
         });
@@ -322,8 +329,6 @@ public class Editor {
             renderNodeEditor();
 //            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
-
-            ImGui.showDemoWindow();
 
             ImGui.end();
         }

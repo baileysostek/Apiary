@@ -1,4 +1,4 @@
-package nodes;
+package nodes.pin;
 
 public enum PinType {
     FLOW(),

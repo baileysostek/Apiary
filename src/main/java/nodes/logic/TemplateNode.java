@@ -1,12 +1,14 @@
-package nodes;
+package nodes.logic;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
+import nodes.Node;
+import nodes.NodeTemplates;
 
-public class TemplateNode extends Node{
+public class TemplateNode extends Node {
 
     private final NodeTemplates node_type;
 

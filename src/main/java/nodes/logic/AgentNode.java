@@ -1,25 +1,21 @@
-package nodes;
+package nodes.logic;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import graphics.GLDataType;
-import graphics.GLPrimitive;
 import imgui.ImGui;
-import imgui.ImGuiTextFilter;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.flag.ImGuiComboFlags;
 import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImString;
+import nodes.Node;
+import nodes.NodeColors;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class AgentNode extends Node{
+public class AgentNode extends Node {
 
     private LinkedList<Attribute> attributes = new LinkedList<>();
     private final LinkedList<Attribute> to_remove = new LinkedList<>();
@@ -58,11 +54,12 @@ public class AgentNode extends Node{
         to_remove.clear();
 
         for(Attribute attribute : attributes){
-            super.renderInputAttribute(attribute.id, () -> {
+            super.renderInputAttribute(attribute.attribute_name.get(), () -> {
                 ImGui.pushItemWidth(128);
                 String initial_name = attribute.attribute_name.get();
                 if(ImGui.inputText("##"+attribute.id, attribute.attribute_name, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
-                    super.renameInput(initial_name, attribute.attribute_name.get());
+                    String new_name = attribute.attribute_name.get();
+                    super.renameAttribute(initial_name, new_name);
                 }
                 ImGui.popItemWidth();
                 ImGui.sameLine();

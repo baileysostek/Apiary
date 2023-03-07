@@ -1,10 +1,11 @@
-package nodes;
+package nodes.logic;
 
-import com.google.gson.JsonPrimitive;
 import graphics.GLDataType;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import nodes.Node;
+import nodes.NodeColors;
 
-public class StepNode extends Node{
+public class StepNode extends Node {
 
     public StepNode() {
 
@@ -13,9 +14,7 @@ public class StepNode extends Node{
         this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.AGENT_NODE_TITLE);
         this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
 
-        for(GLDataType type : GLDataType.values()){
-            super.addOutputAttribute(type.name(), type);
-        }
+        this.addOutputAttribute("instance", GLDataType.INT);
     }
 
 }
