@@ -1,4 +1,6 @@
-![Apiary](https://github.com/baileysostek/Apiary/blob/main/res/textures/apiary.png?raw=true)
+![Apiary](https://github.com/baileysostek/Apiary/blob/main/res/textures/apiary.png?raw=true width="512" height="512")
+
+<div style="text-align:center"><img src="https://github.com/baileysostek/Apiary/blob/main/res/textures/apiary.png" alt="Apiary" width="512" height="512"/></div>
 # Apiary
 Apiary is a tool for GPU accelerated Agent based Modeling
 
