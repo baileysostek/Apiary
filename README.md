@@ -10,4 +10,5 @@ https://drive.google.com/drive/u/0/folders/129YUOL9ydMppT9cgqowcPm3gxeIBz0On
 
 
 Apiary was initially designed and developed as the thesis project I pursued to complete my Masters of Science in Compute Science degree at Worcester Polytechnic Institute in 2023 resources relating to that work can be found below:
+
 [Thesis Proposal]( https://github.com/baileysostek/Apiary/blob/main/Programming_Abstractions_for_Agent_Based_Simulations.pdf)
