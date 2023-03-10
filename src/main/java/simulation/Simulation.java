@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import core.Apiary;
 import graphics.*;
 import input.Keyboard;
-import nodes.NodeManager;
+import compiler.GLSLCompiler;
 import org.lwjgl.glfw.GLFW;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
@@ -85,7 +85,7 @@ public class Simulation {
                 if(attribute_data.has("default_value")) {
                     // TODO: the transpialtion step on the line below can produce multiple lines, rather than a string substitution inject the strings onto the end of the default_value array.
                     // This will have the effect of just adding on the setter in the correct place and let any additional logic happen as well.
-                    String[] default_value = NodeManager.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()).split("\n");
+                    String[] default_value = GLSLCompiler.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()).split("\n");
                     for(int i = 0; i < default_value.length - 1; i++){
                         attribute_initializer_setup_data += default_value[i];
                     }
@@ -118,7 +118,7 @@ public class Simulation {
             // This code will be inserted into an initialization shader.
             for(String attribute_initializer_glsl : attributes_initialization_glsl){
                 // Populate the write buffer
-                initializer_glsl += String.format("%s\n", NodeManager.getInstance().transpile(attribute_initializer_glsl));
+                initializer_glsl += String.format("%s\n", GLSLCompiler.getInstance().transpile(attribute_initializer_glsl));
             }
             initializer_glsl += attributes_copy_glsl;
         }

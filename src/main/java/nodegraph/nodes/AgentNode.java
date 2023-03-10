@@ -1,4 +1,4 @@
-package nodes.logic;
+package nodegraph.nodes;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -9,8 +9,8 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.flag.ImGuiComboFlags;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
-import nodes.Node;
-import nodes.NodeColors;
+import nodegraph.Node;
+import nodegraph.NodeColors;
 
 import java.util.Arrays;
 import java.util.LinkedList;

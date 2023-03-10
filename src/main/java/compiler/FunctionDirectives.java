@@ -1,6 +1,5 @@
-package nodes;
+package compiler;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import graphics.ShaderManager;
@@ -9,9 +8,13 @@ import simulation.SimulationManager;
 import java.util.LinkedHashSet;
 import java.util.Stack;
 
-public enum NodeTemplates {
+public enum FunctionDirectives {
 
-    // Math opperations
+    /**
+     * This file defines all the different function directives which our compiler is aware of.
+     */
+
+    // Math operations
     ABS("@abs",
         new String[]{
             "A"
@@ -38,7 +41,7 @@ public enum NodeTemplates {
             // Since this is the all command, we are going to compute the number of agents of this type which have been allocated for the simulation.
             if(SimulationManager.getInstance().hasActiveSimulation()) {
                 if(SimulationManager.getInstance().hasAgent(params[0])) {
-                    NodeManager.getInstance().requireAgent(params[0]);
+                    GLSLCompiler.getInstance().requireAgent(params[0]);
                     return String.format("%s%s.agent[%s].%s = %s;\n", params[0], ShaderManager.getInstance().getSSBOWriteIdentifier(),params[1],params[2],params[3]);
                 }else{
                     //TODO throw compilation error.
@@ -58,7 +61,7 @@ public enum NodeTemplates {
         (stack, params) -> {
             if(SimulationManager.getInstance().hasActiveSimulation()) {
                 if(SimulationManager.getInstance().hasAgent(params[0])) {
-                    NodeManager.getInstance().requireAgent(params[0]);
+                    GLSLCompiler.getInstance().requireAgent(params[0]);
                     return String.format("%s%s.agent[%s].%s", params[0], ShaderManager.getInstance().getSSBOReadIdentifier(),params[1],params[2]);
                 }else{
                     //TODO throw compilation error.
@@ -174,12 +177,12 @@ public enum NodeTemplates {
         },
         (stack, params) -> {
             if(ShaderManager.getInstance().hasUniform(params[0])){
-                NodeManager.getInstance().requireUniform(params[0]);
+                GLSLCompiler.getInstance().requireUniform(params[0]);
             }else{
                 if(params[0].contains(".")){
                     String base_variable = params[0].substring(0, params[0].indexOf("."));
                     if(ShaderManager.getInstance().hasUniform(base_variable)){
-                        NodeManager.getInstance().requireUniform(base_variable);
+                        GLSLCompiler.getInstance().requireUniform(base_variable);
                     }
                 }
             }
@@ -432,11 +435,11 @@ public enum NodeTemplates {
     // These are our Abstract Methods
     private ToGLSLCallback toGLSLCallback;
 
-    NodeTemplates(String node_id, String[] params, ToGLSLCallback toGLSLCallback){
+    FunctionDirectives(String node_id, String[] params, ToGLSLCallback toGLSLCallback){
         this(node_id, params, new String[]{}, toGLSLCallback, new String[]{}, new String[]{});
     }
 
-    NodeTemplates(String node_id, String[] params, String[] output, ToGLSLCallback toGLSLCallback, String[] required_uniforms, String[] required_libraries){
+    FunctionDirectives(String node_id, String[] params, String[] output, ToGLSLCallback toGLSLCallback, String[] required_uniforms, String[] required_libraries){
         this.node_id = (node_id.startsWith("@") ? node_id : "@" + node_id).toLowerCase();
         for(String param_name : params){
             this.input_names.add(param_name);
@@ -463,7 +466,7 @@ public enum NodeTemplates {
         int num_inputs = this.input_names.size() + (this.output_names.size() == 1 ? 0 : this.output_names.size());
         String[] params = new String[num_inputs];
         for(int i = 0; i < num_inputs; i++){
-            params[num_inputs - i - 1] = NodeManager.getInstance().transpile(stack.pop());
+            params[num_inputs - i - 1] = GLSLCompiler.getInstance().transpile(stack.pop());
         }
         String out = toGLSL(stack, params);
         stack.push(new JsonPrimitive(out));

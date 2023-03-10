@@ -1,4 +1,4 @@
-package nodes;
+package nodegraph;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -11,10 +11,10 @@ import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
-import nodes.link.Link;
-import nodes.pin.Pin;
-import nodes.pin.PinDirection;
-import nodes.pin.PinType;
+import nodegraph.link.Link;
+import nodegraph.pin.Pin;
+import nodegraph.pin.PinDirection;
+import nodegraph.pin.PinType;
 import util.BidirectionalLinkedHashedSet;
 
 import java.util.*;

@@ -1,6 +1,7 @@
 package editor;
 
 import com.google.gson.JsonElement;
+import compiler.FunctionDirectives;
 import core.Apiary;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
@@ -17,12 +18,12 @@ import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import input.Keyboard;
 import input.Mouse;
-import nodes.*;
-import nodes.logic.AgentNode;
-import nodes.logic.StepNode;
-import nodes.logic.TemplateNode;
-import nodes.pin.Pin;
+import nodegraph.*;
+import nodegraph.nodes.AgentNode;
+import nodegraph.nodes.StepNode;
+import nodegraph.pin.Pin;
 import org.lwjgl.opengl.GL43;
+import simulation.SimulationManager;
 import util.StringUtils;
 
 import java.util.LinkedList;
@@ -51,8 +52,8 @@ public class Editor {
 
     NodeGraph graph = new NodeGraph();
 
-    Node test_0 = new TemplateNode(NodeTemplates.ON_SCREEN);
-    Node test_1 = new TemplateNode(NodeTemplates.CONDITIONAL);
+//    Node test_0 = new TemplateNode(FunctionDirectives.ON_SCREEN);
+//    Node test_1 = new TemplateNode(FunctionDirectives.CONDITIONAL);
 
     Pin start_pin = null;
     Pin end_pin = null;
@@ -202,8 +203,8 @@ public class Editor {
             }
         });
 
-        graph.addNode(this.test_0);
-        graph.addNode(this.test_1);
+//        graph.addNode(this.test_0);
+//        graph.addNode(this.test_1);
 
         graph.addNode(new AgentNode("Cell"));
 
@@ -266,10 +267,10 @@ public class Editor {
             ImString seachData = new ImString();
             ImGui.inputText("Search", seachData);
             ImGui.beginChildFrame(getNextAvailableID(), 256, 512);
-            for(NodeTemplates node : NodeTemplates.values()){
+            for(FunctionDirectives node : FunctionDirectives.values()){
                 if(node.name().contains(seachData.get())) {
                     if(ImGui.button(node.name())){
-                        graph.addNode(new TemplateNode(NodeTemplates.valueOf(node.name())));
+//                        graph.addNode(new TemplateNode(FunctionDirectives.valueOf(node.name())));
                         ImGui.closeCurrentPopup();
                     }
                     ImGui.newLine();
@@ -326,8 +327,8 @@ public class Editor {
             ImGui.endChild();
             ImGui.nextColumn();
             ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
-            renderNodeEditor();
-//            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
+//            renderNodeEditor();
+            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
 
             ImGui.end();

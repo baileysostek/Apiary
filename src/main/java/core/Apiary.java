@@ -6,27 +6,17 @@ import graphics.texture.TextureManager;
 import graphics.ui.FontLoader;
 import input.Keyboard;
 import input.Mouse;
-import nodes.NodeManager;
+import compiler.GLSLCompiler;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
-import org.lwjgl.stb.STBImage;
-import org.lwjgl.system.*;
-import org.lwjgl.util.nfd.NFDPathSet;
-import org.lwjgl.util.nfd.NativeFileDialog;
-import org.lwjgl.util.nfd.NativeFileDialog.*;
 import simulation.SimulationManager;
 import util.FileManager;
 import util.JsonUtils;
-import util.StringUtils;
 import util.ThreadUtils;
-
-import java.nio.*;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 // Accelerating Agent Based Simulations with Modern OpenGL
 
@@ -79,7 +69,7 @@ public class Apiary {
         JsonUtils.initialize();
         ShaderManager.initialize();
         TextureManager.initialize();
-        NodeManager.initialize();
+        GLSLCompiler.initialize();
         SimulationManager.initialize();
         FontLoader.initialize();
         FontLoader.getInstance().loadFont("font/Roboto/Roboto-Regular.ttf", "roboto");

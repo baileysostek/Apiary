@@ -1,4 +1,4 @@
-package nodes.pin;
+package nodegraph.pin;
 
 public enum PinDirection {
     SOURCE(),

@@ -1,9 +1,9 @@
-package nodes.logic;
+package nodegraph.nodes;
 
 import graphics.GLDataType;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
-import nodes.Node;
-import nodes.NodeColors;
+import nodegraph.Node;
+import nodegraph.NodeColors;
 
 public class StepNode extends Node {
 

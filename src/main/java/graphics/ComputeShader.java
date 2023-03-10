@@ -3,7 +3,7 @@ package graphics;
 import com.google.gson.JsonElement;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
-import nodes.NodeManager;
+import compiler.GLSLCompiler;
 import util.MathUtil;
 import util.StringUtils;
 
@@ -67,7 +67,7 @@ public class ComputeShader {
 
     private String generateShaderSource(boolean isRead){
         // Clear the state of the required imports in the PegManager. This way we only import what is needed.
-        NodeManager.getInstance().clearPersistentData();
+        GLSLCompiler.getInstance().clearPersistentData();
 
         // Define our substitutions to make to GLSL file
         HashMap<String, Object> substitutions = new HashMap<>();
@@ -76,12 +76,12 @@ public class ComputeShader {
         substitutions.put("workgroup_height", this.workgroup_height);
 
         // First thing we need to do besides mapping the current state of shader variables, is to compute our source code.
-        substitutions.put("compute_source", NodeManager.getInstance().transpile(compute_source_nodes));
+        substitutions.put("compute_source", GLSLCompiler.getInstance().transpile(compute_source_nodes));
         // Note this changes the state of PegManager.
 
         // Get the Agents accessor functions.
         String agent_ssbos = "";
-        HashMap<String, SSBO> required_agents = NodeManager.getInstance().getRequiredAgents();
+        HashMap<String, SSBO> required_agents = GLSLCompiler.getInstance().getRequiredAgents();
         for(String agent_name : required_agents.keySet()){
             agent_ssbos += required_agents.get(agent_name).generateGLSL(isRead);
         }
@@ -89,7 +89,7 @@ public class ComputeShader {
 
         // Uniforms
         String uniforms = "";
-        HashSet<String> uniform_names = NodeManager.getInstance().getRequiredUniforms();
+        HashSet<String> uniform_names = GLSLCompiler.getInstance().getRequiredUniforms();
         uniform_names.add("u_window_size");
         for(String uniform_name : uniform_names){
             if(ShaderManager.getInstance().hasUniform(uniform_name)) {
@@ -100,7 +100,7 @@ public class ComputeShader {
 
         // Includes
         String includes = "";
-        HashSet<String> required_includes = NodeManager.getInstance().getRequiredIncludes();
+        HashSet<String> required_includes = GLSLCompiler.getInstance().getRequiredIncludes();
         for(String requirement_name : required_includes){
             includes += String.format("#include %s\n", requirement_name);
         }
@@ -108,7 +108,7 @@ public class ComputeShader {
 
         // Includes In Main
         String include_in_main = "";
-        HashSet<String> required_to_include_in_main = NodeManager.getInstance().getRequiredIncludesInMain();
+        HashSet<String> required_to_include_in_main = GLSLCompiler.getInstance().getRequiredIncludesInMain();
         required_to_include_in_main.add("fragment_index");
         for(String requirement_name : required_to_include_in_main){
             include_in_main += String.format("#include %s\n", requirement_name);

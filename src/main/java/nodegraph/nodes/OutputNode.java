@@ -1,6 +1,6 @@
-package nodes.logic;
+package nodegraph.nodes;
 
-import nodes.Node;
+import nodegraph.Node;
 
 public class OutputNode extends Node {
 

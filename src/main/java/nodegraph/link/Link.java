@@ -1,13 +1,13 @@
-package nodes.link;
+package nodegraph.link;
 
 import editor.Editor;
 import graphics.GLPrimitive;
 import graphics.GLStruct;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
-import nodes.NodeColors;
-import nodes.pin.Pin;
-import nodes.pin.PinType;
+import nodegraph.NodeColors;
+import nodegraph.pin.Pin;
+import nodegraph.pin.PinType;
 
 // Links are directed
 public class Link {

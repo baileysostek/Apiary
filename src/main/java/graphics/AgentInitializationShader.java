@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import input.Mouse;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL43;
-import nodes.NodeManager;
+import compiler.GLSLCompiler;
 import simulation.SimulationManager;
 import util.MathUtil;
 import util.StringUtils;
@@ -56,7 +56,7 @@ public class AgentInitializationShader {
             if(attribute_data.has("default_value")) {
                 // TODO: the transpialtion step on the line below can produce multiple lines, rather than a string substitution inject the strings onto the end of the default_value array.
                 // This will have the effect of just adding on the setter in the correct place and let any additional logic happen as well.
-                String[] default_value = NodeManager.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()).split("\n");
+                String[] default_value = GLSLCompiler.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()).split("\n");
                 for(int i = 0; i < default_value.length - 1; i++){
                     attribute_initializer_setup_data += default_value[i];
                 }
@@ -77,7 +77,7 @@ public class AgentInitializationShader {
         // This code will be inserted into an initialization shader.
         for(String attribute_initializer_glsl : attributes_initialization_glsl){
             // Populate the write buffer
-            initializer_glsl += String.format("%s\n", NodeManager.getInstance().transpile(attribute_initializer_glsl));
+            initializer_glsl += String.format("%s\n", GLSLCompiler.getInstance().transpile(attribute_initializer_glsl));
         }
         initializer_glsl += attributes_copy_glsl;
 
@@ -91,7 +91,7 @@ public class AgentInitializationShader {
 
         // Uniforms
         String uniforms = "";
-        HashSet<String> uniform_names = NodeManager.getInstance().getRequiredUniforms();
+        HashSet<String> uniform_names = GLSLCompiler.getInstance().getRequiredUniforms();
         uniform_names.add("u_window_size");
         for(String uniform_name : uniform_names){
             if(ShaderManager.getInstance().hasUniform(uniform_name)) {
@@ -102,7 +102,7 @@ public class AgentInitializationShader {
 
         // Includes
         String includes = "";
-        HashSet<String> required_includes = NodeManager.getInstance().getRequiredIncludes();
+        HashSet<String> required_includes = GLSLCompiler.getInstance().getRequiredIncludes();
         for(String requirement_name : required_includes){
             includes += String.format("#include %s\n", requirement_name);
         }
@@ -110,7 +110,7 @@ public class AgentInitializationShader {
 
         // Includes In Main
         String include_in_main = "";
-        HashSet<String> required_to_include_in_main = NodeManager.getInstance().getRequiredIncludesInMain();
+        HashSet<String> required_to_include_in_main = GLSLCompiler.getInstance().getRequiredIncludesInMain();
         required_to_include_in_main.add("fragment_index");
         for(String requirement_name : required_to_include_in_main){
             include_in_main += String.format("#include %s\n", requirement_name);

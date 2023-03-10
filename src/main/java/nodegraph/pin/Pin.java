@@ -1,8 +1,8 @@
-package nodes.pin;
+package nodegraph.pin;
 
 import graphics.GLStruct;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
-import nodes.Node;
+import nodegraph.Node;
 
 public class Pin {
 

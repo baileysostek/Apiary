@@ -1,4 +1,4 @@
-package nodes;
+package nodegraph;
 
 import graphics.GLDataType;
 import imgui.ImColor;

@@ -1,4 +1,4 @@
-package nodes;
+package nodegraph;
 
 public enum NodeMetadata {
     DEFAULT(),

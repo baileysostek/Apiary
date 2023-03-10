@@ -1,4 +1,4 @@
-package nodes;
+package compiler;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -12,15 +12,15 @@ import util.StringUtils;
 
 import java.util.*;
 
-public class NodeManager {
-    private static NodeManager instance;
-    private NodeManager(){
-        for(NodeTemplates nodes : NodeTemplates.values()){
+public class GLSLCompiler {
+    private static GLSLCompiler instance;
+    private GLSLCompiler(){
+        for(FunctionDirectives nodes : FunctionDirectives.values()){
             registerNode(nodes);
         }
     }
     // Holds all nodes that our system knows about.
-    private HashMap<String, NodeTemplates> nodes = new HashMap<>();
+    private HashMap<String, FunctionDirectives> nodes = new HashMap<>();
 
     // Required uniforms
     private HashSet<String> required_uniforms = new HashSet<>();
@@ -30,16 +30,16 @@ public class NodeManager {
 
     public static void initialize(){
         if(instance == null){
-            instance = new NodeManager();
+            instance = new GLSLCompiler();
         }
     }
 
-    public static NodeManager getInstance(){
+    public static GLSLCompiler getInstance(){
         return instance;
     }
 
     // TODO: Maybe make an API that can be called into here.
-    private void registerNode(NodeTemplates node){
+    private void registerNode(FunctionDirectives node){
         String key = node.getNodeID();
         if(!this.nodes.containsKey(key)){
             this.nodes.put(key, node);
@@ -95,7 +95,7 @@ public class NodeManager {
                         if (instruction.startsWith("@")) {
                             if (nodes.containsKey(instruction)) {
                                 // Determine what node we are trying to reference.
-                                NodeTemplates action = nodes.get(instruction);
+                                FunctionDirectives action = nodes.get(instruction);
 
                                 // Now that we have our node lets figure out the requirements.
                                 for(String uniform_name : action.getRequiredUniforms()){
@@ -207,11 +207,11 @@ public class NodeManager {
         return this.required_imports;
     }
 
-    public NodeTemplates getNode(String node_identifier) {
+    public FunctionDirectives getNode(String node_identifier) {
         return this.nodes.getOrDefault(node_identifier, null);
     }
 
-    public Collection<NodeTemplates> getAllNodes() {
+    public Collection<FunctionDirectives> getAllNodes() {
         return this.nodes.values();
     }
 

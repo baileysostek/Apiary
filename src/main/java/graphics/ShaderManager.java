@@ -3,7 +3,7 @@ package graphics;
 import com.google.gson.JsonElement;
 import core.Apiary;
 import org.lwjgl.opengl.GL43;
-import nodes.NodeManager;
+import compiler.GLSLCompiler;
 import simulation.SimulationManager;
 import util.StringUtils;
 
@@ -388,19 +388,19 @@ public class ShaderManager {
 
     public int generateVertexShader(JsonElement pegs_data, boolean is_read){
         // Clear the state of the required imports in the PegManager. This way we only import what is needed.
-        NodeManager.getInstance().clearPersistentData();
+        GLSLCompiler.getInstance().clearPersistentData();
 
         // Define our substitutions to make to GLSL file
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
 
         // First thing we need to do besides mapping the current state of shader variables, is to compute our source code.
-        substitutions.put("vertex_source", NodeManager.getInstance().transpile(pegs_data));
+        substitutions.put("vertex_source", GLSLCompiler.getInstance().transpile(pegs_data));
         // Note this changes the state of PegManager.
 
         // Get the Agents accessor functions.
         String agent_ssbos = "";
-        HashMap<String, SSBO> required_agents = NodeManager.getInstance().getRequiredAgents();
+        HashMap<String, SSBO> required_agents = GLSLCompiler.getInstance().getRequiredAgents();
         for(String agent_name : required_agents.keySet()){
             agent_ssbos += required_agents.get(agent_name).generateGLSL(is_read);
         }
@@ -408,7 +408,7 @@ public class ShaderManager {
 
         // Uniforms
         String uniforms = "";
-        HashSet<String> uniform_names = NodeManager.getInstance().getRequiredUniforms();
+        HashSet<String> uniform_names = GLSLCompiler.getInstance().getRequiredUniforms();
         for(String uniform_name : uniform_names){
             if(ShaderManager.getInstance().hasUniform(uniform_name)) {
                 uniforms += ShaderManager.getInstance().getUniform(uniform_name).toGLSL();
@@ -418,7 +418,7 @@ public class ShaderManager {
 
         // Includes
         String includes = "";
-        HashSet<String> required_includes = NodeManager.getInstance().getRequiredIncludes();
+        HashSet<String> required_includes = GLSLCompiler.getInstance().getRequiredIncludes();
         for(String requirement_name : required_includes){
             includes += String.format("#include %s\n", requirement_name);
         }
@@ -426,7 +426,7 @@ public class ShaderManager {
 
         // Includes In Main
         String include_in_main = "";
-        HashSet<String> required_to_include_in_main = NodeManager.getInstance().getRequiredIncludesInMain();
+        HashSet<String> required_to_include_in_main = GLSLCompiler.getInstance().getRequiredIncludesInMain();
         for(String requirement_name : required_to_include_in_main){
             include_in_main += String.format("#include %s\n", requirement_name);
         }
@@ -453,19 +453,19 @@ public class ShaderManager {
 
     public int generateFragmentShaderFromPegs(JsonElement pegs_data, boolean is_read){
         // Clear the state of the required imports in the PegManager. This way we only import what is needed.
-        NodeManager.getInstance().clearPersistentData();
+        GLSLCompiler.getInstance().clearPersistentData();
 
         // Define our substitutions to make to GLSL file
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("shader_version", ShaderManager.getInstance().generateVersionString());
 
         // First thing we need to do besides mapping the current state of shader variables, is to compute our source code.
-        substitutions.put("fragment_source", NodeManager.getInstance().transpile(pegs_data));
+        substitutions.put("fragment_source", GLSLCompiler.getInstance().transpile(pegs_data));
         // Note this changes the state of PegManager.
 
         // Get the Agents accessor functions.
         String agent_ssbos = "";
-        HashMap<String, SSBO> required_agents = NodeManager.getInstance().getRequiredAgents();
+        HashMap<String, SSBO> required_agents = GLSLCompiler.getInstance().getRequiredAgents();
         for(String agent_name : required_agents.keySet()){
             agent_ssbos += required_agents.get(agent_name).generateGLSL(is_read);
         }
@@ -473,7 +473,7 @@ public class ShaderManager {
 
         // Uniforms
         String uniforms = "";
-        HashSet<String> uniform_names = NodeManager.getInstance().getRequiredUniforms();
+        HashSet<String> uniform_names = GLSLCompiler.getInstance().getRequiredUniforms();
         for(String uniform_name : uniform_names){
             if(ShaderManager.getInstance().hasUniform(uniform_name)) {
                 uniforms += ShaderManager.getInstance().getUniform(uniform_name).toGLSL();
@@ -483,7 +483,7 @@ public class ShaderManager {
 
         // Includes
         String includes = "";
-        HashSet<String> required_includes = NodeManager.getInstance().getRequiredIncludes();
+        HashSet<String> required_includes = GLSLCompiler.getInstance().getRequiredIncludes();
         for(String requirement_name : required_includes){
             includes += String.format("#include %s\n", requirement_name);
         }
@@ -491,7 +491,7 @@ public class ShaderManager {
 
         // Includes In Main
         String include_in_main = "";
-        HashSet<String> required_to_include_in_main = NodeManager.getInstance().getRequiredIncludesInMain();
+        HashSet<String> required_to_include_in_main = GLSLCompiler.getInstance().getRequiredIncludesInMain();
         for(String requirement_name : required_to_include_in_main){
             include_in_main += String.format("#include %s\n", requirement_name);
         }

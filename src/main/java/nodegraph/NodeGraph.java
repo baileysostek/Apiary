@@ -1,7 +1,7 @@
-package nodes;
+package nodegraph;
 
 import com.google.gson.JsonObject;
-import nodes.pin.Pin;
+import nodegraph.pin.Pin;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
