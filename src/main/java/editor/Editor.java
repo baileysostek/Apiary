@@ -1,8 +1,8 @@
 package editor;
 
-import com.google.gson.JsonElement;
-import compiler.FunctionDirectives;
+import compiler.FunctionDirective;
 import core.Apiary;
+import graphics.GLDataType;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
 import imgui.ImGui;
@@ -19,8 +19,15 @@ import imgui.type.ImString;
 import input.Keyboard;
 import input.Mouse;
 import nodegraph.*;
-import nodegraph.nodes.AgentNode;
-import nodegraph.nodes.StepNode;
+import nodegraph.nodes.agent.AgentNode;
+import nodegraph.nodes.controlflow.InitializationNode;
+import nodegraph.nodes.controlflow.StepNode;
+import nodegraph.nodes.data.Vec3Node;
+import nodegraph.nodes.random.RandomBoolNode;
+import nodegraph.nodes.random.RandomFloatNode;
+import nodegraph.nodes.variables.DefineNode;
+import nodegraph.nodes.variables.common.XPosBuiltInNode;
+import nodegraph.nodes.variables.common.YPosBuiltInNode;
 import nodegraph.pin.Pin;
 import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
@@ -179,7 +186,20 @@ public class Editor {
                     System.out.println("Link:" + ImNodes.getHoveredLink());
                     System.out.println("Node:" + ImNodes.getHoveredNode());
 
-                    this.start_pin = graph.getPinFromID(ImNodes.getHoveredPin());
+                    Pin clicked_pin = graph.getPinFromID(ImNodes.getHoveredPin());
+
+                    if (!(clicked_pin == null)) {
+                        if (Keyboard.getInstance().isKeyPressed(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_RIGHT_CONTROL)) {
+                            if (clicked_pin.isConnected()) {
+                                clicked_pin.disconnect();
+                            }
+
+                            start_pin = null;
+                            return;
+                        }
+                    }
+
+                    this.start_pin = clicked_pin;
                     System.out.println(start_pin);
                 }
                 if(action == GLFW_RELEASE) {
@@ -192,6 +212,7 @@ public class Editor {
                         if(dest_pin != null) {
                             //TODO logic
                             this.start_pin.link(dest_pin);
+                            dest_pin.link(this.start_pin);
                         }
 
                     }
@@ -206,26 +227,60 @@ public class Editor {
 //        graph.addNode(this.test_0);
 //        graph.addNode(this.test_1);
 
-        graph.addNode(new AgentNode("Cell"));
+//        graph.addNode(new DefineNode());
 
-        graph.addNode(new StepNode());
 
 //        this.test_0.link("out", this.test_1, "Predicate");
-
-        Keyboard.getInstance().addPressCallback(GLFW_KEY_F1, () -> {
-            if(this.graph.hasNodesOfType(AgentNode.class)){
-                for(Node node : this.graph.getNodesOfType(AgentNode.class)){
-                    JsonElement element = node.serialize();
-                    System.out.println(element);
-                }
-            }
-        });
 
     }
 
     public static void initialize(){
         if(instance == null){
             instance = new Editor();
+
+            Node init = new InitializationNode();
+
+            AgentNode cell = new AgentNode("cell");
+            cell.addInputPin("color", GLDataType.VEC3);
+            cell.addInputPin("alive", GLDataType.BOOL);
+            instance.graph.addNode(cell);
+
+//            init.getOutflow().link(cell.getInflow());
+
+            instance.graph.addNode(init);
+
+            Node vec3 = new Vec3Node();
+            instance.graph.addNode(vec3);
+
+            Node r = new RandomFloatNode();
+//            r.getPinFromName("random_float").link(vec3.getPinFromName("x"));
+            Node g = new RandomFloatNode();
+//            g.getPinFromName("random_float").link(vec3.getPinFromName("y"));
+            Node b = new RandomFloatNode();
+//            b.getPinFromName("random_float").link(vec3.getPinFromName("z"));
+            instance.graph.addNode(r);
+            instance.graph.addNode(g);
+            instance.graph.addNode(b);
+
+//            vec3.getPinFromName("vec3").link(cell.getPinFromName("color"));
+
+            Node alive = new RandomBoolNode();
+            instance.graph.addNode(alive);
+
+            // Now we will add the steps
+            StepNode gol_step = new StepNode();
+            instance.graph.addNode(gol_step);
+
+            DefineNode define_neighbors = new DefineNode();
+            instance.graph.addNode(define_neighbors);
+
+            instance.graph.addNode(new XPosBuiltInNode());
+            instance.graph.addNode(new YPosBuiltInNode());
+
+            instance.graph.addNode(new SequenceNode());
+
+//            alive.getPinFromName("random_bool").link(cell.getPinFromName("alive"));
+
         }
     }
 
@@ -267,7 +322,7 @@ public class Editor {
             ImString seachData = new ImString();
             ImGui.inputText("Search", seachData);
             ImGui.beginChildFrame(getNextAvailableID(), 256, 512);
-            for(FunctionDirectives node : FunctionDirectives.values()){
+            for(FunctionDirective node : FunctionDirective.values()){
                 if(node.name().contains(seachData.get())) {
                     if(ImGui.button(node.name())){
 //                        graph.addNode(new TemplateNode(FunctionDirectives.valueOf(node.name())));
@@ -327,7 +382,7 @@ public class Editor {
             ImGui.endChild();
             ImGui.nextColumn();
             ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
-//            renderNodeEditor();
+            renderNodeEditor();
             ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
 

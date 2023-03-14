@@ -15,12 +15,12 @@ import java.util.*;
 public class GLSLCompiler {
     private static GLSLCompiler instance;
     private GLSLCompiler(){
-        for(FunctionDirectives nodes : FunctionDirectives.values()){
+        for(FunctionDirective nodes : FunctionDirective.values()){
             registerNode(nodes);
         }
     }
     // Holds all nodes that our system knows about.
-    private HashMap<String, FunctionDirectives> nodes = new HashMap<>();
+    private HashMap<String, FunctionDirective> nodes = new HashMap<>();
 
     // Required uniforms
     private HashSet<String> required_uniforms = new HashSet<>();
@@ -39,7 +39,7 @@ public class GLSLCompiler {
     }
 
     // TODO: Maybe make an API that can be called into here.
-    private void registerNode(FunctionDirectives node){
+    private void registerNode(FunctionDirective node){
         String key = node.getNodeID();
         if(!this.nodes.containsKey(key)){
             this.nodes.put(key, node);
@@ -95,7 +95,7 @@ public class GLSLCompiler {
                         if (instruction.startsWith("@")) {
                             if (nodes.containsKey(instruction)) {
                                 // Determine what node we are trying to reference.
-                                FunctionDirectives action = nodes.get(instruction);
+                                FunctionDirective action = nodes.get(instruction);
 
                                 // Now that we have our node lets figure out the requirements.
                                 for(String uniform_name : action.getRequiredUniforms()){
@@ -207,11 +207,11 @@ public class GLSLCompiler {
         return this.required_imports;
     }
 
-    public FunctionDirectives getNode(String node_identifier) {
+    public FunctionDirective getNode(String node_identifier) {
         return this.nodes.getOrDefault(node_identifier, null);
     }
 
-    public Collection<FunctionDirectives> getAllNodes() {
+    public Collection<FunctionDirective> getAllNodes() {
         return this.nodes.values();
     }
 

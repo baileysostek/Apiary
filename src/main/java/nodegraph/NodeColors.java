@@ -18,11 +18,20 @@ public enum NodeColors {
     ;
 
     // Constants defined here
-    public static final int WHITE = ImColor.rgba(255, 255, 255, 255) ;
-    public static final int BLUE = ImColor.rgba(0,  0, 255, 255) ;
-    public static final int PINK = ImColor.rgba(255, 200, 255, 255);
+    public static final int RED     = ImColor.rgba(255,  0, 0, 255);
+    public static final int ORANGE  = ImColor.rgba(255,  165, 0, 255);
+    public static final int YELLOW  = ImColor.rgba(255,  255, 0, 255);
+    public static final int GREEN   = ImColor.rgba(0,  128, 0, 255);
+    public static final int BLUE    = ImColor.rgba(0,  0, 255, 255);
+    public static final int CYAN    = ImColor.rgba(0,  255, 255, 255);
+    public static final int MAGENTA = ImColor.rgba(255,  0, 255, 255);
+    public static final int WHITE   = ImColor.rgba(255, 255, 255, 255);
+    public static final int BLACK   = ImColor.rgba(0,  0, 0, 255);
+    public static final int PINK    = ImColor.rgba(255, 200, 255, 255);
+    public static final int GREY    = ImColor.rgba(128, 128, 128, 255);
+    public static final int BROWN   = ImColor.rgba(61, 28, 12, 255);
 
-    // Define a Map for our primative types
+    // Define a Map for our primitive types
     private static final Map<GLDataType, Integer> TYPE_COLORS = new HashMap<>();
     public static final int getTypeColor(GLDataType type){
         return TYPE_COLORS.getOrDefault(type , WHITE);
@@ -32,46 +41,45 @@ public enum NodeColors {
             int color = WHITE;
             switch (type) {
                 case INT:
-                    color = 0xFF000000;
+                    color = RED;
                     break;
                 case FLOAT:
-                    color = 0xFFFF0000;
+                    color = ORANGE;
                     break;
                 case VEC2:
-                    color = 0xFF00FF00;
+                    color = YELLOW;
                     break;
                 case VEC3:
-                    color = 0xFFFFFF00;
+                    color = GREEN;
                     break;
                 case VEC4:
-                    color = 0xFF0000FF;
+                    color = BLUE;
                     break;
                 case SAMPLER_CUBE:
-                    color = 0xFFFF00FF;
+                    color = MAGENTA;
                     break;
                 case SAMPLER_2D:
-                    color = 0xFF00FFFF;
+                    color = PINK;
                     break;
                 case SAMPLER_3D:
-                    color = 0xFFFFFFFF;
+                    color = WHITE;
                     break;
                 case MAT2:
-                    color = 0xFF0F0F0F;
+                    color = BLACK;
                     break;
                 case MAT3:
-                    color = 0xFFFF0F0F;
+                    color = GREY;
                     break;
                 case MAT4:
-                    color = 0xFF0FFF0F;
+                    color = CYAN;
                     break;
                 case BOOL:
-                    color = 0xFFFFFF0F;
+                    color = BROWN;
                     break;
             }
             // Append to our map
             TYPE_COLORS.put(type, color);
         }
-
     }
 
     protected int color;

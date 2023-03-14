@@ -15,7 +15,7 @@ public class UniformManager {
 
     private UniformManager() {
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("bg_color"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER));
-        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("cell_color"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER));
+        uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("fg_color"  , GLDataType.VEC3), UniformRenderer.COLOR_PICKER));
         uniforms.add(new ConstraintedUniform(ShaderManager.getInstance().createUniform("sensor", GLDataType.FLOAT), UniformRenderer.DRAG));
         HashMap<UniformConstraint, Float> turn_constraints = new HashMap<>();
         turn_constraints.put(UniformConstraint.MIN, 0f);

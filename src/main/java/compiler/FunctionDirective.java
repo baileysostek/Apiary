@@ -8,7 +8,7 @@ import simulation.SimulationManager;
 import java.util.LinkedHashSet;
 import java.util.Stack;
 
-public enum FunctionDirectives {
+public enum FunctionDirective {
 
     /**
      * This file defines all the different function directives which our compiler is aware of.
@@ -435,11 +435,11 @@ public enum FunctionDirectives {
     // These are our Abstract Methods
     private ToGLSLCallback toGLSLCallback;
 
-    FunctionDirectives(String node_id, String[] params, ToGLSLCallback toGLSLCallback){
+    FunctionDirective(String node_id, String[] params, ToGLSLCallback toGLSLCallback){
         this(node_id, params, new String[]{}, toGLSLCallback, new String[]{}, new String[]{});
     }
 
-    FunctionDirectives(String node_id, String[] params, String[] output, ToGLSLCallback toGLSLCallback, String[] required_uniforms, String[] required_libraries){
+    FunctionDirective(String node_id, String[] params, String[] output, ToGLSLCallback toGLSLCallback, String[] required_uniforms, String[] required_libraries){
         this.node_id = (node_id.startsWith("@") ? node_id : "@" + node_id).toLowerCase();
         for(String param_name : params){
             this.input_names.add(param_name);
@@ -447,6 +447,9 @@ public enum FunctionDirectives {
         if(output.length > 0){
             for(String output_name : output){
                 this.output_names.add(output_name);
+            }
+            if(output.length > 1){
+                System.out.println("Woah this is a strange node.");
             }
         }else{
             this.output_names.add("out");

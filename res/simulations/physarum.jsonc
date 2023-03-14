@@ -8,8 +8,8 @@
 //      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix", "vec4(1.0, 0.0, 0.0, 1.0)", ["marker", "fragment_index", "concentration", "@agent_read"], "@mix"], "@set"]
       "fragment_logic":[
 //         "out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "1.0", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix"], "@set"
-//             "out_color", ["vec4(", "pheromone", "fragment_index", "concentration", "@agent_read", "cell_color", "@get", "@mul", ", 1.0);"], "@set"
-        "out_color", ["vec4(", "bg_color", "@get", "cell_color", "@get", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix", ", 1.0);"], "@set"
+//             "out_color", ["vec4(", "pheromone", "fragment_index", "concentration", "@agent_read", "fg_color", "@get", "@mul", ", 1.0);"], "@set"
+        "out_color", ["vec4(", "bg_color", "@get", "fg_color", "@get", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix", ", 1.0);"], "@set"
       ]
     }
   },

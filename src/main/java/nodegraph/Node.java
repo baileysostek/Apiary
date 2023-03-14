@@ -1,8 +1,8 @@
 package nodegraph;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
 import editor.Editor;
 import graphics.GLDataType;
 import graphics.GLPrimitive;
@@ -11,15 +11,18 @@ import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
-import nodegraph.link.Link;
-import nodegraph.pin.Pin;
-import nodegraph.pin.PinDirection;
-import nodegraph.pin.PinType;
+import nodegraph.nodes.OutflowNode;
+import nodegraph.pin.*;
 import util.BidirectionalLinkedHashedSet;
+import util.ObservableLinkedHashMap;
 
 import java.util.*;
 
 public abstract class Node{
+
+    private boolean flow_controls_enabled = true;
+    private boolean force_render_inflow = false;
+    private boolean force_render_outflow = false;
 
     @FunctionalInterface
     public interface AttributeOverride{
@@ -48,9 +51,7 @@ public abstract class Node{
     private final LinkedHashMap<String, GLStruct> output_values = new LinkedHashMap<>();
 
     private final BidirectionalLinkedHashedSet<String, Integer> attribute_ids = new BidirectionalLinkedHashedSet<>();
-    private final LinkedHashMap<String, Pin> pins = new LinkedHashMap<>();
-
-    private LinkedHashSet<Link> links = new LinkedHashSet<>();
+    private final ObservableLinkedHashMap<String, Pin> pins = new ObservableLinkedHashMap<>();
 
     public Node(){
         this.id = ++next_id;
@@ -63,35 +64,55 @@ public abstract class Node{
         this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.CODE_NODE_TITLE_HOVER);
 
         // Reserve some Pins
-        addPin(INFLOW, PinType.FLOW, PinDirection.DESTINATION);
-        addPin(OUTFLOW, PinType.FLOW, PinDirection.SOURCE);
+        this.addPin(new InflowPin(this, INFLOW, PinType.FLOW));
+        this.addPin(new OutflowPin(this, OUTFLOW, PinType.FLOW));
     }
 
-    private void addPin(String pin_name, PinType type, PinDirection direction){
-        pins.put(pin_name, new Pin(this, pin_name, type, direction));
+    private Pin addPin(Pin to_add){
+        pins.put(to_add.getAttributeName(), to_add);
+        return to_add;
+    }
+
+    private Pin addPin(String pin_name, PinType type, PinDirection direction){
+        Pin to_add = (direction.equals(PinDirection.SOURCE)) ? new OutflowPin(this, pin_name, type) : new InflowPin(this, pin_name, type);
+        pins.put(pin_name, to_add);
+        return to_add;
     }
 
     // Helper functions to add and remove attributes
-    public void addInputAttribute(String name, GLStruct value){
+    public InflowPin addInputPin(String name, GLStruct value){
         if(!hasAttributeWithName(name)) {
             addPin(name, PinType.DATA, PinDirection.DESTINATION);
         }
         this.input_values.put(name, value);
+        Pin pin =  pins.getOrDefault(name, null);
+        if(pin instanceof OutflowPin){
+            System.err.println(String.format("Error: Trying to cast an outflow pin to an inflow pin. This is probably because %s was already defined to be an output pin.", name));
+        }
+        return (InflowPin)pin;
     }
 
-    public void addInputAttribute(String name, GLDataType type){
-        this.addInputAttribute(name, new GLPrimitive(name, type));
+    public InflowPin addInputPin(String name, GLDataType type){
+        return this.addInputPin(name, new GLPrimitive(name, type));
     }
 
-    public void addOutputAttribute(String name, GLStruct value){
+    public OutflowPin addOutputPin(String name, GLStruct value){
         if(!hasAttributeWithName(name)) {
             addPin(name, PinType.DATA, PinDirection.SOURCE);
         }
         this.output_values.put(name, value);
+        return (OutflowPin) pins.getOrDefault(name, null);
     }
 
-    public void addOutputAttribute(String name, GLDataType type){
-        this.addOutputAttribute(name, new GLPrimitive(name, type));
+    public OutflowPin addOutputPin(String name, GLDataType type){
+        return this.addOutputPin(name, new GLPrimitive(name, type));
+    }
+
+    public OutflowPin addOutflowPin(String  name){
+        OutflowPin pin = new OutflowPin(this, name, PinType.FLOW);
+        this.addPin(pin);
+        this.output_values.put(name, null);
+        return pin;
     }
 
     public boolean hasAttributeWithName(String attribute_name){
@@ -158,6 +179,10 @@ public abstract class Node{
         this.colors.put(style, color.getColor());
     }
 
+    public void applyStyle(int style, int color){
+        this.colors.put(style, color);
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -189,8 +214,8 @@ public abstract class Node{
         ImGui.beginGroup();
         // Title Bar
         ImNodes.beginNodeTitleBar();
-        ImGui.textColored(255, 255, 255, 255, this.title);
         renderFlowControls();
+        ImGui.textColored(255, 255, 255, 255, this.title);
         ImNodes.endNodeTitleBar();
 
         render();
@@ -234,31 +259,41 @@ public abstract class Node{
         return id;
     }
 
-    public int getInflowID() {
-        return inflow_id;
+    public InflowPin getInflow() {
+        return (InflowPin) getPinFromID(getPinIDFromName(INFLOW));
     }
 
-    public int getOutflowID() {
-        return outflow_id;
+    public OutflowPin getOutflow() {
+        return (OutflowPin) getPinFromID(getPinIDFromName(OUTFLOW));
     }
 
     //TODO custom function override.
     protected final void renderInputAttribute(String param_name) {
         if(this.attribute_ids.containsKey(param_name)) {
-            ImNodes.beginInputAttribute(this.attribute_ids.get(param_name), ImNodesPinShape.Circle);
-            ImGui.text(param_name);
-            ImNodes.endInputAttribute();
-        }
-    }
-
-    protected final void renderInputAttribute(String param_name, AttributeOverride render_override) {
-        if(this.attribute_ids.containsKey(param_name)) {
+            Pin pin = getPinFromName(param_name);
             GLStruct value = this.input_values.get(param_name);
             boolean push_color = (value instanceof GLPrimitive);
             if(push_color) {
                 ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.getTypeColor(((GLPrimitive)value).getPrimitiveType()));
             }
-            ImNodes.beginInputAttribute(this.attribute_ids.get(param_name), ImNodesPinShape.Circle);
+            ImNodes.beginInputAttribute(this.attribute_ids.get(param_name), pin.getShape());
+            ImGui.text(param_name);
+            ImNodes.endInputAttribute();
+            if (push_color) {
+                ImNodes.popColorStyle();
+            }
+        }
+    }
+
+    protected final void renderInputAttribute(String param_name, AttributeOverride render_override) {
+        if(this.attribute_ids.containsKey(param_name)) {
+            Pin pin = getPinFromName(param_name);
+            GLStruct value = this.input_values.get(param_name);
+            boolean push_color = (value instanceof GLPrimitive);
+            if(push_color) {
+                ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.getTypeColor(((GLPrimitive)value).getPrimitiveType()));
+            }
+            ImNodes.beginInputAttribute(this.attribute_ids.get(param_name), pin.getShape());
             render_override.render();
             ImNodes.endInputAttribute();
             if (push_color) {
@@ -269,12 +304,13 @@ public abstract class Node{
 
     protected final void renderOutputAttribute(String out_name) {
         if(this.attribute_ids.containsKey(out_name)) {
+            Pin pin = getPinFromName(out_name);
             GLStruct value = this.output_values.get(out_name);
             boolean push_color = (value instanceof GLPrimitive);
             if(push_color) {
                 ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.getTypeColor(((GLPrimitive)value).getPrimitiveType()));
             }
-            ImNodes.beginOutputAttribute(this.attribute_ids.get(out_name), ImNodesPinShape.Circle);
+            ImNodes.beginOutputAttribute(this.attribute_ids.get(out_name), pin.getShape());
             ImGui.text(out_name);
             ImNodes.endOutputAttribute();
             if (push_color) {
@@ -285,26 +321,36 @@ public abstract class Node{
 
     protected final void renderOutputAttribute(String out_name, AttributeOverride render_override) {
         if(this.attribute_ids.containsKey(out_name)) {
-            ImNodes.beginOutputAttribute(this.attribute_ids.get(out_name), ImNodesPinShape.Circle);
+            Pin pin = getPinFromName(out_name);
+            GLStruct value = this.output_values.get(out_name);
+            boolean push_color = (value instanceof GLPrimitive);
+            if(push_color) {
+                ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.getTypeColor(((GLPrimitive)value).getPrimitiveType()));
+            }
+            ImNodes.beginOutputAttribute(this.attribute_ids.get(out_name), pin.getShape());
             render_override.render();
             ImNodes.endOutputAttribute();
+            if (push_color) {
+                ImNodes.popColorStyle();
+            }
         }
     }
 
     private void renderFlowControls(){
-        ImGui.newLine();
-        if(input_values.size() > 0) {
+        if((input_values.size() > 0 || force_render_inflow) && flow_controls_enabled) {
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
-            ImNodes.beginInputAttribute(inflow_id, ImNodesPinShape.Triangle);
+            ImNodes.beginInputAttribute(inflow_id, getInflow().isConnected() ? ImNodesPinShape.TriangleFilled : ImNodesPinShape.Triangle);
             ImNodes.endInputAttribute();
             ImNodes.popColorStyle();
+            ImGui.sameLine();
         }
-        ImGui.sameLine();
-        ImGui.image(0, this.width, 0);
-        ImGui.sameLine();
-        if(output_values.size() > 0) {
+        if(this.width > 0) {
+            ImGui.image(0, this.width, 0);
+        }
+        if((output_values.size() > 0 || force_render_outflow) && flow_controls_enabled) {
+            ImGui.sameLine();
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
-            ImNodes.beginOutputAttribute(outflow_id, ImNodesPinShape.Triangle);
+            ImNodes.beginOutputAttribute(outflow_id, getOutflow().isConnected() ? ImNodesPinShape.TriangleFilled : ImNodesPinShape.Triangle);
             ImNodes.endOutputAttribute();
             ImNodes.popColorStyle();
         }
@@ -312,14 +358,9 @@ public abstract class Node{
 
     // Links
     public void renderLinks(){
-        // Now we can render all of our links
-        for(Link link : links){
-            link.renderLink();
+        for(Pin pin : this.pins.getValues()){
+            pin.renderLinks();
         }
-    }
-
-    public void link(Pin source, Pin destination){
-        this.links.add(new Link(source, destination));
     }
 
     //TODO
@@ -399,14 +440,37 @@ public abstract class Node{
         }
     }
 
-    public JsonElement serialize(){
-        JsonObject save_data = new JsonObject();
-        return save_data;
+    public final void generateIntermediate(JsonArray evaluation_stack){
+        // First we are going to push our serialization onto the stack.
+        // This serialization is anything we want to
+         serialize(evaluation_stack);
+
+        LinkedList<OutflowPin> outflows = new LinkedList<>();
+        for(Pin outflow : this.pins.getValues()){
+            if(outflow instanceof OutflowPin){
+                if(outflow.getType().equals(PinType.FLOW)) {
+                    outflows.add((OutflowPin) outflow);
+                }
+            }
+        }
+
+        if(outflows.size() == 1){
+            OutflowPin outflow = outflows.getFirst();
+            if(outflow.isConnected()) {
+                outflow.getConnection().getParent().generateIntermediate(evaluation_stack);
+            }
+        }else{
+            JsonArray multi_out = new JsonArray();
+            for(OutflowPin outflow : outflows){
+                outflow.getConnection().getParent().generateIntermediate(multi_out);
+            }
+            evaluation_stack.add(multi_out);
+        }
     }
 
-    public Node deserialize(JsonElement element){
-        return this;
-    }
+    // Default serialize dose nothing.
+    public void serialize(JsonArray evaluation_stack){};
+    public abstract JsonElement getValueOfPin(OutflowPin outflow);
 
     @Deprecated
     public String getPinNameFromID(int pin_id) {
@@ -415,6 +479,10 @@ public abstract class Node{
 
     public boolean hasPinWithID(int pin_id) {
         return this.attribute_ids.containsValue(pin_id) || inflow_id == pin_id || outflow_id == pin_id;
+    }
+
+    public Pin getPinFromName(String pin_name){
+        return this.getPinFromID(this.getPinIDFromName(pin_name));
     }
 
     public Pin getPinFromID(int hovered_pin) {
@@ -433,6 +501,61 @@ public abstract class Node{
 
     public int getPinIDFromName(String attribute_name){
         return this.attribute_ids.getValueOrDefault(attribute_name, -1);
+    }
+
+    public int getNumDataInflows(){
+        return this.input_values.size();
+    }
+
+    public int getNumDataOutflows(){
+        return this.output_values.size();
+    }
+
+    public Collection<InflowPin> getNodeInflowPins(){
+        //TODO optimize later
+        LinkedList<InflowPin> inflow_pins = new LinkedList<>();
+
+        for(Pin pin : pins.getValues()){
+            if(pin.getType().equals(PinType.DATA) && pin instanceof InflowPin){
+                inflow_pins.add((InflowPin) pin);
+            }
+        }
+
+        return inflow_pins;
+    }
+
+    public OutflowPin getPinSource(String inflow_pin_name){
+        if(this.pins.containsKey(inflow_pin_name)){
+            Pin pin = this.pins.get(inflow_pin_name);
+            if(pin instanceof InflowPin){
+                return getPinSource((InflowPin) pin);
+            }
+        }
+        return null;
+    }
+
+    public OutflowPin getPinSource(InflowPin inflow){
+        if(inflow.isConnected()){
+            return inflow.getLink();
+        }
+        return null;
+    }
+
+    // Rendering stuff
+    public void disableFlowControls(){
+        this.flow_controls_enabled = false;
+    }
+
+    public void forceRenderInflow(){
+        this.force_render_inflow = true;
+    }
+
+    public void forceRenderOutflow(){
+        this.force_render_outflow = true;
+    }
+
+    protected void setWidth(int width) {
+        this.width = width;
     }
 
 }

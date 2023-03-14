@@ -1,8 +1,6 @@
-package nodegraph.nodes;
+package nodegraph.nodes.agent;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
@@ -11,6 +9,8 @@ import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import nodegraph.Node;
 import nodegraph.NodeColors;
+import nodegraph.pin.InflowPin;
+import nodegraph.pin.OutflowPin;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -19,6 +19,7 @@ public class AgentNode extends Node {
 
     private LinkedList<Attribute> attributes = new LinkedList<>();
     private final LinkedList<Attribute> to_remove = new LinkedList<>();
+    private final LinkedList<Attribute> buffer = new LinkedList<>();
 
     public AgentNode(String agent_name){
         this();
@@ -35,11 +36,16 @@ public class AgentNode extends Node {
     public void render() {
         if(ImGui.button("Add Attribute")){
             String attribute_name = attributeNameAtIndex((int) System.currentTimeMillis());
-            Attribute new_attribute = new Attribute(attribute_name, attribute_name, GLDataType.FLOAT);
-            attributes.addLast(new_attribute);
-            super.addInputAttribute(attribute_name, new_attribute.type);
+            addInputPin(attribute_name, GLDataType.INT);
         }
         renderAttributes();
+    }
+
+    @Override
+    public InflowPin addInputPin(String attribute_name, GLDataType value) {
+        Attribute new_attribute = new Attribute(attribute_name, attribute_name, value);
+        attributes.addLast(new_attribute);
+        return super.addInputPin(attribute_name, new_attribute.type);
     }
 
     private String attributeNameAtIndex(int index){
@@ -53,7 +59,9 @@ public class AgentNode extends Node {
         }
         to_remove.clear();
 
-        for(Attribute attribute : attributes){
+        // Avoid concurrent modification
+        buffer.addAll(attributes);
+        for(Attribute attribute : buffer){
             super.renderInputAttribute(attribute.attribute_name.get(), () -> {
                 ImGui.pushItemWidth(128);
                 String initial_name = attribute.attribute_name.get();
@@ -78,7 +86,7 @@ public class AgentNode extends Node {
                 }
                 ImGui.popItemWidth();
                 ImGui.sameLine();
-                ImGui.pushItemWidth(96);
+                ImGui.pushItemWidth(16);
                 if(ImGui.imageButton(0, 16, 16)){
                     to_remove.add(attribute);
                 }
@@ -91,6 +99,7 @@ public class AgentNode extends Node {
 
             });
         };
+        buffer.clear();
     }
 
     private void removeAttribute(Attribute to_remove){
@@ -115,20 +124,18 @@ public class AgentNode extends Node {
 
         public void setType(GLDataType type){
             if(!this.type.equals(type)){
-                AgentNode.this.addInputAttribute(attribute_name.get(), type);
+                AgentNode.this.addInputPin(attribute_name.get(), type);
                 this.type = type;
             }
         }
     }
 
     @Override
-    public JsonElement serialize() {
-        JsonObject save_data = new JsonObject();
-
+    public void serialize(JsonArray evaluation_stack) {
         JsonObject agent_data = new JsonObject();
 
         JsonObject attributes_data = new JsonObject();
-        // Encode all of our attributes
+        // Encode all of our attributes by looping through them and checking if they are connected.
         for(Attribute attribute : attributes){
             String attribute_name = attribute.attribute_name.get();
 
@@ -139,19 +146,22 @@ public class AgentNode extends Node {
             attribute_data.add("type", new JsonPrimitive(attribute.type.getGLSL()));
 
             // Check if there is a link between this attribute and another node.
-//            Node connection = this.getLinkedNode(attribute_name);
-//            if(connection != null) {
-//                // If there is a connection serialize that connection.
-//                attributes_data.add("default_value", connection.serialize());
-//            }
+            InflowPin inflow = (InflowPin) super.getPinFromName(attribute_name);
+            if(inflow.isConnected()) {
+                // Get the outflow/source pin connecting to this pin.
+                OutflowPin source = inflow.getLink();
+                // If there is a connection serialize that connection.
+                attribute_data.add("default_value", source.getValue());
+            }
 
             attributes_data.add(attribute_name, attribute_data);
         }
         // Attach our attributes to agent data.
         agent_data.add("attributes", attributes_data);
-        // Add our data to the object
-        save_data.add(this.title, agent_data);
+    }
 
-        return save_data;
+    @Override
+    public JsonElement getValueOfPin(OutflowPin outflow) {
+        return JsonNull.INSTANCE;
     }
 }

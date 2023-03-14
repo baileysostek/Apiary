@@ -85,7 +85,7 @@ public class Simulation {
                 if(attribute_data.has("default_value")) {
                     // TODO: the transpialtion step on the line below can produce multiple lines, rather than a string substitution inject the strings onto the end of the default_value array.
                     // This will have the effect of just adding on the setter in the correct place and let any additional logic happen as well.
-                    String[] default_value = GLSLCompiler.getInstance().transpile(attribute_data.get("default_value").getAsJsonArray()).split("\n");
+                    String[] default_value = GLSLCompiler.getInstance().transpile(attribute_data.get("default_value")).split("\n");
                     for(int i = 0; i < default_value.length - 1; i++){
                         attribute_initializer_setup_data += default_value[i];
                     }

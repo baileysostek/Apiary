@@ -176,6 +176,6 @@ public class SimulationManager {
     }
 
     public int getSimulationTexture(){
-        return fbo.getTextureID();
+        return (fbo != null) ? fbo.getTextureID() : 0;
     }
 }

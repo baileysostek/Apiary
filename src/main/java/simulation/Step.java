@@ -11,7 +11,5 @@ public class Step {
     public Collection<String> getAgents() {
         return agents;
     }
-//    inputs
-//    uniform adjustments?
-//    outputs
+
 }

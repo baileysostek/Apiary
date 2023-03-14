@@ -1,15 +1,22 @@
 package nodegraph.pin;
 
 import graphics.GLStruct;
+import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
 import nodegraph.Node;
 
-public class Pin {
+import java.util.LinkedHashSet;
+
+public abstract class Pin {
 
     private final Node parent;
 
     private String attribute_name;
-    private final int shape = ImNodesPinShape.Circle;
+    private final int shape_connected_data = ImNodesPinShape.CircleFilled;
+    private final int shape_disconnected_data = ImNodesPinShape.Circle;
+
+    private final int shape_connected_flow = ImNodesPinShape.TriangleFilled;
+    private final int shape_disconnected_flow = ImNodesPinShape.Triangle;
 
     private final PinType type;
     private final PinDirection direction;
@@ -27,7 +34,7 @@ public class Pin {
     }
 
     public int getShape() {
-        return shape;
+        return isConnected() ? ((type.equals(PinType.FLOW)) ? shape_connected_flow : shape_connected_data) :  ((type.equals(PinType.FLOW)) ? shape_disconnected_flow : shape_disconnected_data);
     }
 
     public PinType getType() {
@@ -38,17 +45,16 @@ public class Pin {
         return this.parent.getPinIDFromName(attribute_name);
     }
 
-    public void link(Pin other){
-        if(canLink(other)){
-            this.parent.link(this, other);
-        }
-    }
-
     public boolean canLink(Pin other){
         // Disallow pins from linking to themselves
         if(this.equals(other)){
             return false;
         }
+        // If we are already linked to the other pin do not allow duplicate links.
+        if(isConnectedTo(other)){
+            return false;
+        }
+
         // In order to link the types need to align.
         if(this.type.equals(other.type)){
             // The directions need to be different
@@ -88,4 +94,18 @@ public class Pin {
     public void rename(String new_name) {
         this.attribute_name = new_name;
     }
+
+    public Node getParent() {
+        return this.parent;
+    }
+
+
+
+    public abstract void link(Pin other);
+    public abstract void disconnect();
+
+    public abstract boolean isConnected();
+    public abstract boolean isConnectedTo(Pin other);
+
+    public abstract void renderLinks();
 }
