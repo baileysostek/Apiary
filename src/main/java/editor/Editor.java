@@ -23,6 +23,7 @@ import nodegraph.nodes.agent.AgentNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
 import nodegraph.nodes.data.Vec3Node;
+import nodegraph.nodes.math.IncrementNode;
 import nodegraph.nodes.random.RandomBoolNode;
 import nodegraph.nodes.random.RandomFloatNode;
 import nodegraph.nodes.variables.DefineNode;
@@ -278,6 +279,17 @@ public class Editor {
             instance.graph.addNode(new YPosBuiltInNode());
 
             instance.graph.addNode(new SequenceNode());
+
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+            instance.graph.addNode(new IncrementNode());
+
 
 //            alive.getPinFromName("random_bool").link(cell.getPinFromName("alive"));
 
