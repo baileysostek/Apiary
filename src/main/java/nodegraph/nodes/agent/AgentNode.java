@@ -42,8 +42,8 @@ public class AgentNode extends Node {
     }
 
     @Override
-    public InflowPin addInputPin(String attribute_name, GLDataType value) {
-        Attribute new_attribute = new Attribute(attribute_name, attribute_name, value);
+    public InflowPin addInputPin(String attribute_name, GLDataType... accepted_types) {
+        Attribute new_attribute = new Attribute(attribute_name, attribute_name, (GLDataType) Arrays.stream(accepted_types).toArray()[0]);
         attributes.addLast(new_attribute);
         return super.addInputPin(attribute_name, new_attribute.type);
     }
@@ -103,7 +103,7 @@ public class AgentNode extends Node {
     }
 
     private void removeAttribute(Attribute to_remove){
-        super.removeAttribute(to_remove.attribute_name.get());
+        super.removePin(to_remove.attribute_name.get());
         this.attributes.remove(to_remove);
     }
 

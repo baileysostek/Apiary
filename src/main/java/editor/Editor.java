@@ -22,10 +22,13 @@ import nodegraph.*;
 import nodegraph.nodes.agent.AgentNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
+import nodegraph.nodes.controlflow.TernaryNode;
 import nodegraph.nodes.data.Vec3Node;
+import nodegraph.nodes.math.AddNode;
 import nodegraph.nodes.math.IncrementNode;
 import nodegraph.nodes.random.RandomBoolNode;
 import nodegraph.nodes.random.RandomFloatNode;
+import nodegraph.nodes.simulation.LinearizeNode;
 import nodegraph.nodes.variables.DefineNode;
 import nodegraph.nodes.variables.common.XPosBuiltInNode;
 import nodegraph.nodes.variables.common.YPosBuiltInNode;
@@ -211,7 +214,7 @@ public class Editor {
                         // Check if we are dragging onto a pin.
                         Pin dest_pin = graph.getPinFromID(ImNodes.getHoveredPin());
                         if(dest_pin != null) {
-                            //TODO logic
+                            // Bidirectional link.
                             this.start_pin.link(dest_pin);
                             dest_pin.link(this.start_pin);
                         }
@@ -244,6 +247,7 @@ public class Editor {
             AgentNode cell = new AgentNode("cell");
             cell.addInputPin("color", GLDataType.VEC3);
             cell.addInputPin("alive", GLDataType.BOOL);
+            cell.addInputPin("test", GLDataType.INT);
             instance.graph.addNode(cell);
 
 //            init.getOutflow().link(cell.getInflow());
@@ -290,6 +294,11 @@ public class Editor {
             instance.graph.addNode(new IncrementNode());
             instance.graph.addNode(new IncrementNode());
 
+            instance.graph.addNode(new LinearizeNode());
+
+            instance.graph.addNode(new AddNode());
+
+            instance.graph.addNode(new TernaryNode());
 
 //            alive.getPinFromName("random_bool").link(cell.getPinFromName("alive"));
 

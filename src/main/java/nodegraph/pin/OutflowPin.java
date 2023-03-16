@@ -1,7 +1,9 @@
 package nodegraph.pin;
 
 import com.google.gson.JsonElement;
+import graphics.GLDataType;
 import nodegraph.Node;
+import nodegraph.NodeColors;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -10,8 +12,15 @@ public class OutflowPin extends Pin{
 
     private LinkedHashSet<InflowPin> links = new LinkedHashSet<>();
 
-    public OutflowPin(Node parent, String attribute_name, PinType type) {
+    private GLDataType type;
+
+    public OutflowPin(Node parent, String attribute_name, PinType type, GLDataType data_type) {
         super(parent, attribute_name, type, PinDirection.SOURCE);
+        this.type = data_type;
+    }
+
+    public GLDataType getDataType(){
+        return this.type;
     }
 
     @Override
@@ -57,6 +66,34 @@ public class OutflowPin extends Pin{
         return this.links.stream().findFirst().get();
     }
 
+    public void setType(GLDataType type) {
+        this.type = type;
+    }
+
+    @Override
+    public boolean canLink(Pin other) {
+        if(other == null){
+            return false; // Cant link to nothing.
+        }
+
+        // If we are already linked to the other pin do not allow duplicate links.
+        if(isConnectedTo(other)){
+            return false;
+        }
+
+        if(!(this.getType().equals(other.getType()))){
+            return false;
+        }
+
+        // Ensure that we are connecting to an outflow
+        if(other instanceof InflowPin){
+            InflowPin inflow = (InflowPin) other;
+            return inflow.canLink(this);
+        }
+
+        return false;
+    }
+
     @Override
     public boolean isConnected() {
         return this.links.size() > 0;
@@ -67,11 +104,11 @@ public class OutflowPin extends Pin{
         return links.contains(other);
     }
 
-    public void renderLinks() {
-
-    }
-
     public JsonElement getValue(){
         return this.getParent().getValueOfPin(this);
+    }
+
+    public int getColor(){
+        return NodeColors.getTypeColor(this.type);
     }
 }

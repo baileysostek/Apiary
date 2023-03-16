@@ -72,8 +72,8 @@ public class Apiary {
         GLSLCompiler.initialize();
         SimulationManager.initialize();
         FontLoader.initialize();
-        FontLoader.getInstance().loadFont("font/Roboto/Roboto-Regular.ttf", "roboto");
-        FontLoader.getInstance().loadFont("font/Roboto_Mono/static/RobotoMono-Regular.ttf", "roboto_mono");
+//        FontLoader.getInstance().loadFont("font/Roboto/Roboto-Regular.ttf", "roboto");
+//        FontLoader.getInstance().loadFont("font/Roboto_Mono/static/RobotoMono-Regular.ttf", "roboto_mono");
 
         Mouse.initialize();
         Keyboard.initialize();
