@@ -1,5 +1,6 @@
 package nodegraph.pin;
 
+import com.google.gson.JsonElement;
 import graphics.GLDataType;
 import graphics.GLStruct;
 import imgui.extension.imnodes.ImNodes;
@@ -66,12 +67,15 @@ public abstract class Pin {
     }
 
 
-
+    public abstract void render();
     public abstract void link(Pin other);
     public abstract void disconnect();
 
     public abstract boolean isConnected();
     public abstract boolean isConnectedTo(Pin other);
+    public abstract boolean hasNonDefaultValue();
+
+    public abstract JsonElement getValue();
 
     public abstract int getColor();
 }

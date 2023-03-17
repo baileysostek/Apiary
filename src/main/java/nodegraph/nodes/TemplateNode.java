@@ -49,15 +49,7 @@ public class TemplateNode extends Node {
                 JsonArray local_evaluation_stack = new JsonArray();
 
                 for (InflowPin inflow : inflow_pins) {
-                    OutflowPin inflow_source = super.getPinSource(inflow);
-                    if (inflow_source != null) {
-                        if (inflow_source.isConnected()) {
-                            JsonElement element = inflow_source.getValue();
-                            local_evaluation_stack.add(element);
-                        }
-                    } else {
-                        local_evaluation_stack.add(JsonNull.INSTANCE);
-                    }
+                    local_evaluation_stack.add(inflow.getValue());
                 }
 
                 // Finally, we add the Directive

@@ -1,27 +1,51 @@
 package nodegraph.pin;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import editor.Editor;
 import graphics.GLDataType;
-import graphics.GLPrimitive;
-import graphics.GLStruct;
+import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
-import imgui.extension.imnodes.flag.ImNodesStyleVar;
+import imgui.flag.ImGuiInputTextFlags;
+import imgui.type.ImString;
 import nodegraph.Node;
 import nodegraph.NodeColors;
+import simulation.Attribute;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 public class InflowPin extends Pin {
 
     private OutflowPin link;
+
+    private ImString value = new ImString();
 
     // An inflow pin can have any number of datatypes in it.
     private LinkedHashSet<GLDataType> accepted_types = new LinkedHashSet<GLDataType>();
 
     public InflowPin(Node parent, String attribute_name, PinType type, GLDataType ... accepted_types) {
         super(parent, attribute_name, type, PinDirection.DESTINATION);
-        this.accepted_types.addAll(List.of(accepted_types));
+        this.accepted_types.addAll(Arrays.asList(accepted_types));
+    }
+
+    @Override
+    public void render() {
+        ImNodes.pushColorStyle(ImNodesColorStyle.Pin, getColor());
+        ImNodes.beginInputAttribute(getID(), getShape());
+        if(this.isConnected()){
+            // Render the name
+            ImGui.text(this.getAttributeName());
+        }else{
+            ImGui.setNextItemWidth(this.getParent().getWidth()  / 2);
+            if(ImGui.inputTextWithHint("##_"+this.getID()+"_value", "value", value, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
+                System.out.println("Value:"+value.get());
+            }
+        }
+        ImNodes.endInputAttribute();
+        ImNodes.popColorStyle();
     }
 
     @Override
@@ -95,6 +119,11 @@ public class InflowPin extends Pin {
         return link.equals(other);
     }
 
+    @Override
+    public boolean hasNonDefaultValue() {
+        return isConnected() || !value.get().isEmpty();
+    }
+
     public void renderLinks() {
         if (!(link == null)) {
             //TODO smooth fade between colors.
@@ -123,6 +152,25 @@ public class InflowPin extends Pin {
         if(this.isConnected()){
             return NodeColors.getTypeColor(this.getLink().getDataType());
         }
-        return NodeColors.getTypeColor((GLDataType) this.accepted_types.toArray()[(int) Math.floor(this.accepted_types.size() * Math.random())]);
+        if(this.accepted_types.size() > 0) {
+            return NodeColors.getTypeColor((GLDataType) this.accepted_types.toArray()[(int) Math.floor(this.accepted_types.size() * Math.random())]);
+        }else{
+            return NodeColors.WHITE;
+        }
+    }
+
+    public LinkedList<GLDataType> getAcceptedTypes(){
+        LinkedList<GLDataType> out = new LinkedList<>();
+        out.addAll(this.accepted_types);
+        return out;
+    }
+
+    @Override
+    public JsonElement getValue(){
+        if(isConnected()){
+            return this.link.getValue();
+        } else {
+            return new JsonPrimitive(this.value.get());
+        }
     }
 }

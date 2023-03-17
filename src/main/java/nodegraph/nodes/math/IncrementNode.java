@@ -3,39 +3,82 @@ package nodegraph.nodes.math;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import compiler.FunctionDirective;
+import editor.Editor;
+import graphics.GLDataType;
 import imgui.ImGui;
-import imgui.flag.ImGuiInputTextFlags;
-import imgui.type.ImString;
+import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
+import nodegraph.nodes.variables.DefineNode;
+import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
+
+import java.util.Collection;
 
 public class IncrementNode extends Node {
 
-    private ImString variable_name = new ImString("variable");
+    private DefineNode reference;
+
+    private InflowPin value;
 
     public IncrementNode() {
 
-        super.setTitle("++");
+        super.setTitle("Increment Value");
 
         this.forceRenderInflow();
         this.forceRenderOutflow();
 
         this.setWidth(128);
+
+        // We dont know the data type yet.
+        value = super.addInputPin("value", GLDataType.INT);
     }
 
     @Override
     public void render() {
         ImGui.setNextItemWidth(super.width);
-        if(ImGui.inputText("##"+super.getID(), variable_name, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
 
+        String variable_name = (reference == null) ? "Select a Variable" : reference.getVariableName();
+
+        Collection<Node> variables = Editor.getInstance().getNodeGraph().getNodesOfType(DefineNode.class);
+
+        if (ImGui.beginCombo("##"+super.getID()+"_var", variable_name, ImGuiComboFlags.None)){
+            for (Node node : variables) {
+                DefineNode define_node = (DefineNode) node;
+                if(define_node.getVariableName().isEmpty()){
+                    continue; // If the variable does not have a name we will skip over it.
+                }
+
+                boolean is_selected = reference != null && reference.equals(define_node);
+                if (ImGui.selectable(define_node.getVariableName(), is_selected)){
+                    reference = define_node;
+                }
+                if (is_selected) {
+                    ImGui.setItemDefaultFocus();
+                }
+            }
+
+//            if (ImGui.selectable("Select a Variable", reference == null)){
+//                attribute.setType(type);
+//            }
+//            if (is_selected) {
+//                ImGui.setItemDefaultFocus();
+//            }
+            ImGui.endCombo();
         }
+
+        if(reference != null){
+            value.setType(reference.getVariableDataType());
+        }
+
+        // Render the value
+        super.renderInputAttribute(value.getAttributeName());
     }
 
     @Override
     public void serialize(JsonArray evaluation_stack) {
         JsonArray define_variable = new JsonArray();
 
-        define_variable.add(variable_name.get());       // Type
+        define_variable.add(reference.getTitle());       // Type
         define_variable.add(1);  // Name
         define_variable.add(FunctionDirective.INCREMENT.getNodeID());
 

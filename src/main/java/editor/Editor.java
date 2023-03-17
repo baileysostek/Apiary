@@ -8,6 +8,7 @@ import graphics.texture.TextureManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImGuiViewport;
+import imgui.ImVec2;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.extension.imnodes.ImNodes;
@@ -20,6 +21,9 @@ import input.Keyboard;
 import input.Mouse;
 import nodegraph.*;
 import nodegraph.nodes.agent.AgentNode;
+import nodegraph.nodes.agent.AgentReadNode;
+import nodegraph.nodes.agent.AgentWriteNode;
+import nodegraph.nodes.controlflow.ConditionalNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
 import nodegraph.nodes.controlflow.TernaryNode;
@@ -67,7 +71,9 @@ public class Editor {
 //    Node test_1 = new TemplateNode(FunctionDirectives.CONDITIONAL);
 
     Pin start_pin = null;
-    Pin end_pin = null;
+
+    float node_editor_width  = 1;
+    float node_editor_height = 1;
 
     // IDS of popups and stuff
     String ADD_NODE_POPUP = "Add Node";
@@ -190,6 +196,14 @@ public class Editor {
                     System.out.println("Link:" + ImNodes.getHoveredLink());
                     System.out.println("Node:" + ImNodes.getHoveredNode());
 
+//                    if(ImNodes.getHoveredNode() >= 0){
+//                        ImNodes.editorMoveToNode(ImNodes.getHoveredNode());
+//                        ImVec2 pan = new ImVec2();
+//                        ImNodes.editorContextGetPanning(pan);
+//                        ImNodes.editorResetPanning(pan.x + node_editor_width / 2f, pan.y + node_editor_height / 2f);
+//                        System.out.println(pan);
+//                    }
+
                     Pin clicked_pin = graph.getPinFromID(ImNodes.getHoveredPin());
 
                     if (!(clicked_pin == null)) {
@@ -300,6 +314,11 @@ public class Editor {
 
             instance.graph.addNode(new TernaryNode());
 
+            instance.graph.addNode(new AgentReadNode());
+            instance.graph.addNode(new AgentWriteNode());
+
+            instance.graph.addNode(new ConditionalNode());
+
 //            alive.getPinFromName("random_bool").link(cell.getPinFromName("alive"));
 
         }
@@ -403,6 +422,8 @@ public class Editor {
             ImGui.endChild();
             ImGui.nextColumn();
             ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
+            node_editor_width = ImGui.getWindowWidth();
+            node_editor_height = ImGui.getWindowHeight();
             renderNodeEditor();
             ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
@@ -471,5 +492,9 @@ public class Editor {
         io.setKeyShift(io.getKeysDown(GLFW_KEY_LEFT_SHIFT) || io.getKeysDown(GLFW_KEY_RIGHT_SHIFT));
         io.setKeyAlt(io.getKeysDown(GLFW_KEY_LEFT_ALT) || io.getKeysDown(GLFW_KEY_RIGHT_ALT));
         io.setKeySuper(io.getKeysDown(GLFW_KEY_LEFT_SUPER) || io.getKeysDown(GLFW_KEY_RIGHT_SUPER));
+    }
+
+    public NodeGraph getNodeGraph() {
+        return this.graph;
     }
 }

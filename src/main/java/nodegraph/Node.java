@@ -16,9 +16,13 @@ import java.util.*;
 
 public abstract class Node{
 
-    private boolean flow_controls_enabled = true;
+    private boolean inflow_controls_enabled = true;
+    private boolean outflow_controls_enabled = true;
+
     private boolean force_render_inflow = false;
     private boolean force_render_outflow = false;
+
+    private boolean node_processes_own_flow = false;
 
     @FunctionalInterface
     public interface AttributeOverride{
@@ -211,6 +215,10 @@ public abstract class Node{
         }
     }
 
+    public String getTitle() {
+        return this.title;
+    }
+
     public int getID() {
         return id;
     }
@@ -227,11 +235,7 @@ public abstract class Node{
     protected final void renderInputAttribute(String param_name) {
         if(this.inputs.containsKey(param_name)) {
             InflowPin pin = this.inputs.get(param_name);
-            ImNodes.pushColorStyle(ImNodesColorStyle.Pin, pin.getColor());
-            ImNodes.beginInputAttribute(pin.getID(), pin.getShape());
-            ImGui.text(param_name);
-            ImNodes.endInputAttribute();
-            ImNodes.popColorStyle();
+            pin.render();
         }
     }
 
@@ -249,11 +253,7 @@ public abstract class Node{
     protected final void renderOutputAttribute(String out_name) {
         if(this.outputs.containsKey(out_name)) {
             OutflowPin outflow = this.outputs.get(out_name);
-            ImNodes.pushColorStyle(ImNodesColorStyle.Pin, outflow.getColor());
-            ImNodes.beginOutputAttribute(outflow.getID(), outflow.getShape());
-            ImGui.text(out_name);
-            ImNodes.endOutputAttribute();
-            ImNodes.popColorStyle();
+            outflow.render();
         }
     }
 
@@ -270,7 +270,7 @@ public abstract class Node{
     }
 
     private void renderFlowControls(){
-        if((inputs.size() > 0 || force_render_inflow) && flow_controls_enabled) {
+        if((inputs.size() > 0 || force_render_inflow) && inflow_controls_enabled) {
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
             ImNodes.beginInputAttribute(inflow_id, getInflow().isConnected() ? ImNodesPinShape.TriangleFilled : ImNodesPinShape.Triangle);
             ImNodes.endInputAttribute();
@@ -280,7 +280,7 @@ public abstract class Node{
         if(this.width > 0) {
             ImGui.image(0, this.width, 0);
         }
-        if((outputs.size() > 0 || force_render_outflow) && flow_controls_enabled) {
+        if((outputs.size() > 0 || force_render_outflow) && outflow_controls_enabled) {
             ImGui.sameLine();
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
             ImNodes.beginOutputAttribute(outflow_id, getOutflow().isConnected() ? ImNodesPinShape.TriangleFilled : ImNodesPinShape.Triangle);
@@ -365,33 +365,46 @@ public abstract class Node{
         // This serialization is anything we want to
         serialize(evaluation_stack);
 
-        LinkedList<OutflowPin> outflows = new LinkedList<>();
+        if(!node_processes_own_flow) {
+            LinkedList<OutflowPin> outflows = new LinkedList<>();
 
-        if(outflow.isConnected()) {
-            outflows.add(outflow);
-        }
+            if (outflow.isConnected()) {
+                outflows.add(outflow);
+            }
 
-        for(OutflowPin outflow : this.outputs.values()){
-            if(outflow instanceof OutflowPin){
-                if(outflow.getType().equals(PinType.FLOW)) {
-                    outflows.add((OutflowPin) outflow);
+            for (OutflowPin outflow : this.outputs.values()) {
+                if (outflow instanceof OutflowPin) {
+                    if (outflow.getType().equals(PinType.FLOW)) {
+                        outflows.add((OutflowPin) outflow);
+                    }
                 }
             }
-        }
 
-        if(outflows.size() == 1){
-            OutflowPin outflow = outflows.getFirst();
-            if(outflow.isConnected()) {
-                outflow.getConnection().getParent().generateIntermediate(evaluation_stack);
-            }
-        }else{
-            JsonArray multi_out = new JsonArray();
-            for(OutflowPin outflow : outflows){
-                if(outflow.isConnected()) {
-                    outflow.getConnection().getParent().generateIntermediate(multi_out);
+            if (outflows.size() == 1) {
+                OutflowPin outflow = outflows.getFirst();
+                if (outflow.isConnected()) {
+                    outflow.getConnection().getParent().generateIntermediate(evaluation_stack);
+                }
+            } else {
+                JsonArray multi_out = new JsonArray();
+                for (OutflowPin outflow : outflows) {
+                    if (outflow.isConnected()) {
+                        outflow.getConnection().getParent().generateIntermediate(multi_out);
+                    }
+                }
+                if(multi_out.size() == 1){
+                    if(multi_out.get(0).isJsonArray()) {
+                        JsonArray multi_out_element_array = multi_out.get(0).getAsJsonArray();
+                        for(int i = 0; i < multi_out_element_array.size(); i++) {
+                            evaluation_stack.add(multi_out_element_array.get(i));
+                        }
+                    }else{
+                        evaluation_stack.add(multi_out.get(0));
+                    }
+                }else if(multi_out.size() > 1) {
+                    evaluation_stack.add(multi_out);
                 }
             }
-            evaluation_stack.add(multi_out);
         }
     }
 
@@ -444,23 +457,61 @@ public abstract class Node{
         return inflow_pins;
     }
 
-    public OutflowPin getPinSource(String inflow_pin_name){
-        if(this.inputs.containsKey(inflow_pin_name)){
-            return getPinSource(this.inputs.get(inflow_pin_name));
+    public Collection<OutflowPin> getNodeOutflowPins(){
+        //TODO optimize later
+        LinkedList<OutflowPin> outflow_pins = new LinkedList<>();
+
+        for(OutflowPin pin : this.outputs.values()){
+            if(pin.getType().equals(PinType.DATA)){
+                outflow_pins.add(pin);
+            }
         }
-        return null;
+
+        return outflow_pins;
     }
 
-    public OutflowPin getPinSource(InflowPin inflow){
-        if(inflow.isConnected()){
-            return inflow.getLink();
+    public void clearInflowPins(){
+        for(InflowPin pin : new LinkedHashSet<>(this.inputs.values())){
+            if(pin.getType().equals(PinType.DATA)){
+                this.inputs.remove(pin);
+            }
         }
-        return null;
     }
+
+    public void clearOutflowPins(){
+        for(OutflowPin pin : new LinkedHashSet<>(this.outputs.values())){
+            if(pin.getType().equals(PinType.DATA)){
+                this.outputs.remove(pin);
+            }
+        }
+    }
+
+//    public OutflowPin getPinSource(String inflow_pin_name){
+//        if(this.inputs.containsKey(inflow_pin_name)){
+//            return getPinSource(this.inputs.get(inflow_pin_name));
+//        }
+//        return null;
+//    }
+//
+//    public OutflowPin getPinSource(InflowPin inflow){
+//        if(inflow.isConnected()){
+//            return inflow.getLink();
+//        }
+//        return null;
+//    }
 
     // Rendering stuff
     public void disableFlowControls(){
-        this.flow_controls_enabled = false;
+        this.inflow_controls_enabled = false;
+        this.outflow_controls_enabled = false;
+    }
+
+    public void disableInflowControl(){
+        this.inflow_controls_enabled = false;
+    }
+
+    public void disableOutflowControls(){
+        this.outflow_controls_enabled = false;
     }
 
     public void forceRenderInflow(){
@@ -471,8 +522,15 @@ public abstract class Node{
         this.force_render_outflow = true;
     }
 
+    public void setNodeProcessesOwnFlow(boolean process_own_flow){
+        this.node_processes_own_flow = process_own_flow;
+    }
+
     protected void setWidth(int width) {
         this.width = width;
     }
 
+    public float getWidth() {
+        return width;
+    }
 }

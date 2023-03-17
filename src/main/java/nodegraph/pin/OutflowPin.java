@@ -2,6 +2,9 @@ package nodegraph.pin;
 
 import com.google.gson.JsonElement;
 import graphics.GLDataType;
+import imgui.ImGui;
+import imgui.extension.imnodes.ImNodes;
+import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import nodegraph.Node;
 import nodegraph.NodeColors;
 
@@ -95,6 +98,15 @@ public class OutflowPin extends Pin{
     }
 
     @Override
+    public void render() {
+        ImNodes.pushColorStyle(ImNodesColorStyle.Pin, getColor());
+        ImNodes.beginOutputAttribute(getID(), getShape());
+        ImGui.text(getAttributeName());
+        ImNodes.endOutputAttribute();
+        ImNodes.popColorStyle();
+    }
+
+    @Override
     public boolean isConnected() {
         return this.links.size() > 0;
     }
@@ -104,6 +116,12 @@ public class OutflowPin extends Pin{
         return links.contains(other);
     }
 
+    @Override
+    public boolean hasNonDefaultValue() {
+        return isConnected();
+    }
+
+    @Override
     public JsonElement getValue(){
         return this.getParent().getValueOfPin(this);
     }

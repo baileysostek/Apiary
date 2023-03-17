@@ -164,4 +164,8 @@ public class AgentNode extends Node {
     public JsonElement getValueOfPin(OutflowPin outflow) {
         return JsonNull.INSTANCE;
     }
+
+    public LinkedList<Attribute> getAttributes(){
+        return this.attributes;
+    }
 }
