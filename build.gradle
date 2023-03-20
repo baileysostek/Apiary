@@ -52,6 +52,9 @@ dependencies {
 //    GSON
     implementation 'com.google.code.gson:gson:2.8.5'
 
+//   Reflections
+    implementation 'org.reflections:reflections:0.10.2'
+
 //    Runtime Natives
     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
     runtimeOnly "org.lwjgl:lwjgl-assimp::$lwjglNatives"

@@ -2,7 +2,7 @@ package nodegraph.nodes;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
@@ -12,7 +12,7 @@ import nodegraph.pin.OutflowPin;
 
 import java.util.Collection;
 
-public class TemplateNode extends Node {
+public abstract class TemplateNode extends Node {
 
     final String name;
     final FunctionDirective template;
@@ -20,7 +20,9 @@ public class TemplateNode extends Node {
     final OutflowPin out;
 
     //TODO this is limiting we need to let the return tybe be derrived.
-    public TemplateNode(String name, FunctionDirective template, GLDataType return_type) {
+    public TemplateNode(String name, FunctionDirective template, GLDataType return_type, JsonObject initialization_data) {
+        super(initialization_data);
+
         this.name = name;
         this.template = template;
         this.return_type = return_type;

@@ -1,9 +1,6 @@
 package nodegraph.nodes.controlflow;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
 import nodegraph.Node;
@@ -18,7 +15,8 @@ public class ConditionalNode extends Node {
     OutflowPin consequent;
     OutflowPin alternate;
 
-    public ConditionalNode() {
+    public ConditionalNode(JsonObject initialization_data) {
+        super(initialization_data);
         super.setTitle("if");
 
         super.forceRenderInflow();

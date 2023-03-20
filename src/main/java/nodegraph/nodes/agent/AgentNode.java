@@ -21,15 +21,15 @@ public class AgentNode extends Node {
     private final LinkedList<Attribute> to_remove = new LinkedList<>();
     private final LinkedList<Attribute> buffer = new LinkedList<>();
 
-    public AgentNode(String agent_name){
-        this();
-        super.setTitle(agent_name);
-    }
+    public AgentNode(JsonObject initialization_data){
+        super(initialization_data);
 
-    public AgentNode() {
-        super();
         this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.AGENT_NODE_TITLE);
         this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
+
+        if(initialization_data.has("agent_name")){
+            super.setTitle(initialization_data.get("agent_name").getAsString());
+        }
     }
 
     @Override

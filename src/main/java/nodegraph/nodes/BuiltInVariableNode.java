@@ -2,6 +2,7 @@ package nodegraph.nodes;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
@@ -12,7 +13,9 @@ import nodegraph.pin.OutflowPin;
 public class BuiltInVariableNode extends Node {
     String built_in_variable_name;
 
-    public BuiltInVariableNode(String built_in, GLDataType type) {
+    public BuiltInVariableNode(String built_in, GLDataType type, JsonObject initialization_data) {
+        super(initialization_data);
+
         super.setTitle(built_in);
         this.built_in_variable_name = built_in;
 

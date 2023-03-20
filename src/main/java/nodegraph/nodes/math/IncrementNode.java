@@ -2,6 +2,7 @@ package nodegraph.nodes.math;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
@@ -20,7 +21,8 @@ public class IncrementNode extends Node {
 
     private InflowPin value;
 
-    public IncrementNode() {
+    public IncrementNode(JsonObject initialization_data) {
+        super(initialization_data);
 
         super.setTitle("Increment Value");
 
@@ -78,8 +80,8 @@ public class IncrementNode extends Node {
     public void serialize(JsonArray evaluation_stack) {
         JsonArray define_variable = new JsonArray();
 
-        define_variable.add(reference.getTitle());       // Type
-        define_variable.add(1);  // Name
+        define_variable.add(reference.getVariableName());// Type
+        define_variable.add(value.getValue());  // Name
         define_variable.add(FunctionDirective.INCREMENT.getNodeID());
 
         evaluation_stack.add(define_variable);

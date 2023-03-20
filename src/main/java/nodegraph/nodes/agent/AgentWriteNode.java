@@ -3,6 +3,7 @@ package nodegraph.nodes.agent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
@@ -21,8 +22,8 @@ public class AgentWriteNode extends Node {
     private AgentNode agent = null;
     private InflowPin instance;
 
-    public AgentWriteNode() {
-        super();
+    public AgentWriteNode(JsonObject initialization_data) {
+        super(initialization_data);
 
         super.setTitle("Agent Write");
 

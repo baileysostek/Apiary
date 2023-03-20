@@ -2,19 +2,39 @@ package nodegraph;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import editor.Editor;
 import graphics.GLDataType;
-import graphics.GLPrimitive;
-import graphics.GLStruct;
 import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
-import nodegraph.pin.*;
+import nodegraph.pin.InflowPin;
+import nodegraph.pin.OutflowPin;
+import nodegraph.pin.Pin;
+import nodegraph.pin.PinType;
 
 import java.util.*;
 
 public abstract class Node{
+
+    // Static interfaces and constants used so nodes dont break easily.
+    @FunctionalInterface
+    public interface AttributeOverride{
+        void render();
+    }
+
+    private static final String INFLOW = "inflow";
+    private static final String OUTFLOW = "outflow";
+    private static final HashSet<String> RESERVED_NAMES = new HashSet<>(Arrays.asList(new String[]{
+            INFLOW,
+            OUTFLOW,
+    }));
+
+    private static int next_id = 0;
+    private static final JsonObject EMPTY_OBJECT = new JsonObject();
+
+    // Variables for each node.
 
     private boolean inflow_controls_enabled = true;
     private boolean outflow_controls_enabled = true;
@@ -24,19 +44,8 @@ public abstract class Node{
 
     private boolean node_processes_own_flow = false;
 
-    @FunctionalInterface
-    public interface AttributeOverride{
-        void render();
-    }
-
-    private static final String INFLOW = "inflow";
-    private static final String OUTFLOW = "outflow";
-    private static final HashSet<String> RESERVED_NAMES = new HashSet<>(Arrays.asList(new String[]{
-        INFLOW,
-        OUTFLOW,
-    }));
-
-    private static int next_id = 0;
+    private float node_pos_x = 0.0f;
+    private float node_pos_y = 0.0f;
 
     protected String title = "";
     protected int width = 256;
@@ -49,16 +58,18 @@ public abstract class Node{
 
     private HashMap<Integer, Integer> colors = new HashMap<>();
 
-//    private final LinkedHashMap<String, GLStruct> input_values  = new LinkedHashMap<>();
-//    private final LinkedHashMap<String, GLStruct> output_values = new LinkedHashMap<>();
-
     private LinkedHashMap<String, InflowPin> inputs = new LinkedHashMap<>();
     private LinkedHashMap<String, OutflowPin> outputs = new LinkedHashMap<>();
 
     private LinkedHashMap<Integer, Pin> pin_ids = new LinkedHashMap<>();
 
-    public Node(){
-        this.id = ++next_id;
+    public Node(JsonObject initialization_data){
+        // Determine ID
+        if(initialization_data.has("id")){
+            this.id = initialization_data.get("id").getAsInt();
+        }else{
+            this.id = ++next_id;
+        }
 
         this.inflow_id = -1;
         this.outflow_id = -1;
@@ -71,6 +82,25 @@ public abstract class Node{
         this.inflow = new InflowPin(this, INFLOW, PinType.FLOW);
         this.outflow = new OutflowPin(this, OUTFLOW, PinType.FLOW, null);
     }
+
+    public final JsonObject generateSaveData(){
+        JsonObject save_object = new JsonObject();
+        // Add the ID
+
+        // Add the pins
+
+        // We dont need to add inflow and outflow IDS because they are implicit.
+        save_object.addProperty("class", this.getClass().getName());
+
+        // We are going to encode the screen position of this object.
+        save_object.addProperty("pos_x", this.node_pos_x + ImNodes.getNodeEditorSpacePosX(id) - 100); // The 100 here is kindof a magic number. For whatever reason when you set a node to 0,0 it appears at 100,100
+        save_object.addProperty("pos_y", this.node_pos_y + ImNodes.getNodeEditorSpacePosY(id) - 100);
+
+        return save_object;
+    }
+
+    // Default dose nothing.
+    public void onLoadFromSaveData(JsonObject save_data) {}
 
     // Helper functions to add and remove attributes
     public InflowPin addInputPin(String name, GLDataType ... accepted_types){
@@ -146,7 +176,7 @@ public abstract class Node{
         this.title = title;
     }
 
-    public final void renderNode(){
+    private void regeneratePinIDs(){
         pin_ids.clear();
         // Set ourInflow and outflow IDS
         this.inflow_id = Editor.getInstance().getNextAvailableID();
@@ -155,6 +185,20 @@ public abstract class Node{
         this.outflow_id = Editor.getInstance().getNextAvailableID();
         this.outflow.setId(outflow_id);
         pin_ids.put(outflow_id, outflow);
+    }
+
+    public void setPositionX(float position_x){
+        this.node_pos_x = position_x;
+    }
+
+    public void setPositionY(float position_y){
+        this.node_pos_y = position_y;
+    }
+
+    public final void renderNode(){
+
+        // associate each pin with a unique id
+        regeneratePinIDs();
 
         // First we need to allocate a bunch of IDS for the future
         for(InflowPin inflow : inputs.values()){
@@ -172,6 +216,9 @@ public abstract class Node{
         this.colors.forEach((style, color) -> {
             ImNodes.pushColorStyle(style, color);
         });
+
+        // Set the position of this node
+        ImNodes.editorResetPanning(node_pos_x, node_pos_y);
 
         // Begin a node.
         ImNodes.beginNode(this.id);
@@ -191,6 +238,8 @@ public abstract class Node{
         this.colors.forEach((style, color) -> {
             ImNodes.popColorStyle();
         });
+        // Reset the camera.
+        ImNodes.editorResetPanning(0, 0);
     }
 
     public void render(){

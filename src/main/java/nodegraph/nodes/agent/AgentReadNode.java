@@ -3,6 +3,7 @@ package nodegraph.nodes.agent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
@@ -22,8 +23,8 @@ public class AgentReadNode extends Node {
     private AgentNode agent = null;
     private InflowPin instance;
 
-    public AgentReadNode() {
-        super();
+    public AgentReadNode(JsonObject initialization_data) {
+        super(initialization_data);
 
         super.setTitle("Agent Read");
 

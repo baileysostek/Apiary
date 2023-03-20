@@ -1,6 +1,7 @@
 package nodegraph.nodes.controlflow;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
 import imgui.ImGui;
@@ -17,8 +18,8 @@ public class TernaryNode extends TemplateNode {
     private InflowPin consequent;
     private InflowPin alternate;
 
-    public TernaryNode() {
-        super("Ternary", FunctionDirective.TERNARY, GLDataType.INT);
+    public TernaryNode(JsonObject initialization_data) {
+        super("Ternary", FunctionDirective.TERNARY, GLDataType.INT, initialization_data);
 
         outflow_data = (OutflowPin) super.getPinFromName("Ternary");
 

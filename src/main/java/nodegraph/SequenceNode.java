@@ -2,10 +2,13 @@ package nodegraph;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import nodegraph.pin.OutflowPin;
 
 public class SequenceNode extends Node{
-    public SequenceNode() {
+    public SequenceNode(JsonObject initialization_data) {
+        super(initialization_data);
+
         this.setTitle("Sequence");
 
         // Force the inflow

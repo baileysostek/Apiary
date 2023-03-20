@@ -41,7 +41,7 @@ public class ObservableLinkedHashMap<Key , Value> {
     public void remove(Key key){
         if(this.values.containsKey(key)){
             if(this.remove_callback != null){
-                this.remove_callback.onRemove(key);
+                this.remove_callback.onRemove(this.values.get(key));
             }
         }
         values.remove(key);
@@ -63,7 +63,16 @@ public class ObservableLinkedHashMap<Key , Value> {
         return this.values.getOrDefault(key, default_value);
     }
 
-    public Collection<Value> getValues(){
+    public Collection<Value> values(){
         return this.values.values();
+    }
+
+    public void clear(){
+        for(Value value : this.values.values()){
+            if(this.remove_callback != null){
+                this.remove_callback.onRemove(value);
+            }
+        }
+        this.values.clear();
     }
 }

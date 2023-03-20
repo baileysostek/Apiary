@@ -7,6 +7,7 @@ import graphics.ui.FontLoader;
 import input.Keyboard;
 import input.Mouse;
 import compiler.GLSLCompiler;
+import nodegraph.NodeRegistry;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -77,6 +78,9 @@ public class Apiary {
 
         Mouse.initialize();
         Keyboard.initialize();
+
+        // Init our NodeManager TODO API for external jars being included in the reflection search.
+        NodeRegistry.initialize();
 
         Editor.initialize();
 

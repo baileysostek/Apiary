@@ -23,16 +23,8 @@
   "steps":[
     {
       "logic":[
-        "int", "neighbors", "0", "@define", 
-        ["neighbors", "cell", ["x_pos", "-1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["neighbors", "cell", ["x_pos", "y_pos", "-1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["neighbors", "cell", ["x_pos", "+1", "@add", "y_pos", "-1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["neighbors", "cell", ["x_pos", "-1", "@add", "y_pos", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["neighbors", "cell", ["x_pos", "+1", "@add", "y_pos", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["neighbors", "cell", ["x_pos", "-1", "@add", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["neighbors", "cell", ["x_pos", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["neighbors", "cell", ["x_pos", "+1", "@add", "y_pos", "+1", "@add", "@xy_to_screen_index"], "alive", "@agent_read", "1", "0", "@?", "@increment"],
-        ["cell", "fragment_index", "alive", "@agent_read" , ["cell", "fragment_index", "alive", ["neighbors", "2", "@equals", "neighbors", "3", "@equals", "@or"], "@agent_write"], ["cell", "fragment_index", "alive", "neighbors", "3", "@equals", "@agent_write"], "@conditional"],
+        [["int","neighbor","0","@define"],[["neighbor",[["cell",[[["x_pos","@get"],"-1","@add"],[["y_pos","@get"],"-1","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"],["neighbor",[["cell",[[["x_pos","@get"],"0","@add"],[["y_pos","@get"],"-1","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"],["neighbor",[["cell",[[["x_pos","@get"],"1","@add"],[["y_pos","@get"],"-1","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"],["neighbor",[["cell",[[["x_pos","@get"],"-1","@add"],[["y_pos","@get"],"0","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"],["neighbor",[["cell",[[["x_pos","@get"],"1","@add"],[["y_pos","@get"],"0","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"],["neighbor",[["cell",[[["x_pos","@get"],"-1","@add"],[["y_pos","@get"],"1","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"],["neighbor",[["cell",[[["x_pos","@get"],"0","@add"],[["y_pos","@get"],"1","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"],["neighbor",[["cell",[[["x_pos","@get"],"1","@add"],[["y_pos","@get"],"1","@add"],"@xy_to_screen_index"],"alive","@agent_read"],"1","0","@?"],"@increment"]]],
+        ["cell", "fragment_index", "alive", "@agent_read" , ["cell", "fragment_index", "alive", ["neighbor", "2", "@equals", "neighbor", "3", "@equals", "@or"], "@agent_write"], ["cell", "fragment_index", "alive", "neighbor", "3", "@equals", "@agent_write"], "@conditional"],
         ["cell", "fragment_index", "color", [["cell", "fragment_index", "alive", "@agent_read"], ["1.0"], [["cell", "fragment_index", "color", "@agent_read"], "0.0", "@mul"], "@?"], "@agent_write"]
       ]
     }

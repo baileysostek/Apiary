@@ -2,7 +2,7 @@ package nodegraph.nodes.variables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
 import imgui.ImGui;
@@ -11,8 +11,6 @@ import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import nodegraph.Node;
 import nodegraph.pin.OutflowPin;
-
-import java.util.Collection;
 
 public class DefineNode extends Node {
 
@@ -23,8 +21,8 @@ public class DefineNode extends Node {
 
     private GLDataType type = GLDataType.VEC3;
 
-    public DefineNode() {
-        super();
+    public DefineNode(JsonObject initialization_data) {
+        super(initialization_data);
 
         this.setTitle("Variable Definition");
 

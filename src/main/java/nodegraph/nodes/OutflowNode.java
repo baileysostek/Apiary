@@ -1,9 +1,6 @@
 package nodegraph.nodes;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import graphics.GLDataType;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import nodegraph.Node;
@@ -16,7 +13,8 @@ public class OutflowNode extends Node {
 
     OutflowPin instance_id;
 
-    public OutflowNode(String title) {
+    public OutflowNode(String title, JsonObject initialization_data) {
+        super(initialization_data);
 
         this.setTitle(title);
 

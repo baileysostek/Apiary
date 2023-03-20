@@ -1,14 +1,13 @@
 package editor;
 
+import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import core.Apiary;
-import graphics.GLDataType;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImGuiViewport;
-import imgui.ImVec2;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.extension.imnodes.ImNodes;
@@ -19,32 +18,20 @@ import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import input.Keyboard;
 import input.Mouse;
-import nodegraph.*;
-import nodegraph.nodes.agent.AgentNode;
-import nodegraph.nodes.agent.AgentReadNode;
-import nodegraph.nodes.agent.AgentWriteNode;
-import nodegraph.nodes.controlflow.ConditionalNode;
-import nodegraph.nodes.controlflow.InitializationNode;
-import nodegraph.nodes.controlflow.StepNode;
-import nodegraph.nodes.controlflow.TernaryNode;
-import nodegraph.nodes.data.Vec3Node;
-import nodegraph.nodes.math.AddNode;
-import nodegraph.nodes.math.IncrementNode;
-import nodegraph.nodes.random.RandomBoolNode;
-import nodegraph.nodes.random.RandomFloatNode;
-import nodegraph.nodes.simulation.LinearizeNode;
+import nodegraph.Node;
+import nodegraph.NodeGraph;
+import nodegraph.NodeRegistry;
 import nodegraph.nodes.variables.DefineNode;
-import nodegraph.nodes.variables.common.XPosBuiltInNode;
-import nodegraph.nodes.variables.common.YPosBuiltInNode;
 import nodegraph.pin.Pin;
 import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
 import util.StringUtils;
 
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Locale;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.GLFW_CURSOR_NORMAL;
 
 public class Editor {
 
@@ -82,6 +69,11 @@ public class Editor {
     boolean initialize = true;
 
     final int APIARY_TEXTURE_ID;
+
+    // TODO move to own class maybe?
+    ImString search_data = new ImString();
+
+    int[] selected_nodes = new int[128];
 
     private Editor(){
         // Initialize the other singletons that we need
@@ -240,6 +232,15 @@ public class Editor {
             if(button == GLFW_MOUSE_BUTTON_RIGHT){
                 onRightClick();
             }
+
+            Arrays.fill(selected_nodes, -1);
+
+            Keyboard.getInstance().addPressCallback(GLFW_KEY_DELETE, () -> {
+                Arrays.fill(selected_nodes, -1);
+                ImNodes.getSelectedNodes(selected_nodes);
+                Editor.instance.graph.removeNodes(selected_nodes);
+            });
+
         });
 
 //        graph.addNode(this.test_0);
@@ -256,68 +257,106 @@ public class Editor {
         if(instance == null){
             instance = new Editor();
 
-            Node init = new InitializationNode();
 
-            AgentNode cell = new AgentNode("cell");
-            cell.addInputPin("color", GLDataType.VEC3);
-            cell.addInputPin("alive", GLDataType.BOOL);
-            cell.addInputPin("test", GLDataType.INT);
-            instance.graph.addNode(cell);
+//            Node init = new InitializationNode();
+//            instance.graph.addNode(init);
+//
+//            AgentNode cell = new AgentNode("cell");
+//            cell.addInputPin("color", GLDataType.VEC3);
+//            cell.addInputPin("alive", GLDataType.BOOL);
+//            instance.graph.addNode(cell);
+//
+//            Node vec3 = new Vec3Node();
+//            instance.graph.addNode(vec3);
+//
+//            Node r = new RandomFloatNode();
+////            r.getPinFromName("random_float").link(vec3.getPinFromName("x"));
+//            Node g = new RandomFloatNode();
+////            g.getPinFromName("random_float").link(vec3.getPinFromName("y"));
+//            Node b = new RandomFloatNode();
+////            b.getPinFromName("random_float").link(vec3.getPinFromName("z"));
+//            instance.graph.addNode(r);
+//            instance.graph.addNode(g);
+//            instance.graph.addNode(b);
+//
+////            vec3.getPinFromName("vec3").link(cell.getPinFromName("color"));
+//
+//            Node alive = new RandomBoolNode();
+//            instance.graph.addNode(alive);
+//
+//            // Now we will add the steps
+//            StepNode gol_step = new StepNode();
+//            instance.graph.addNode(gol_step);
 
-//            init.getOutflow().link(cell.getInflow());
+//            DefineNode define_neighbors = new DefineNode();
+//            instance.graph.addNode(define_neighbors);
+//
+//            instance.graph.addNode(new XPosBuiltInNode());
+//            instance.graph.addNode(new YPosBuiltInNode());
+//
+//            instance.graph.addNode(new SequenceNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new IncrementNode());
+//            instance.graph.addNode(new LinearizeNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new AddNode());
+//            instance.graph.addNode(new TernaryNode());
+//            instance.graph.addNode(new AgentReadNode());
+//
+//            instance.graph.addNode(new AgentWriteNode());
+//
+//            instance.graph.addNode(new ConditionalNode());
 
-            instance.graph.addNode(init);
-
-            Node vec3 = new Vec3Node();
-            instance.graph.addNode(vec3);
-
-            Node r = new RandomFloatNode();
-//            r.getPinFromName("random_float").link(vec3.getPinFromName("x"));
-            Node g = new RandomFloatNode();
-//            g.getPinFromName("random_float").link(vec3.getPinFromName("y"));
-            Node b = new RandomFloatNode();
-//            b.getPinFromName("random_float").link(vec3.getPinFromName("z"));
-            instance.graph.addNode(r);
-            instance.graph.addNode(g);
-            instance.graph.addNode(b);
-
-//            vec3.getPinFromName("vec3").link(cell.getPinFromName("color"));
-
-            Node alive = new RandomBoolNode();
-            instance.graph.addNode(alive);
-
-            // Now we will add the steps
-            StepNode gol_step = new StepNode();
-            instance.graph.addNode(gol_step);
-
-            DefineNode define_neighbors = new DefineNode();
-            instance.graph.addNode(define_neighbors);
-
-            instance.graph.addNode(new XPosBuiltInNode());
-            instance.graph.addNode(new YPosBuiltInNode());
-
-            instance.graph.addNode(new SequenceNode());
-
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-            instance.graph.addNode(new IncrementNode());
-
-            instance.graph.addNode(new LinearizeNode());
-
-            instance.graph.addNode(new AddNode());
-
-            instance.graph.addNode(new TernaryNode());
-
-            instance.graph.addNode(new AgentReadNode());
-            instance.graph.addNode(new AgentWriteNode());
-
-            instance.graph.addNode(new ConditionalNode());
+            instance.graph.load("simulations/gol_test.jsonc");
 
 //            alive.getPinFromName("random_bool").link(cell.getPinFromName("alive"));
 
@@ -359,13 +398,13 @@ public class Editor {
 
     private void renderAddNodePopup(){
         if(ImGui.beginPopup(ADD_NODE_POPUP)){
-            ImString seachData = new ImString();
-            ImGui.inputText("Search", seachData);
+            ImGui.inputTextWithHint("##add_node_search", "Search", search_data, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll);
             ImGui.beginChildFrame(getNextAvailableID(), 256, 512);
-            for(FunctionDirective node : FunctionDirective.values()){
-                if(node.name().contains(seachData.get())) {
-                    if(ImGui.button(node.name())){
-//                        graph.addNode(new TemplateNode(FunctionDirectives.valueOf(node.name())));
+            for(Class<? extends Node> node_class : NodeRegistry.getInstance().getRegisteredNodes()){
+                String node_name = node_class.getSimpleName().toLowerCase(Locale.ROOT);
+                if(node_name.contains(search_data.get().toLowerCase(Locale.ROOT))) {
+                    if(ImGui.button(node_name)){
+                        graph.addNode(NodeRegistry.getInstance().getNodeFromClass(node_class, new JsonObject()));
                         ImGui.closeCurrentPopup();
                     }
                     ImGui.newLine();
