@@ -104,6 +104,8 @@ public class OutflowPin extends Pin{
         ImGui.text(getAttributeName());
         ImNodes.endOutputAttribute();
         ImNodes.popColorStyle();
+
+        rendered_this_frame = true;
     }
 
     @Override

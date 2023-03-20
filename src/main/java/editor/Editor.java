@@ -8,6 +8,7 @@ import graphics.texture.TextureManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImGuiViewport;
+import imgui.ImVec2;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.extension.imnodes.ImNodes;
@@ -65,6 +66,7 @@ public class Editor {
     // IDS of popups and stuff
     String ADD_NODE_POPUP = "Add Node";
     boolean should_open_popup = false;
+    ImVec2 popup_screen_pos = new ImVec2();
 
     boolean initialize = true;
 
@@ -376,6 +378,7 @@ public class Editor {
 
         if(pin < 0 && link < 0 && node < 0){
             should_open_popup = true;
+            ImGui.getMousePosOnOpeningCurrentPopup(popup_screen_pos);
         }else{
             should_open_popup = false;
         }
@@ -403,8 +406,11 @@ public class Editor {
             for(Class<? extends Node> node_class : NodeRegistry.getInstance().getRegisteredNodes()){
                 String node_name = node_class.getSimpleName().toLowerCase(Locale.ROOT);
                 if(node_name.contains(search_data.get().toLowerCase(Locale.ROOT))) {
-                    if(ImGui.button(node_name)){
-                        graph.addNode(NodeRegistry.getInstance().getNodeFromClass(node_class, new JsonObject()));
+                    if(ImGui.button(node_class.getSimpleName())){
+                        JsonObject initialization_data = new JsonObject();
+                        initialization_data.addProperty("pos_x", popup_screen_pos.x);
+                        initialization_data.addProperty("pos_y", popup_screen_pos.y);
+                        graph.addNode(NodeRegistry.getInstance().getNodeFromClass(node_class, initialization_data));
                         ImGui.closeCurrentPopup();
                     }
                     ImGui.newLine();
@@ -504,6 +510,8 @@ public class Editor {
         if(should_open_popup){
             ImGui.openPopup(ADD_NODE_POPUP);
             should_open_popup = false;
+            popup_screen_pos.x -= ImGui.getWindowPosX() + 100; // Translate by window pos.
+            popup_screen_pos.y -= ImGui.getWindowPosY() + 100;
         }
     }
 

@@ -26,6 +26,8 @@ public abstract class Pin {
     private final PinType type;
     private final PinDirection direction;
 
+    protected boolean rendered_this_frame = false;
+
     public Pin(Node parent, String attribute_name, PinType type, PinDirection direction) {
         this.parent = parent;
         this.attribute_name = attribute_name;
@@ -78,4 +80,12 @@ public abstract class Pin {
     public abstract JsonElement getValue();
 
     public abstract int getColor();
+
+    public boolean renderedThisFrame() {
+        return rendered_this_frame;
+    }
+
+    public void setRenderedThisFrame(boolean rendered_this_frame) {
+        this.rendered_this_frame = rendered_this_frame;
+    }
 }

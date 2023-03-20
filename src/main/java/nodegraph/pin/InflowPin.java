@@ -127,20 +127,25 @@ public class InflowPin extends Pin {
 
     public void renderLinks() {
         if (!(link == null)) {
-            //TODO smooth fade between colors.
-            int color = NodeColors.WHITE;
+            // Make sure that the ids are > 0 and that the pins we are linking to rendered this frame.
+            System.out.println("link.renderedThisFrame()" + link.renderedThisFrame() + " this.renderedThisFrame()" + this.renderedThisFrame());
+            if(false) {
 
-            if(this.isConnected()){
-                color = NodeColors.getTypeColor(this.getLink().getDataType());
+                //TODO smooth fade between colors.
+                int color = NodeColors.WHITE;
+
+                if(this.isConnected()){
+                    color = NodeColors.getTypeColor(this.getLink().getDataType());
+                }
+
+                ImNodes.pushColorStyle(ImNodesColorStyle.Link, color);
+                ImNodes.pushColorStyle(ImNodesColorStyle.LinkHovered, color);
+                ImNodes.pushColorStyle(ImNodesColorStyle.LinkSelected, color);
+                ImNodes.link(Editor.getInstance().getNextAvailableID(), link.getID(), this.getID());
+                ImNodes.popColorStyle();
+                ImNodes.popColorStyle();
+                ImNodes.popColorStyle();
             }
-
-            ImNodes.pushColorStyle(ImNodesColorStyle.Link, color);
-            ImNodes.pushColorStyle(ImNodesColorStyle.LinkHovered, color);
-            ImNodes.pushColorStyle(ImNodesColorStyle.LinkSelected, color);
-            ImNodes.link(Editor.getInstance().getNextAvailableID(), link.getID(), this.getID());
-            ImNodes.popColorStyle();
-            ImNodes.popColorStyle();
-            ImNodes.popColorStyle();
         }
     }
 

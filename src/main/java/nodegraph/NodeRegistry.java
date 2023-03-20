@@ -57,15 +57,6 @@ public class NodeRegistry {
         try {
             Class<? extends Node> node_class = (Class<? extends Node>) Class.forName(save_data.get("class").getAsString());
             Node node_instance = getNodeFromClass(node_class, save_data);
-
-            if(save_data.has("pos_x")){
-                node_instance.setPositionX(save_data.get("pos_x").getAsFloat());
-            }
-
-            if(save_data.has("pos_y")){
-                node_instance.setPositionY(save_data.get("pos_y").getAsFloat());
-            }
-
             return node_instance;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -75,7 +66,7 @@ public class NodeRegistry {
     }
 
     public Node getNodeFromClass(Class<? extends Node> node_class, JsonObject initialization_data) {
-        // Prevent instantiation of new Abstract class instance. Alawys need to instantiate the child-class not parent abstract class.
+        // Prevent instantiation of new Abstract class instance. Always need to instantiate the child-class not parent abstract class.
         if(Modifier.isAbstract(node_class.getModifiers())){
             System.out.println(String.format("Error: Cannot instantiate new instance of abstract class:%s.", node_class));
             return null;

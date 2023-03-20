@@ -1,1 +1,1 @@
-{"nodes":[{"class":"nodegraph.nodes.math.AddNode","pos_x":-98.0,"pos_y":-97.0,"id":1},{"class":"nodegraph.nodes.math.AddNode","pos_x":318.0,"pos_y":380.0,"id":2}],"links":[{"src":{"node_id":1,"attribute_name":"Add"},"dst":{"node_id":2,"attribute_name":"x_pos"}}]}
+{"nodes":[{"class":"nodegraph.nodes.controlflow.InitializationNode","pos_x":129.0,"pos_y":92.0,"id":1},{"class":"nodegraph.nodes.agent.AgentNode","pos_x":524.0,"pos_y":97.0,"id":2}],"links":[{"src":{"node_id":1,"attribute_name":"outflow"},"dst":{"node_id":2,"attribute_name":"inflow"}}]}

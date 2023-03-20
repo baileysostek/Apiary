@@ -189,13 +189,62 @@ public class NodeGraph {
 
     public void load (String file_path) {
         JsonObject save_data = JsonUtils.loadJson(file_path);
+        /**
+         *  Since ImNodes uses an internal representation for the nodes that we don't have access to we need to give each node a random ID each time it is generated
+         *  to avoid the problem of linking to arbitrary IDs we construct a linear list of incremental IDs at save time. At load time we reference this map of IDs but
+         *  they dont represent the true IDs of nodes. Those are ~random depending on which nodes have been created or deleted.
+          */
+        HashMap<Integer, Node> id_to_node = new HashMap<>();
         if(save_data.has("nodes")){
             JsonElement nodes = save_data.get("nodes");
             if(nodes.isJsonArray()){
                 JsonArray nodes_array = nodes.getAsJsonArray();
                 for(int i = 0; i < nodes_array.size(); i++){
-                    Node node = NodeRegistry.getInstance().getNodeFromClass(nodes_array.get(i).getAsJsonObject());
+                    JsonObject initialization_data = nodes_array.get(i).getAsJsonObject();
+                    Node node = NodeRegistry.getInstance().getNodeFromClass(initialization_data);
+                    id_to_node.put(initialization_data.get("id").getAsInt(), node);
                     this.addNode(node);
+                }
+            }
+        }
+        if(save_data.has("links")){
+            JsonElement links = save_data.get("links");
+            if(links.isJsonArray()){
+                JsonArray links_array = links.getAsJsonArray();
+                for(int i = 0; i < links_array.size(); i++){
+                    // Link data example
+                    // {"src":{"node_id":1,"attribute_name":"Add"},"dst":{"node_id":2,"attribute_name":"x_pos"}}
+                    JsonObject link_data = links_array.get(i).getAsJsonObject();
+                    // Get the node from the link
+                    int source_id = link_data.get("src").getAsJsonObject().get("node_id").getAsInt();
+                    String source_attribute_name = link_data.get("src").getAsJsonObject().get("attribute_name").getAsString();
+                    OutflowPin source_pin = (OutflowPin) id_to_node.get(source_id).getPinFromName(source_attribute_name);
+
+                    if (source_pin == null) {
+                        if(id_to_node.containsKey(source_id)){
+                            System.err.println(String.format("Error: Could not find an attribute on %s:id:%s with name:%s", id_to_node.get(source_id).toString(), source_id+"", source_attribute_name));
+                        }else{
+                            System.err.println(String.format("Error: Could not find a node with the id:%s", source_id+""));
+                        }
+                        continue;
+                    }
+
+                    int dest_id = link_data.get("dst").getAsJsonObject().get("node_id").getAsInt();
+                    String dest_attribute_name = link_data.get("dst").getAsJsonObject().get("attribute_name").getAsString();
+                    InflowPin dest_pin = (InflowPin) id_to_node.get(dest_id).getPinFromName(dest_attribute_name);
+
+                    if (dest_pin == null) {
+                        if(id_to_node.containsKey(dest_id)){
+                            System.err.println(String.format("Error: Could not find an attribute on %s:id:%s with name %s", id_to_node.get(dest_id).toString(), dest_id+"", dest_attribute_name));
+                        }else{
+                            System.err.println(String.format("Error: Could not find a node with the id:%s", dest_id+""));
+                        }
+                        continue;
+                    }
+
+                    // Bidirectional link
+                    dest_pin.link(source_pin);
+                    source_pin.link(dest_pin);
                 }
             }
         }

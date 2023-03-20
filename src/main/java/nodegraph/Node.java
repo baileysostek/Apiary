@@ -44,6 +44,9 @@ public abstract class Node{
 
     private boolean node_processes_own_flow = false;
 
+    private final float initial_node_pos_x;
+    private final float initial_node_pos_y;
+
     private float node_pos_x = 0.0f;
     private float node_pos_y = 0.0f;
 
@@ -65,11 +68,21 @@ public abstract class Node{
 
     public Node(JsonObject initialization_data){
         // Determine ID
-        if(initialization_data.has("id")){
-            this.id = initialization_data.get("id").getAsInt();
+        this.id = ++next_id;
+
+        if(initialization_data.has("pos_x")){
+            this.initial_node_pos_x = initialization_data.get("pos_x").getAsFloat();
         }else{
-            this.id = ++next_id;
+            this.initial_node_pos_x = 0.0f;
         }
+        setPositionX(this.initial_node_pos_x);
+
+        if(initialization_data.has("pos_y")){
+            this.initial_node_pos_y = initialization_data.get("pos_y").getAsFloat();
+        }else{
+            this.initial_node_pos_y = 0.0f;
+        }
+        setPositionY(this.initial_node_pos_y);
 
         this.inflow_id = -1;
         this.outflow_id = -1;
@@ -181,10 +194,26 @@ public abstract class Node{
         // Set ourInflow and outflow IDS
         this.inflow_id = Editor.getInstance().getNextAvailableID();
         this.inflow.setId(inflow_id);
+        this.inflow.setRenderedThisFrame(false);
         pin_ids.put(inflow_id, inflow);
         this.outflow_id = Editor.getInstance().getNextAvailableID();
         this.outflow.setId(outflow_id);
+        this.outflow.setRenderedThisFrame(false);
         pin_ids.put(outflow_id, outflow);
+
+        // First we need to allocate a bunch of IDS for the future
+        for(InflowPin inflow : inputs.values()){
+            int id = Editor.getInstance().getNextAvailableID(); // Fixed with ++next_id;
+            inflow.setId(id);
+            this.inflow.setRenderedThisFrame(false);
+            pin_ids.put(id, inflow);
+        }
+        for(OutflowPin outflow : outputs.values()){
+            int id = Editor.getInstance().getNextAvailableID();
+            outflow.setId(id);
+            this.outflow.setRenderedThisFrame(false);
+            pin_ids.put(id, outflow);
+        }
     }
 
     public void setPositionX(float position_x){
@@ -199,18 +228,6 @@ public abstract class Node{
 
         // associate each pin with a unique id
         regeneratePinIDs();
-
-        // First we need to allocate a bunch of IDS for the future
-        for(InflowPin inflow : inputs.values()){
-            int id = Editor.getInstance().getNextAvailableID(); // Fixed with ++next_id;
-            inflow.setId(id);
-            pin_ids.put(id, inflow);
-        }
-        for(OutflowPin outflow : outputs.values()){
-            int id = Editor.getInstance().getNextAvailableID();
-            outflow.setId(id);
-            pin_ids.put(id, outflow);
-        }
 
         // Push all of our style attributes onto the stack.
         this.colors.forEach((style, color) -> {
@@ -291,6 +308,7 @@ public abstract class Node{
     protected final void renderInputAttribute(String param_name, AttributeOverride render_override) {
         if(this.inputs.containsKey(param_name)) {
             InflowPin pin = this.inputs.get(param_name);
+            pin.setRenderedThisFrame(true);
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, pin.getColor());
             ImNodes.beginInputAttribute(pin.getID(), pin.getShape());
             render_override.render();
@@ -309,7 +327,7 @@ public abstract class Node{
     protected final void renderOutputAttribute(String out_name, AttributeOverride render_override) {
         if(this.outputs.containsKey(out_name)) {
             OutflowPin outflow = this.outputs.get(out_name);
-            boolean push_color = outflow.getColor() >= 0;
+            outflow.setRenderedThisFrame(true);
             ImNodes.pushColorStyle(ImNodesColorStyle.Pin, outflow.getColor());
             ImNodes.beginOutputAttribute(outflow.getID(), outflow.getShape());
             render_override.render();
@@ -326,6 +344,7 @@ public abstract class Node{
             ImNodes.popColorStyle();
             ImGui.sameLine();
         }
+        // This is a hack to set the width of the nodes.
         if(this.width > 0) {
             ImGui.image(0, this.width, 0);
         }
