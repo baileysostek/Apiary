@@ -123,25 +123,25 @@ public class NodeGraph {
         return null;
     }
 
-    public void saveToFile (String file_path) {
-        JsonObject save_object = new JsonObject();
+    public JsonObject serializeNodes (Collection<Node> nodes) {
+        JsonObject serialization_object = new JsonObject();
 
         JsonArray nodes_array = new JsonArray();
         JsonArray links_array = new JsonArray();
 
         HashMap<Node, Integer> node_ids = new HashMap<>();
         int node_index = 0;
-        for(Node node : nodes.values()){
+        for(Node node : nodes){
             int id = ++node_index;
             node_ids.put(node, id);
             JsonObject node_save_data = node.generateSaveData();
             node_save_data.addProperty("id", id);
             nodes_array.add(node_save_data);
         }
-        save_object.add("nodes", nodes_array);
+        serialization_object.add("nodes", nodes_array);
         // Now that we have added all of the nodes and we know the domain of nodes which exist in the save file, we can generate the links.
 
-        for(Node node : nodes.values()){
+        for(Node node : nodes){
             // We are only looking at inflows here.
             if(node.getInflow().isConnected()){
                 JsonObject link_serialization = serializeLink(node.getInflow(), node_ids);
@@ -158,10 +158,23 @@ public class NodeGraph {
             }
         }
 
-        save_object.add("links", links_array);
+        serialization_object.add("links", links_array);
 
-        System.out.println(save_object);
+        return serialization_object;
+    }
 
+    public Collection<Node> getNodesFromIDs(int[] node_ids) {
+        LinkedList<Node> out = new LinkedList<>();
+        for(int node_id : node_ids){
+            if(this.nodes.containsKey(node_id)){
+                out.push(this.nodes.get(node_id));
+            }
+        }
+        return out;
+    }
+
+    public void saveToFile (String file_path) {
+        JsonObject save_object = serializeNodes(this.nodes.values());
         StringUtils.write(save_object.toString(), file_path);
         this.nodes.clear();
         load(file_path);
@@ -187,16 +200,20 @@ public class NodeGraph {
         return null;
     }
 
-    public void load (String file_path) {
+    public Collection<Node> load (String file_path) {
         JsonObject save_data = JsonUtils.loadJson(file_path);
+        return load(save_data);
+    }
+
+    public Collection<Node> load (JsonObject serialized_node_data) {
         /**
          *  Since ImNodes uses an internal representation for the nodes that we don't have access to we need to give each node a random ID each time it is generated
          *  to avoid the problem of linking to arbitrary IDs we construct a linear list of incremental IDs at save time. At load time we reference this map of IDs but
          *  they dont represent the true IDs of nodes. Those are ~random depending on which nodes have been created or deleted.
-          */
+         */
         HashMap<Integer, Node> id_to_node = new HashMap<>();
-        if(save_data.has("nodes")){
-            JsonElement nodes = save_data.get("nodes");
+        if(serialized_node_data.has("nodes")){
+            JsonElement nodes = serialized_node_data.get("nodes");
             if(nodes.isJsonArray()){
                 JsonArray nodes_array = nodes.getAsJsonArray();
                 for(int i = 0; i < nodes_array.size(); i++){
@@ -207,8 +224,8 @@ public class NodeGraph {
                 }
             }
         }
-        if(save_data.has("links")){
-            JsonElement links = save_data.get("links");
+        if(serialized_node_data.has("links")){
+            JsonElement links = serialized_node_data.get("links");
             if(links.isJsonArray()){
                 JsonArray links_array = links.getAsJsonArray();
                 for(int i = 0; i < links_array.size(); i++){
@@ -248,12 +265,32 @@ public class NodeGraph {
                 }
             }
         }
+
+        return id_to_node.values();
     }
 
     public void removeNodes(int[] selected_nodes) {
         for(int node_id : selected_nodes){
             if ( node_id >= 0 ) {
                 this.nodes.remove(node_id);
+            }
+        }
+    }
+
+    public void pasteClipboard(int[] selected_nodes) {
+        for(int node_id : selected_nodes){
+            if ( node_id >= 0 ) {
+                if(this.nodes.containsKey(node_id)){
+                    Node node = this.nodes.get(node_id);
+                    Node copy = node.clone();
+                    copy.setPositionX(copy.getPositionX() + 100);
+                    copy.setPositionY(copy.getPositionY() + 100);
+                    this.addNode(copy);
+                    System.out.println("Cloned Node.");
+                }
+            }else{
+                // We have hit a section of -1s;
+                return;
             }
         }
     }

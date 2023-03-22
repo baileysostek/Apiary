@@ -1,1 +1,1 @@
-{"nodes":[{"class":"nodegraph.nodes.controlflow.InitializationNode","pos_x":129.0,"pos_y":92.0,"id":1},{"class":"nodegraph.nodes.agent.AgentNode","pos_x":524.0,"pos_y":97.0,"id":2}],"links":[{"src":{"node_id":1,"attribute_name":"outflow"},"dst":{"node_id":2,"attribute_name":"inflow"}}]}
+{"nodes":[{"class":"nodegraph.nodes.simulation.LinearizeNode","pos_x":445.0,"pos_y":271.0,"id":1},{"class":"nodegraph.SequenceNode","pos_x":685.0,"pos_y":420.0,"id":2},{"class":"nodegraph.nodes.random.RandomFloatNode","pos_x":130.0,"pos_y":206.0,"id":3}],"links":[]}

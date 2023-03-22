@@ -94,6 +94,9 @@ public abstract class Node{
         // Reserve some Pins
         this.inflow = new InflowPin(this, INFLOW, PinType.FLOW);
         this.outflow = new OutflowPin(this, OUTFLOW, PinType.FLOW, null);
+
+        // Do a render just so the node exists in the internal state?
+        this.render();
     }
 
     public final JsonObject generateSaveData(){
@@ -219,9 +222,16 @@ public abstract class Node{
     public void setPositionX(float position_x){
         this.node_pos_x = position_x;
     }
-
     public void setPositionY(float position_y){
         this.node_pos_y = position_y;
+    }
+
+    public float getPositionX() {
+        return node_pos_x;
+    }
+
+    public float getPositionY() {
+        return node_pos_y;
     }
 
     public final void renderNode(){
@@ -600,5 +610,10 @@ public abstract class Node{
 
     public float getWidth() {
         return width;
+    }
+
+    public Node clone(){
+        JsonObject initialization_data = this.generateSaveData();
+        return NodeRegistry.getInstance().getNodeFromClass(initialization_data);
     }
 }

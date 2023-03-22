@@ -1,7 +1,6 @@
 package editor;
 
 import com.google.gson.JsonObject;
-import compiler.FunctionDirective;
 import core.Apiary;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
@@ -22,15 +21,12 @@ import input.Mouse;
 import nodegraph.Node;
 import nodegraph.NodeGraph;
 import nodegraph.NodeRegistry;
-import nodegraph.nodes.variables.DefineNode;
 import nodegraph.pin.Pin;
 import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
 import util.StringUtils;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Locale;
+import java.util.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -48,6 +44,7 @@ public class Editor {
     private final ImGuiImplGl3 imgui_impl;
 
     private final ImNodesContext CONTEXT = new ImNodesContext();
+
     private static final ImBoolean SHOW = new ImBoolean(true);
 
     //This is used for ID information
@@ -75,7 +72,9 @@ public class Editor {
     // TODO move to own class maybe?
     ImString search_data = new ImString();
 
-    int[] selected_nodes = new int[128];
+//    int[] selected_nodes  = new int[128];
+    private LinkedHashSet<Node> selected_nodes = new LinkedHashSet<>();
+    JsonObject serialized_clipboard_data = null;
 
     private Editor(){
         // Initialize the other singletons that we need
@@ -234,24 +233,52 @@ public class Editor {
             if(button == GLFW_MOUSE_BUTTON_RIGHT){
                 onRightClick();
             }
-
-            Arrays.fill(selected_nodes, -1);
-
-            Keyboard.getInstance().addPressCallback(GLFW_KEY_DELETE, () -> {
-                Arrays.fill(selected_nodes, -1);
-                ImNodes.getSelectedNodes(selected_nodes);
-                Editor.instance.graph.removeNodes(selected_nodes);
-            });
-
         });
 
-//        graph.addNode(this.test_0);
-//        graph.addNode(this.test_1);
 
-//        graph.addNode(new DefineNode());
+        // Delete
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_DELETE, () -> {
+            int[] selected_node_ids = new int[this.selected_nodes.size()];
+            int index = 0;
+            for(Node node : selected_nodes){
+                selected_node_ids[index] = node.getID();
+            }
+            Editor.instance.graph.removeNodes(selected_node_ids);
+            this.deselect();
+        });
 
+        // Copy
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_C, () -> {
+            if(Keyboard.getInstance().isKeyPressed(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_RIGHT_CONTROL)){
+                int[] clipboard_node_ids = new int[ImNodes.numSelectedNodes()];
+                Arrays.fill(clipboard_node_ids, -1);
+                ImNodes.getSelectedNodes(clipboard_node_ids);
+                serialized_clipboard_data = this.graph.serializeNodes(this.graph.getNodesFromIDs(clipboard_node_ids));
+                //TODO trigger event / snackbar.
+            }
+        });
 
-//        this.test_0.link("out", this.test_1, "Predicate");
+        // Paste
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_V, () -> {
+            if(Keyboard.getInstance().isKeyPressed(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_RIGHT_CONTROL)){
+                if(serialized_clipboard_data != null) {
+                    Collection<Node> new_nodes = Editor.instance.graph.load(serialized_clipboard_data);
+                    // Deselect all nodes
+                    this.deselect();
+                    for(Node node : new_nodes){
+                        this.select(node);
+                    }
+                }
+            }
+        });
+
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_SPACE, () -> {
+            try {
+
+            }catch(Exception e) {
+
+            }
+        });
 
     }
 
@@ -501,6 +528,13 @@ public class Editor {
 
         graph.render();
 
+
+        // After our graph renders we know that our nodes are in the node editor so this code can be executed without crashing.
+        for(Node node : this.selected_nodes){
+            ImNodes.selectNode(node.getID());
+        }
+
+
         final boolean isEditorHovered = ImNodes.isEditorHovered();
 
         ImNodes.endNodeEditor();
@@ -543,5 +577,21 @@ public class Editor {
 
     public NodeGraph getNodeGraph() {
         return this.graph;
+    }
+
+    public void deselect(){
+        this.selected_nodes.clear();
+        ImNodes.clearNodeSelection();
+    }
+
+    public void deselect(Node node){
+        if(this.selected_nodes.contains(node)){
+            this.selected_nodes.remove(node);
+            ImNodes.clearNodeSelection(node.getID());
+        }
+    }
+
+    public void select(Node node){
+        this.selected_nodes.add(node);
     }
 }

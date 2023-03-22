@@ -6,8 +6,8 @@ import imgui.ImGui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 
-import java.awt.event.KeyEvent;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -17,27 +17,27 @@ public class Keyboard {
 
     @FunctionalInterface
     public interface KeyEventCallback<KeyName extends String, KeyCode extends Integer, Action extends Integer> {
-        void apply(KeyName key_name,KeyCode key_code, Action action);
+        void callback(KeyName key_name, KeyCode key_code, Action action);
     }
 
     @FunctionalInterface
     public interface KeyPressCallback {
-        void apply();
+        void callback();
     }
 
     @FunctionalInterface
     public interface KeyHoldCallback {
-        void apply();
+        void callback();
     }
 
     @FunctionalInterface
     public interface KeyReleaseCallback {
-        void apply();
+        void callback();
     }
 
     private static Keyboard keyboard;
     private boolean[] keys = new boolean[512]; // No out of bounds
-    private LinkedList<KeyPressCallback>[] pressedCallbacks = new LinkedList[keys.length];
+    private LinkedHashMap<KeyPressCallback, Boolean>[] pressedCallbacks = new LinkedHashMap[keys.length];
     private LinkedList<KeyHoldCallback>[] holdCallbacks = new LinkedList[keys.length];
     private LinkedList<KeyReleaseCallback>[] releasedCallbacks = new LinkedList[keys.length];
     private LinkedList<KeyEventCallback> anyKeyCallback = new LinkedList<>();
@@ -52,7 +52,7 @@ public class Keyboard {
         //Array init
         for(int i = 0; i < keys.length; i++){
             keys[i] = false;
-            pressedCallbacks[i] = new LinkedList<KeyPressCallback>();
+            pressedCallbacks[i] = new LinkedHashMap<KeyPressCallback, Boolean>();
             holdCallbacks[i] = new LinkedList<KeyHoldCallback>();
             releasedCallbacks[i] = new LinkedList<KeyReleaseCallback>();
         }
@@ -78,20 +78,26 @@ public class Keyboard {
             if (action == GLFW.GLFW_RELEASE) {
                 keys[key] = false;
                 for (KeyReleaseCallback release_callback : releasedCallbacks[key]) {
-                    release_callback.apply();
+                    release_callback.callback();
+                }
+                for (KeyPressCallback callback : pressedCallbacks[key].keySet()) {
+                    pressedCallbacks[key].put(callback, true);
                 }
             } else {
                 if (action == GLFW.GLFW_PRESS) {
                     if(!keys[key]){
-                        for (KeyPressCallback callback : pressedCallbacks[key]) {
-                            callback.apply();
+                        for (KeyPressCallback callback : pressedCallbacks[key].keySet()) {
+                            if(pressedCallbacks[key].get(callback)) {
+                                callback.callback();
+                                pressedCallbacks[key].put(callback, false);
+                            }
                         }
                     }
                 }
                 keys[key] = true;
 
                 for(KeyEventCallback callback : anyKeyCallback){
-                    callback.apply(GLFW.glfwGetKeyName(key, scancode), key, action);
+                    callback.callback(GLFW.glfwGetKeyName(key, scancode), key, action);
                 }
             }
         }
@@ -102,7 +108,7 @@ public class Keyboard {
         for(boolean key_pressed : keys) {
             if(key_pressed) {
                 for (KeyHoldCallback hold_callback : holdCallbacks[key_code]) {
-                    hold_callback.apply();
+                    hold_callback.callback();
                 }
             }
             key_code++;
@@ -127,7 +133,7 @@ public class Keyboard {
         //index where this callback lives
         key_lookup.put(key_press_callback.hashCode(), key);
         //Set the callback
-        this.pressedCallbacks[key].add(key_press_callback);
+        this.pressedCallbacks[key].put(key_press_callback, true);
     }
 
     public void addHoldCallback(int key, KeyHoldCallback key_hold_callback){
@@ -166,7 +172,7 @@ public class Keyboard {
         if(key_lookup.containsKey(callback)) {
             int key = key_lookup.get(callback);
 
-            if (pressedCallbacks[key].contains(callback)) {
+            if (pressedCallbacks[key].containsKey(callback)) {
                 pressedCallbacks[key].remove(callback);
             }
 
