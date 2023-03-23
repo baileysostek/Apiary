@@ -74,6 +74,7 @@ public class Editor {
 
 //    int[] selected_nodes  = new int[128];
     private LinkedHashSet<Node> selected_nodes = new LinkedHashSet<>();
+    private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
     private Editor(){
@@ -238,12 +239,7 @@ public class Editor {
 
         // Delete
         Keyboard.getInstance().addPressCallback(GLFW_KEY_DELETE, () -> {
-            int[] selected_node_ids = new int[this.selected_nodes.size()];
-            int index = 0;
-            for(Node node : selected_nodes){
-                selected_node_ids[index] = node.getID();
-            }
-            Editor.instance.graph.removeNodes(selected_node_ids);
+            Editor.instance.graph.removeNodes(this.selected_nodes);
             this.deselect();
         });
 
@@ -261,14 +257,7 @@ public class Editor {
         // Paste
         Keyboard.getInstance().addPressCallback(GLFW_KEY_V, () -> {
             if(Keyboard.getInstance().isKeyPressed(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_RIGHT_CONTROL)){
-                if(serialized_clipboard_data != null) {
-                    Collection<Node> new_nodes = Editor.instance.graph.load(serialized_clipboard_data);
-                    // Deselect all nodes
-                    this.deselect();
-                    for(Node node : new_nodes){
-                        this.select(node);
-                    }
-                }
+                this.pasteClipboard();
             }
         });
 
@@ -528,16 +517,33 @@ public class Editor {
 
         graph.render();
 
-
-        // After our graph renders we know that our nodes are in the node editor so this code can be executed without crashing.
-        for(Node node : this.selected_nodes){
-            ImNodes.selectNode(node.getID());
-        }
-
-
         final boolean isEditorHovered = ImNodes.isEditorHovered();
 
         ImNodes.endNodeEditor();
+
+        int[] selected_nodes_ids = new int[ImNodes.numSelectedNodes()];
+        HashSet<Integer> selected_nodes_hashed = new HashSet<>(selected_nodes_ids.length);
+        ImNodes.getSelectedNodes(selected_nodes_ids);
+        ImNodes.clearNodeSelection();
+        this.selected_nodes.clear();
+        for(int node_id : selected_nodes_ids) {
+            if (node_id >= 0){
+                this.select(this.graph.getNodeFromID(node_id));
+            }
+        }
+        for(Node node : to_select) {
+            if (node.getID() >= 0){
+                this.select(node);
+            }
+        }
+        to_select.clear();
+        // After our graph renders we know that our nodes are in the node editor so this code can be executed without crashing.
+        for (Node selected_node : selected_nodes) {
+            if(!selected_nodes_hashed.contains(selected_node.getID())){
+                ImNodes.selectNode(selected_node.getID());
+            }
+        }
+
 
         renderAddNodePopup();
 
@@ -593,5 +599,13 @@ public class Editor {
 
     public void select(Node node){
         this.selected_nodes.add(node);
+    }
+
+    public void pasteClipboard(){
+        if(serialized_clipboard_data != null) {
+            this.deselect();
+            Collection<Node> new_nodes = Editor.instance.graph.load(serialized_clipboard_data);
+            to_select.addAll(new_nodes);
+        }
     }
 }

@@ -129,7 +129,7 @@ public class InflowPin extends Pin {
         if (!(link == null)) {
             // Make sure that the ids are > 0 and that the pins we are linking to rendered this frame.
 //            System.out.println("link.renderedThisFrame()" + link.renderedThisFrame() + " this.renderedThisFrame()" + this.renderedThisFrame());
-            if(link.getID() >= 0 && this.getID() >= 0 && this.rendered_this_frame) {
+            if(true) {
 
                 //TODO smooth fade between colors.
                 int color = NodeColors.WHITE;

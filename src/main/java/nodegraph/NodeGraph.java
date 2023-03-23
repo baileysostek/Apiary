@@ -163,6 +163,10 @@ public class NodeGraph {
         return serialization_object;
     }
 
+    public Node getNodeFromID(int node_id) {
+        return this.nodes.getOrDefault(node_id, null);
+    }
+
     public Collection<Node> getNodesFromIDs(int[] node_ids) {
         LinkedList<Node> out = new LinkedList<>();
         for(int node_id : node_ids){
@@ -205,7 +209,7 @@ public class NodeGraph {
         return load(save_data);
     }
 
-    public Collection<Node> load (JsonObject serialized_node_data) {
+    public Collection<Node>     load (JsonObject serialized_node_data) {
         /**
          *  Since ImNodes uses an internal representation for the nodes that we don't have access to we need to give each node a random ID each time it is generated
          *  to avoid the problem of linking to arbitrary IDs we construct a linear list of incremental IDs at save time. At load time we reference this map of IDs but
@@ -274,6 +278,13 @@ public class NodeGraph {
             if ( node_id >= 0 ) {
                 this.nodes.remove(node_id);
             }
+        }
+    }
+
+    public void removeNodes(Collection<Node> nodes) {
+        for(Node node : nodes){
+            this.nodes.remove(node.getID());
+            node.onRemove();
         }
     }
 

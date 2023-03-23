@@ -616,4 +616,17 @@ public abstract class Node{
         JsonObject initialization_data = this.generateSaveData();
         return NodeRegistry.getInstance().getNodeFromClass(initialization_data);
     }
+
+    public final void onRemove(){
+        for (OutflowPin pin : this.outputs.values()) {
+            for(InflowPin link : pin.getConnections()){
+                link.disconnect();
+            }
+        }
+        for(InflowPin pin : this.inputs.values()){
+            pin.disconnect();
+        }
+        this.inflow.disconnect();
+        this.outflow.disconnect();
+    }
 }
