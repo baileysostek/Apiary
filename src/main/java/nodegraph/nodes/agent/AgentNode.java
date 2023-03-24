@@ -17,9 +17,9 @@ import java.util.LinkedList;
 
 public class AgentNode extends Node {
 
-    private LinkedList<Attribute> attributes = new LinkedList<>();
-    private final LinkedList<Attribute> to_remove = new LinkedList<>();
-    private final LinkedList<Attribute> buffer = new LinkedList<>();
+    private LinkedList<Attribute> attributes        = new LinkedList<>();
+    private final LinkedList<Attribute> to_remove   = new LinkedList<>();
+    private final LinkedList<Attribute> buffer      = new LinkedList<>();
 
     public AgentNode(JsonObject initialization_data){
         super(initialization_data);
@@ -30,6 +30,35 @@ public class AgentNode extends Node {
         if(initialization_data.has("agent_name")){
             super.setTitle(initialization_data.get("agent_name").getAsString());
         }
+
+        if(initialization_data.has("attributes")){
+            JsonElement attributes_data = initialization_data.get("attributes");
+            if(attributes_data.isJsonArray()){
+                JsonArray attributes_array = attributes_data.getAsJsonArray();
+                for(int i = 0; i < attributes_array.size(); i++){
+                    JsonObject attribute_data = attributes_array.get(i).getAsJsonObject();
+                    addInputPin(attribute_data.get("name").getAsString(), GLDataType.valueOf(attribute_data.get("type").getAsString()));
+                }
+            }
+        }
+    }
+
+    @Override
+    public JsonObject nodeSpecificSaveData() {
+        JsonObject out = new JsonObject();
+
+        out.addProperty("agent_name", this.getTitle());
+
+        JsonArray attributes = new JsonArray();
+        for (Attribute attribute : this.attributes) {
+            JsonObject attribute_data = new JsonObject();
+            attribute_data.addProperty("name", attribute.attribute_name.get());
+            attribute_data.addProperty("type", attribute.type.name());
+            attributes.add(attribute_data);
+        }
+        out.add("attributes", attributes);
+
+        return out;
     }
 
     @Override

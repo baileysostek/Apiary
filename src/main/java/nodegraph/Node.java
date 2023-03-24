@@ -96,11 +96,11 @@ public abstract class Node{
         this.outflow = new OutflowPin(this, OUTFLOW, PinType.FLOW, null);
 
         // Do a render just so the node exists in the internal state?
-        this.render();
+//        this.render();
     }
 
     public final JsonObject generateSaveData(){
-        JsonObject save_object = new JsonObject();
+        JsonObject save_object = nodeSpecificSaveData();
         // Add the ID
 
         // Add the pins
@@ -115,8 +115,9 @@ public abstract class Node{
         return save_object;
     }
 
-    // Default dose nothing.
-    public void onLoadFromSaveData(JsonObject save_data) {}
+    public JsonObject nodeSpecificSaveData(){
+        return new JsonObject();
+    }
 
     // Helper functions to add and remove attributes
     public InflowPin addInputPin(String name, GLDataType ... accepted_types){
