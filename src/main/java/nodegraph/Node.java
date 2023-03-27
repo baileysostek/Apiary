@@ -66,6 +66,8 @@ public abstract class Node{
 
     private LinkedHashMap<Integer, Pin> pin_ids = new LinkedHashMap<>();
 
+    private boolean initial_render = true;
+
     public Node(JsonObject initialization_data){
         // Determine ID
         this.id = ++next_id;
@@ -118,8 +120,8 @@ public abstract class Node{
         save_object.addProperty("class", this.getClass().getName());
 
         // We are going to encode the screen position of this object.
-        save_object.addProperty("pos_x", this.node_pos_x + ImNodes.getNodeEditorSpacePosX(id) - 100); // The 100 here is kindof a magic number. For whatever reason when you set a node to 0,0 it appears at 100,100
-        save_object.addProperty("pos_y", this.node_pos_y + ImNodes.getNodeEditorSpacePosY(id) - 100);
+        save_object.addProperty("pos_x", ImNodes.getNodeGridSpacePosX(id)); // The 100 here is kindof a magic number. For whatever reason when you set a node to 0,0 it appears at 100,100
+        save_object.addProperty("pos_y", ImNodes.getNodeGridSpacePosY(id));
 
         return save_object;
     }
@@ -238,14 +240,6 @@ public abstract class Node{
         this.node_pos_y = position_y;
     }
 
-    public float getPositionX() {
-        return node_pos_x;
-    }
-
-    public float getPositionY() {
-        return node_pos_y;
-    }
-
     public final void renderNode(){
 
         // associate each pin with a unique id
@@ -257,10 +251,10 @@ public abstract class Node{
         });
 
         // Set the position of this node
-        ImNodes.editorResetPanning(node_pos_x, node_pos_y);
+//        ImNodes.editorResetPanning(node_pos_x, node_pos_y);
 
         // Begin a node.
-        ImNodes.beginNode(this.id);
+        ImNodes.beginNode(this.getID());
         ImGui.beginGroup();
         // Title Bar
         ImNodes.beginNodeTitleBar();
@@ -274,11 +268,17 @@ public abstract class Node{
 
         ImNodes.endNode();
 
+        // Now we can position the node
+        if (initial_render) {
+            ImNodes.setNodeGridSpacePos(getID(), node_pos_x, node_pos_y);
+            initial_render = false;
+        }
+
         this.colors.forEach((style, color) -> {
             ImNodes.popColorStyle();
         });
         // Reset the camera.
-        ImNodes.editorResetPanning(0, 0);
+//        ImNodes.editorResetPanning(0, 0);
     }
 
     public void render(){

@@ -12,6 +12,7 @@ import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
+import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
@@ -396,6 +397,8 @@ public class Editor {
         graph.render();
 
         final boolean isEditorHovered = ImNodes.isEditorHovered();
+
+        ImNodes.miniMap(.1f, ImNodesMiniMapLocation.BottomRight);
 
         ImNodes.endNodeEditor();
 
