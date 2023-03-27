@@ -313,6 +313,7 @@ public enum FunctionDirective {
         new String[]{"noise"} // Libraries
     ),
 
+    //TODO seeded random
     RANDOM_FLOAT("@random_float",
         new String[]{},
         new String[]{},

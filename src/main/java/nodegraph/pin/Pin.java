@@ -1,14 +1,8 @@
 package nodegraph.pin;
 
 import com.google.gson.JsonElement;
-import graphics.GLDataType;
-import graphics.GLStruct;
-import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
 import nodegraph.Node;
-
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 
 public abstract class Pin {
 

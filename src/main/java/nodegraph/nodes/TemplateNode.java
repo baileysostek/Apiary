@@ -17,7 +17,7 @@ public abstract class TemplateNode extends Node {
     final String name;
     final FunctionDirective template;
     final GLDataType return_type;
-    final OutflowPin out;
+    protected final OutflowPin out;
 
     //TODO this is limiting we need to let the return tybe be derrived.
     public TemplateNode(String name, FunctionDirective template, GLDataType return_type, JsonObject initialization_data) {

@@ -13,6 +13,12 @@ import java.util.LinkedHashSet;
 
 public class OutflowPin extends Pin{
 
+    @FunctionalInterface
+    public interface OutflowPinConnectionCallback{
+        void onConnect(InflowPin other);
+    }
+    protected OutflowPinConnectionCallback callback;
+
     private LinkedHashSet<InflowPin> links = new LinkedHashSet<>();
 
     private GLDataType type;
@@ -43,7 +49,11 @@ public class OutflowPin extends Pin{
             }
 
             // Add this new connection
-            this.links.add((InflowPin) other);
+            InflowPin inflow_pin = (InflowPin) other;
+            this.links.add(inflow_pin);
+            if(this.callback != null){
+                this.callback.onConnect(inflow_pin);
+            }
         }
     }
 
@@ -130,5 +140,9 @@ public class OutflowPin extends Pin{
 
     public int getColor(){
         return NodeColors.getTypeColor(this.type);
+    }
+
+    public void onConnect(OutflowPinConnectionCallback callback){
+        this.callback = callback;
     }
 }

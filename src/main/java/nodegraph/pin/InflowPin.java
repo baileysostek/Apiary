@@ -20,6 +20,12 @@ import java.util.LinkedList;
 
 public class InflowPin extends Pin {
 
+    @FunctionalInterface
+    public interface InflowPinConnectionCallback{
+        void onConnect(OutflowPin other);
+    }
+    private InflowPinConnectionCallback callback;
+
     private OutflowPin link;
 
     private ImString value = new ImString();
@@ -57,12 +63,15 @@ public class InflowPin extends Pin {
         }
 
         if(canLink(other)){
-            OutflowPin outflowPin = ((OutflowPin)other);
+            OutflowPin outflow_pin = ((OutflowPin)other);
             // If we are linked to something now, we are becoming disconnected so reflect that change.
             if (!(link == null)) {
                 link.disconnect(this);
             }
-            this.link = outflowPin;
+            this.link = outflow_pin;
+            if(this.callback != null){
+                this.callback.onConnect(outflow_pin);
+            }
         }
     }
 
@@ -189,5 +198,9 @@ public class InflowPin extends Pin {
         } else {
             return new JsonPrimitive(this.value.get());
         }
+    }
+
+    public void onConnect(InflowPinConnectionCallback callback){
+        this.callback = callback;
     }
 }
