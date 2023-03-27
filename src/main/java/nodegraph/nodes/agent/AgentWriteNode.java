@@ -39,6 +39,27 @@ public class AgentWriteNode extends Node {
     }
 
     @Override
+    public void onLoad(JsonObject initialization_data) {
+        if(initialization_data.has("agent_reference")){
+            // We are going to look for our node
+            int node_id = initialization_data.get("agent_reference").getAsInt();
+            Node reference = Editor.getInstance().getNodeGraph().getNodeFromReference(node_id);
+            if(reference instanceof AgentNode){
+                this.setAgent((AgentNode) reference);
+            }
+        }
+    }
+
+    @Override
+    public JsonObject nodeSpecificSaveData() {
+        JsonObject out = new JsonObject();
+        if(this.agent != null) {
+            out.addProperty("agent_reference", this.agent.getReferenceID());
+        }
+        return out;
+    }
+
+    @Override
     public void render() {
         // Render our index
         super.renderInputAttribute("instance");
@@ -52,11 +73,7 @@ public class AgentWriteNode extends Node {
 
                 boolean is_selected = agent_node.getTitle().equals(agent_name);
                 if (ImGui.selectable(agent_node.getTitle(), is_selected)){
-                    if(agent == null || !agent.equals(agent_node)) {
-                        // We need to update out outflows
-                        agent = agent_node;
-                        setInflowPins(agent);
-                    }
+                    this.setAgent(agent_node);
                 }
                 if (is_selected) {
                     ImGui.setItemDefaultFocus();
@@ -74,6 +91,14 @@ public class AgentWriteNode extends Node {
                 }
                 super.renderInputAttribute(inflow_pin.getAttributeName());
             }
+        }
+    }
+
+    public void setAgent(AgentNode agent) {
+        if(this.agent == null || !this.agent.equals(agent)) {
+            // We need to update out outflows
+            this.agent = agent;
+            setInflowPins(this.agent);
         }
     }
 

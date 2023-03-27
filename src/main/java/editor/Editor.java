@@ -21,6 +21,7 @@ import input.Mouse;
 import nodegraph.Node;
 import nodegraph.NodeGraph;
 import nodegraph.NodeRegistry;
+import nodegraph.nodes.math.AddNode;
 import nodegraph.pin.Pin;
 import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
@@ -60,17 +61,11 @@ public class Editor {
     float node_editor_width  = 1;
     float node_editor_height = 1;
 
-    // IDS of popups and stuff
-    String ADD_NODE_POPUP = "Add Node";
-    boolean should_open_popup = false;
-    ImVec2 popup_screen_pos = new ImVec2();
-
     boolean initialize = true;
 
     final int APIARY_TEXTURE_ID;
 
-    // TODO move to own class maybe?
-    ImString search_data = new ImString();
+    private AddNodePopup add_node_popup;
 
 //    int[] selected_nodes  = new int[128];
     private LinkedHashSet<Node> selected_nodes = new LinkedHashSet<>();
@@ -251,6 +246,7 @@ public class Editor {
                 ImNodes.getSelectedNodes(clipboard_node_ids);
                 serialized_clipboard_data = this.graph.serializeNodes(this.graph.getNodesFromIDs(clipboard_node_ids));
                 //TODO trigger event / snackbar.
+                System.out.println(serialized_clipboard_data);
             }
         });
 
@@ -269,114 +265,16 @@ public class Editor {
             }
         });
 
+        add_node_popup = new AddNodePopup(graph);
+
     }
 
     public static void initialize(){
         if(instance == null){
             instance = new Editor();
-
-
-//            Node init = new InitializationNode();
-//            instance.graph.addNode(init);
-//
-//            AgentNode cell = new AgentNode("cell");
-//            cell.addInputPin("color", GLDataType.VEC3);
-//            cell.addInputPin("alive", GLDataType.BOOL);
-//            instance.graph.addNode(cell);
-//
-//            Node vec3 = new Vec3Node();
-//            instance.graph.addNode(vec3);
-//
-//            Node r = new RandomFloatNode();
-////            r.getPinFromName("random_float").link(vec3.getPinFromName("x"));
-//            Node g = new RandomFloatNode();
-////            g.getPinFromName("random_float").link(vec3.getPinFromName("y"));
-//            Node b = new RandomFloatNode();
-////            b.getPinFromName("random_float").link(vec3.getPinFromName("z"));
-//            instance.graph.addNode(r);
-//            instance.graph.addNode(g);
-//            instance.graph.addNode(b);
-//
-////            vec3.getPinFromName("vec3").link(cell.getPinFromName("color"));
-//
-//            Node alive = new RandomBoolNode();
-//            instance.graph.addNode(alive);
-//
-//            // Now we will add the steps
-//            StepNode gol_step = new StepNode();
-//            instance.graph.addNode(gol_step);
-
-//            DefineNode define_neighbors = new DefineNode();
-//            instance.graph.addNode(define_neighbors);
-//
-//            instance.graph.addNode(new XPosBuiltInNode());
-//            instance.graph.addNode(new YPosBuiltInNode());
-//
-//            instance.graph.addNode(new SequenceNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new IncrementNode());
-//            instance.graph.addNode(new LinearizeNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new AddNode());
-//            instance.graph.addNode(new TernaryNode());
-//            instance.graph.addNode(new AgentReadNode());
-//
-//            instance.graph.addNode(new AgentWriteNode());
-//
-//            instance.graph.addNode(new ConditionalNode());
-
             instance.graph.load("simulations/gol_test.jsonc");
 
-//            alive.getPinFromName("random_bool").link(cell.getPinFromName("alive"));
+
 
         }
     }
@@ -393,10 +291,9 @@ public class Editor {
         int node = ImNodes.getHoveredNode();
 
         if(pin < 0 && link < 0 && node < 0){
-            should_open_popup = true;
-            ImGui.getMousePosOnOpeningCurrentPopup(popup_screen_pos);
+            add_node_popup.open();
         }else{
-            should_open_popup = false;
+
         }
 
     }
@@ -413,28 +310,9 @@ public class Editor {
         // Update mouse cursor
         glfwSetCursor(Apiary.getWindowPointer(), MOUSE_CURSORS[ImGui.getMouseCursor()]);
         glfwSetInputMode(Apiary.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
 
-    private void renderAddNodePopup(){
-        if(ImGui.beginPopup(ADD_NODE_POPUP)){
-            ImGui.inputTextWithHint("##add_node_search", "Search", search_data, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll);
-            ImGui.beginChildFrame(getNextAvailableID(), 256, 512);
-            for(Class<? extends Node> node_class : NodeRegistry.getInstance().getRegisteredNodes()){
-                String node_name = node_class.getSimpleName().toLowerCase(Locale.ROOT);
-                if(node_name.contains(search_data.get().toLowerCase(Locale.ROOT))) {
-                    if(ImGui.button(node_class.getSimpleName())){
-                        JsonObject initialization_data = new JsonObject();
-                        initialization_data.addProperty("pos_x", popup_screen_pos.x);
-                        initialization_data.addProperty("pos_y", popup_screen_pos.y);
-                        graph.addNode(NodeRegistry.getInstance().getNodeFromClass(node_class, initialization_data));
-                        ImGui.closeCurrentPopup();
-                    }
-                    ImGui.newLine();
-                }
-            }
-            ImGui.endChildFrame();
-            ImGui.endPopup();
-        }
+        // TODO collection
+        add_node_popup.update(delta);
     }
 
     public void render(){
@@ -539,20 +417,16 @@ public class Editor {
         to_select.clear();
         // After our graph renders we know that our nodes are in the node editor so this code can be executed without crashing.
         for (Node selected_node : selected_nodes) {
-            if(!selected_nodes_hashed.contains(selected_node.getID())){
-                ImNodes.selectNode(selected_node.getID());
+            try {
+                if (!selected_nodes_hashed.contains(selected_node.getID())) {
+                    ImNodes.selectNode(selected_node.getID());
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
-
-        renderAddNodePopup();
-
-        if(should_open_popup){
-            ImGui.openPopup(ADD_NODE_POPUP);
-            should_open_popup = false;
-            popup_screen_pos.x -= ImGui.getWindowPosX() + 100; // Translate by window pos.
-            popup_screen_pos.y -= ImGui.getWindowPosY() + 100;
-        }
+        add_node_popup.render();
     }
 
     public void load(String file_path){
@@ -604,7 +478,7 @@ public class Editor {
     public void pasteClipboard(){
         if(serialized_clipboard_data != null) {
             this.deselect();
-            Collection<Node> new_nodes = Editor.instance.graph.load(serialized_clipboard_data);
+            Collection<Node> new_nodes = Editor.instance.graph.load(serialized_clipboard_data, true);
             to_select.addAll(new_nodes);
         }
     }

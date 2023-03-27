@@ -12,12 +12,15 @@ import nodegraph.NodeColors;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 
 public class AgentNode extends Node {
 
-    private LinkedList<Attribute> attributes        = new LinkedList<>();
+    private static int attribute_id = 0;
+
+    private ImString agent_name = new ImString();
+
+    private LinkedHashMap<String, Attribute> attributes = new LinkedHashMap<>();
     private final LinkedList<Attribute> to_remove   = new LinkedList<>();
     private final LinkedList<Attribute> buffer      = new LinkedList<>();
 
@@ -29,6 +32,7 @@ public class AgentNode extends Node {
 
         if(initialization_data.has("agent_name")){
             super.setTitle(initialization_data.get("agent_name").getAsString());
+            agent_name.set(super.getTitle());
         }
 
         if(initialization_data.has("attributes")){
@@ -50,7 +54,7 @@ public class AgentNode extends Node {
         out.addProperty("agent_name", this.getTitle());
 
         JsonArray attributes = new JsonArray();
-        for (Attribute attribute : this.attributes) {
+        for (Attribute attribute : getAttributes()) {
             JsonObject attribute_data = new JsonObject();
             attribute_data.addProperty("name", attribute.attribute_name.get());
             attribute_data.addProperty("type", attribute.type.name());
@@ -63,6 +67,11 @@ public class AgentNode extends Node {
 
     @Override
     public void render() {
+        ImGui.setNextItemWidth(100);
+        if(ImGui.inputText("##"+super.getID()+"_agent_name", agent_name)){
+            setTitle(agent_name.get());
+        }
+        ImGui.newLine();
         if(ImGui.button("Add Attribute")){
             String attribute_name = attributeNameAtIndex((int) System.currentTimeMillis());
             addInputPin(attribute_name, GLDataType.INT);
@@ -72,8 +81,8 @@ public class AgentNode extends Node {
 
     @Override
     public InflowPin addInputPin(String attribute_name, GLDataType... accepted_types) {
-        Attribute new_attribute = new Attribute(attribute_name, attribute_name, (GLDataType) Arrays.stream(accepted_types).toArray()[0]);
-        attributes.addLast(new_attribute);
+        Attribute new_attribute = new Attribute(attribute_name, (GLDataType) Arrays.stream(accepted_types).toArray()[0]);
+        attributes.put(attribute_name, new_attribute);
         return super.addInputPin(attribute_name, new_attribute.type);
     }
 
@@ -89,7 +98,7 @@ public class AgentNode extends Node {
         to_remove.clear();
 
         // Avoid concurrent modification
-        buffer.addAll(attributes);
+        buffer.addAll(getAttributes());
         for(Attribute attribute : buffer){
             super.renderInputAttribute(attribute.attribute_name.get(), () -> {
                 ImGui.pushItemWidth(128);
@@ -137,14 +146,14 @@ public class AgentNode extends Node {
     }
 
     private class Attribute{
-        private String id;
+        private int id;
         private ImString attribute_name;
         private GLDataType type;
         private float[] value;
 
 
-        public Attribute(String id, String attribute_name, GLDataType type) {
-            this.id = id;
+        public Attribute(String attribute_name, GLDataType type) {
+            this.id = ++attribute_id;
             this.attribute_name = new ImString(attribute_name);
             this.type = type;
             this.value = new float[type.getSizeInFloats()];
@@ -165,7 +174,7 @@ public class AgentNode extends Node {
 
         JsonObject attributes_data = new JsonObject();
         // Encode all of our attributes by looping through them and checking if they are connected.
-        for(Attribute attribute : attributes){
+        for(Attribute attribute : getAttributes()){
             String attribute_name = attribute.attribute_name.get();
 
             // Create the data that goes in each attribute.
@@ -194,7 +203,7 @@ public class AgentNode extends Node {
         return JsonNull.INSTANCE;
     }
 
-    public LinkedList<Attribute> getAttributes(){
-        return this.attributes;
+    public Collection<Attribute> getAttributes(){
+        return this.attributes.values();
     }
 }

@@ -32,7 +32,6 @@ public abstract class Node{
     }));
 
     private static int next_id = 0;
-    private static final JsonObject EMPTY_OBJECT = new JsonObject();
 
     // Variables for each node.
 
@@ -53,7 +52,8 @@ public abstract class Node{
     protected String title = "";
     protected int width = 256;
 
-    private final int id;
+    private final int id; // A unique ID used by ImNodes to guarantee that this node is unique.
+    private final int reference_id; // An ID used internally for addressing an ID when loading data.
     private int inflow_id;
     private InflowPin inflow;
     private int outflow_id;
@@ -69,6 +69,11 @@ public abstract class Node{
     public Node(JsonObject initialization_data){
         // Determine ID
         this.id = ++next_id;
+        if(initialization_data.has("id")){
+            this.reference_id = initialization_data.get("id").getAsInt();
+        }else{
+            this.reference_id = this.id;
+        }
 
         if(initialization_data.has("pos_x")){
             this.initial_node_pos_x = initialization_data.get("pos_x").getAsFloat();
@@ -99,6 +104,10 @@ public abstract class Node{
 //        this.render();
     }
 
+    // Guarenteed to run after all nodes and links have been loaded.
+    // Any data which relies on other nodes to exist should be intereacted with at this point.
+    public void onLoad(JsonObject initialization_data){}
+
     public final JsonObject generateSaveData(){
         JsonObject save_object = nodeSpecificSaveData();
         // Add the ID
@@ -123,6 +132,8 @@ public abstract class Node{
     public InflowPin addInputPin(String name, GLDataType ... accepted_types){
         if(!hasPinWithName(name)) {
             this.inputs.put(name, new InflowPin(this, name, PinType.DATA, accepted_types));
+        }else{
+            this.inputs.get(name).setType(accepted_types);
         }
         return inputs.getOrDefault(name, null);
     }
@@ -298,6 +309,10 @@ public abstract class Node{
 
     public int getID() {
         return id;
+    }
+
+    public int getReferenceID() {
+        return reference_id;
     }
 
     public InflowPin getInflow() {
@@ -619,13 +634,19 @@ public abstract class Node{
     }
 
     public final void onRemove(){
-        for (OutflowPin pin : this.outputs.values()) {
-            for(InflowPin link : pin.getConnections()){
+        LinkedList<Pin> pin_buffer = new LinkedList<>();
+        pin_buffer.addAll(this.outputs.values());
+        for (Pin pin : pin_buffer) {
+            OutflowPin outflow_pin = (OutflowPin) pin;
+            Collection<InflowPin> connections = new LinkedList<>(outflow_pin.getConnections());
+            for(InflowPin link : connections){
                 link.disconnect();
             }
         }
-        for(InflowPin pin : this.inputs.values()){
-            pin.disconnect();
+        pin_buffer.clear();
+        pin_buffer.addAll(this.inputs.values());
+        for(Pin pin : pin_buffer){
+            ((InflowPin)pin).disconnect();
         }
         this.inflow.disconnect();
         this.outflow.disconnect();

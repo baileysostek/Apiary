@@ -149,9 +149,20 @@ public class InflowPin extends Pin {
         }
     }
 
-    public void setType(GLDataType type){
+    public void setType(GLDataType ... types){
         this.accepted_types.clear();
-        this.accepted_types.add(type);
+        this.accepted_types.addAll(Arrays.asList(types));
+        refreshConnections();
+    }
+
+    // Re-evaluate any connections
+    private void refreshConnections(){
+        if(this.isConnected()){
+            if(!this.link.canLink(this)){
+                this.link.disconnect(this);
+                this.disconnect();
+            }
+        }
     }
 
     public int getColor(){

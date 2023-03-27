@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
 public class NodeGraph {
+    private LinkedHashMap<Integer, Integer> node_id_to_reference = new LinkedHashMap<>();
     private LinkedHashMap<Integer, Node> nodes = new LinkedHashMap<>();
     private LinkedHashMap<Class<Node>, LinkedList<Node>> typed_nodes = new LinkedHashMap<>();
 
@@ -43,7 +44,8 @@ public class NodeGraph {
             return;
         }
 
-        this.nodes.put(node.getID(), node);
+        this.nodes.put(node.getReferenceID(), node);
+        this.node_id_to_reference.put(node.getID(), node.getReferenceID());
 
         // Check if we have this type
         if (!this.typed_nodes.containsKey(node.getClass())) {
@@ -164,14 +166,19 @@ public class NodeGraph {
     }
 
     public Node getNodeFromID(int node_id) {
+        return this.nodes.getOrDefault(this.node_id_to_reference.get(node_id), null);
+    }
+
+    public Node getNodeFromReference(int node_id) {
         return this.nodes.getOrDefault(node_id, null);
     }
 
     public Collection<Node> getNodesFromIDs(int[] node_ids) {
         LinkedList<Node> out = new LinkedList<>();
         for(int node_id : node_ids){
-            if(this.nodes.containsKey(node_id)){
-                out.push(this.nodes.get(node_id));
+            int node_reference = this.node_id_to_reference.get(node_id);
+            if(this.nodes.containsKey(node_reference)){
+                out.push(this.nodes.get(node_reference));
             }
         }
         return out;
@@ -180,7 +187,7 @@ public class NodeGraph {
     public void saveToFile (String file_path) {
         JsonObject save_object = serializeNodes(this.nodes.values());
         StringUtils.write(save_object.toString(), file_path);
-        this.nodes.clear();
+        this.clearNodes();
         load(file_path);
     }
 
@@ -191,11 +198,17 @@ public class NodeGraph {
 
             JsonObject src = new JsonObject();
             src.addProperty("node_id", node_ids.get(source_node.getParent()));
+            if(node_ids.get(source_node.getParent()) == null){
+                return null;
+            }
             src.addProperty("attribute_name", source_node.getAttributeName());
             link.add("src", src);
 
             JsonObject dst = new JsonObject();
             dst.addProperty("node_id", node_ids.get(dest_node.getParent()));
+            if(node_ids.get(dest_node.getParent()) == null){
+                return null;
+            }
             dst.addProperty("attribute_name", dest_node.getAttributeName());
             link.add("dst", dst);
 
@@ -206,10 +219,10 @@ public class NodeGraph {
 
     public Collection<Node> load (String file_path) {
         JsonObject save_data = JsonUtils.loadJson(file_path);
-        return load(save_data);
+        return load(save_data, false);
     }
 
-    public Collection<Node>     load (JsonObject serialized_node_data) {
+    public Collection<Node> load (JsonObject serialized_node_data, boolean is_clone) {
         /**
          *  Since ImNodes uses an internal representation for the nodes that we don't have access to we need to give each node a random ID each time it is generated
          *  to avoid the problem of linking to arbitrary IDs we construct a linear list of incremental IDs at save time. At load time we reference this map of IDs but
@@ -222,9 +235,21 @@ public class NodeGraph {
                 JsonArray nodes_array = nodes.getAsJsonArray();
                 for(int i = 0; i < nodes_array.size(); i++){
                     JsonObject initialization_data = nodes_array.get(i).getAsJsonObject();
+                    int reference_id = initialization_data.get("id").getAsInt();
+                    if(is_clone){
+                        initialization_data.remove("id");
+                    }
                     Node node = NodeRegistry.getInstance().getNodeFromClass(initialization_data);
-                    id_to_node.put(initialization_data.get("id").getAsInt(), node);
+                    if(is_clone){
+                        initialization_data.addProperty("id", reference_id);
+                    }
+                    id_to_node.put(reference_id, node);
                     this.addNode(node);
+                }
+                // After all the nodes have been added we can call the onLoad function.
+                for(int i = 0; i < nodes_array.size(); i++){
+                    JsonObject initialization_data = nodes_array.get(i).getAsJsonObject();
+                    id_to_node.get(initialization_data.get("id").getAsInt()).onLoad(initialization_data);
                 }
             }
         }
@@ -264,8 +289,8 @@ public class NodeGraph {
                     }
 
                     // Bidirectional link
-                    dest_pin.link(source_pin);
                     source_pin.link(dest_pin);
+                    dest_pin.link(source_pin);
                 }
             }
         }
@@ -273,36 +298,15 @@ public class NodeGraph {
         return id_to_node.values();
     }
 
-    public void removeNodes(int[] selected_nodes) {
-        for(int node_id : selected_nodes){
-            if ( node_id >= 0 ) {
-                this.nodes.remove(node_id);
-            }
-        }
-    }
-
     public void removeNodes(Collection<Node> nodes) {
-        for(Node node : nodes){
-            this.nodes.remove(node.getID());
+        for(Node node : new LinkedList<>(nodes)){
+            this.typed_nodes.get(node.getClass()).remove(node);
+            this.nodes.remove(node.getReferenceID());
             node.onRemove();
         }
     }
 
-    public void pasteClipboard(int[] selected_nodes) {
-        for(int node_id : selected_nodes){
-            if ( node_id >= 0 ) {
-                if(this.nodes.containsKey(node_id)){
-                    Node node = this.nodes.get(node_id);
-                    Node copy = node.clone();
-                    copy.setPositionX(copy.getPositionX() + 100);
-                    copy.setPositionY(copy.getPositionY() + 100);
-                    this.addNode(copy);
-                    System.out.println("Cloned Node.");
-                }
-            }else{
-                // We have hit a section of -1s;
-                return;
-            }
-        }
+    private void clearNodes(){
+        this.removeNodes(this.nodes.values());
     }
 }
