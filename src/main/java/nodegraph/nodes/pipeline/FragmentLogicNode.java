@@ -2,11 +2,10 @@ package nodegraph.nodes.pipeline;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import compiler.FunctionDirective;
 import graphics.GLDataType;
 import nodegraph.Node;
-import nodegraph.nodes.data.Vec3Node;
 import nodegraph.pin.OutflowPin;
 
 public class FragmentLogicNode extends Node {
@@ -20,12 +19,14 @@ public class FragmentLogicNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
-
+    public JsonElement getValueOfPin(OutflowPin outflow) {
+        return outflow.getValue();
     }
 
     @Override
-    public JsonElement getValueOfPin(OutflowPin outflow) {
-        return JsonNull.INSTANCE;
+    public void serialize (JsonArray evaluation_stack) {
+        evaluation_stack.add("out_color");
+        super.serialize(evaluation_stack);
+        evaluation_stack.add(FunctionDirective.SET.getNodeID());
     }
 }

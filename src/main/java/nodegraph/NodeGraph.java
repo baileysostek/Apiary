@@ -1,9 +1,6 @@
 package nodegraph;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import input.Keyboard;
 import nodegraph.nodes.OutflowNode;
 import nodegraph.nodes.agent.AgentNode;
@@ -14,6 +11,7 @@ import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 import nodegraph.pin.Pin;
 import org.lwjgl.glfw.GLFW;
+import simulation.SimulationManager;
 import util.JsonUtils;
 import util.ObservableLinkedHashMap;
 import util.StringUtils;
@@ -59,7 +57,7 @@ public class NodeGraph {
         return this.typed_nodes.containsKey(node);
     }
 
-    public <T extends Node> Collection<Node> getNodesOfType(Class<T> node){
+    public <T extends Node> LinkedList<Node> getNodesOfType(Class<T> node){
         return this.typed_nodes.getOrDefault(node, null);
     }
 
@@ -75,40 +73,51 @@ public class NodeGraph {
     public JsonObject serialize(){
         JsonObject out = new JsonObject();
 
-        for(Node node : this.getNodesOfType(InitializationNode.class)){
-            JsonArray test = new JsonArray();
-            node.generateIntermediate(test);
-            System.out.println(test);
-        }
 
-//        // World definition
-//        JsonObject world = new JsonObject();
-//        // Add our world properties
-//        world.add("name", new JsonPrimitive("Conway's Game of Life"));
-//        world.add("type", new JsonPrimitive("AgentGrid2D"));
-//
-//        JsonObject arguments = new JsonObject();
-//        if(hasNodesOfType(FragmentLogicNode.class)){
-//            // Serialize the node.
+
+//        for(Node node : this.getNodesOfType(InitializationNode.class)){
+//            JsonArray test = new JsonArray();
+//            node.generateIntermediate(test);
+//            System.out.println(test);
 //        }
-//        world.add("arguments", arguments);
-//
-//        out.add("world", world);
-//
-//        // Agents definitions
-//        Collection<Node> agent_nodes = this.getNodesOfType(AgentNode.class);
-//        JsonObject agents = new JsonObject();
-//        for(Node node : agent_nodes){
-//            AgentNode agent_node = ((AgentNode) node);
-//
-//            agents.add(agent_node.title, agent_node.generateIntermediate());
-//        }
-//        out.add("agents", agents);
-//
-//        // Steps definitions
-//        Collection<Node> step_nodes = this.getNodesOfType(StepNode.class);
-//        JsonArray steps = new JsonArray(agent_nodes.size());
-//        out.add("steps", steps);
+
+        // World definition
+        JsonObject world = new JsonObject();
+        // Add our world properties
+        world.add("name", new JsonPrimitive("Conway's Game of Life"));
+        world.add("type", new JsonPrimitive("AgentGrid2D"));
+
+        JsonObject arguments = new JsonObject();
+        if(hasNodesOfType(FragmentLogicNode.class)){
+            // Serialize the node.
+            LinkedList<Node> fragment_nodes = getNodesOfType(FragmentLogicNode.class);
+            // There should only be one fragment node.
+            FragmentLogicNode fragment_logic_node = (FragmentLogicNode) fragment_nodes.getFirst();
+            Node initializer = getSource(fragment_logic_node);
+            if(initializer instanceof InitializationNode){
+                // We have an initialization node which leads to the fragment logic, lets serialize that data.
+                JsonArray fragment_logic = new JsonArray();
+                initializer.generateIntermediate(fragment_logic);
+                arguments.add("fragment_logic", fragment_logic);
+            }
+        }
+        world.add("arguments", arguments);
+
+        out.add("world", world);
+
+        // Agents definitions
+        JsonObject agents = new JsonObject();
+        Collection<Node> agent_nodes = this.getNodesOfType(AgentNode.class);
+        for(Node node : agent_nodes){
+            AgentNode agent_node = ((AgentNode) node);
+            agents.add(agent_node.title, agent_node.serialize(null));
+        }
+        out.add("agents", agents);
+
+        // Steps definitions
+        Collection<Node> step_nodes = this.getNodesOfType(StepNode.class);
+        JsonArray steps = new JsonArray(agent_nodes.size());
+        out.add("steps", steps);
 
         return out;
     }
@@ -317,7 +326,7 @@ public class NodeGraph {
             if(!parent.getInflow().isConnected()){
                 return parent;
             }
-            parent = parent.getInflow().getParent();
+            parent = parent.getInflow().getLink().getParent();
         }
     }
 }

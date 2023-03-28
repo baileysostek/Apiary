@@ -3,6 +3,7 @@ package nodegraph;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
@@ -474,7 +475,7 @@ public abstract class Node{
                         outflow.getConnection().getParent().generateIntermediate(multi_out);
                     }
                 }
-                if(multi_out.size() == 1){
+                if(multi_out.size() == 1){ // If adding a single element
                     if(multi_out.get(0).isJsonArray()) {
                         JsonArray multi_out_element_array = multi_out.get(0).getAsJsonArray();
                         for(int i = 0; i < multi_out_element_array.size(); i++) {
@@ -483,7 +484,7 @@ public abstract class Node{
                     }else{
                         evaluation_stack.add(multi_out.get(0));
                     }
-                }else if(multi_out.size() > 1) {
+                }else if(multi_out.size() > 1) { // Prevent adding empty arrays
                     evaluation_stack.add(multi_out);
                 }
             }
@@ -491,7 +492,28 @@ public abstract class Node{
     }
 
     // Default serialize dose nothing.
-    public void serialize(JsonArray evaluation_stack){};
+    public void serialize (JsonArray evaluation_stack) {
+        // Each attribute we are trying to write to needs to have its own VM code.
+        JsonArray node_inputs_serialized = new JsonArray();
+
+        // For each input
+        for (InflowPin inflow_data : getNodeInflowPins()) {
+            // Dont process the instance pin.
+            if(inflow_data.equals(this.inflow)){
+                continue;
+            }
+
+            if(inflow_data.hasNonDefaultValue()) {
+                // Add this to the set of agent_writes
+                node_inputs_serialized.add(inflow_data.getValue());
+            }
+        }
+
+        // If we have non-default values, enqueue them.
+        if(node_inputs_serialized.size() > 0){
+            evaluation_stack.add(node_inputs_serialized);
+        }
+    }
     public abstract JsonElement getValueOfPin(OutflowPin outflow);
 
 //    public boolean hasPinWithID(int pin_id) {

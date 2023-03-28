@@ -37,7 +37,7 @@ public class SimulationManager {
 
     // We are going to buffer the unload request such that it does not try to unload a simulation that is being rendered.
     private boolean unload_simulation = false;
-    private String simulation_to_load = "";
+    private JsonObject simulation_to_load = null;
 
     // Store our output in an FBO
     private FBO fbo;
@@ -47,8 +47,17 @@ public class SimulationManager {
     }
 
     public void load(String path){
+        JsonObject simulation_object = JsonUtils.loadJson(path);
+        load(simulation_object);
+    }
+
+    public void load(JsonObject simulation_object){
+        if (!JsonUtils.validate(simulation_object, JsonUtils.getInstance().SIMULATION_SCHEMA)) {
+            System.err.println(String.format("Error: tried to load %s, however that file is not a valid Simulation."));
+            return; // Not the correct format. TODO: print error.
+        }
         unloadSimulation();
-        simulation_to_load = path;
+        simulation_to_load = simulation_object;
     }
 
     public void unloadSimulation(){
@@ -69,18 +78,11 @@ public class SimulationManager {
             unload_simulation = false;
 
             // Load
-            if(!simulation_to_load.isEmpty()) {
-                // Ensure that the loaded simulation file abides by our simulation schema.
-                JsonObject object = JsonUtils.loadJson(simulation_to_load);
-                if (!JsonUtils.validate(object, JsonUtils.getInstance().SIMULATION_SCHEMA)) {
-                    return; // Not the correct format. TODO: print error.
-                }
-
-                // The object is valid
-                simulation = new Simulation(object);
+            if(simulation_to_load != null) {
+                simulation = new Simulation(simulation_to_load);
                 onLoad(simulation);
             }
-            simulation_to_load = "";
+            simulation_to_load = null;
         }
 
         // Update our uniforms
