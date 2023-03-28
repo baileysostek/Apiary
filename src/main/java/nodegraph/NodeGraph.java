@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import input.Keyboard;
+import nodegraph.nodes.OutflowNode;
 import nodegraph.nodes.agent.AgentNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
@@ -308,5 +309,15 @@ public class NodeGraph {
 
     private void clearNodes(){
         this.removeNodes(this.nodes.values());
+    }
+
+    private Node getSource(Node other){
+        Node parent = other;
+        while(true){
+            if(!parent.getInflow().isConnected()){
+                return parent;
+            }
+            parent = parent.getInflow().getParent();
+        }
     }
 }

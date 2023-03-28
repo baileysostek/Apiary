@@ -46,9 +46,6 @@ public abstract class Node{
     private final float initial_node_pos_x;
     private final float initial_node_pos_y;
 
-    private float node_pos_x = 0.0f;
-    private float node_pos_y = 0.0f;
-
     protected String title = "";
     protected int width = 256;
 
@@ -82,14 +79,12 @@ public abstract class Node{
         }else{
             this.initial_node_pos_x = 0.0f;
         }
-        setPositionX(this.initial_node_pos_x);
 
         if(initialization_data.has("pos_y")){
             this.initial_node_pos_y = initialization_data.get("pos_y").getAsFloat();
         }else{
             this.initial_node_pos_y = 0.0f;
         }
-        setPositionY(this.initial_node_pos_y);
 
         this.inflow_id = -1;
         this.outflow_id = -1;
@@ -233,13 +228,6 @@ public abstract class Node{
         }
     }
 
-    public void setPositionX(float position_x){
-        this.node_pos_x = position_x;
-    }
-    public void setPositionY(float position_y){
-        this.node_pos_y = position_y;
-    }
-
     public final void renderNode(){
 
         // associate each pin with a unique id
@@ -270,7 +258,7 @@ public abstract class Node{
 
         // Now we can position the node
         if (initial_render) {
-            ImNodes.setNodeGridSpacePos(getID(), node_pos_x, node_pos_y);
+            ImNodes.setNodeGridSpacePos(getID(), initial_node_pos_x, initial_node_pos_y);
             initial_render = false;
         }
 
