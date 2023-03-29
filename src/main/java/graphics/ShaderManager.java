@@ -240,8 +240,6 @@ public class ShaderManager {
                 //Cleanup our broken shader
                 this.deleteShader(shader_id);
 
-                System.exit(1);
-
                 return -1;
             }
         }else{

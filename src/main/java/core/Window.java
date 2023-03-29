@@ -43,7 +43,7 @@ public class Window {
         //Figure out the monitor size
         GLFWVidMode video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-        width = (int) (video_mode.width() * 0.99f);
+        width = (int) (video_mode.width());
         height = video_mode.height();
         aspect_ratio = (float)width / (float)height;
 

@@ -41,22 +41,22 @@ public class SetNode extends Node {
         String variable_name = (reference == null) ? "Select a Variable" : reference.getVariableName();
 
         Collection<Node> variables = Editor.getInstance().getNodeGraph().getNodesOfType(DefineNode.class);
+        if(variables != null && !variables.isEmpty()){
+            if (ImGui.beginCombo("##"+super.getID()+"_var", variable_name, ImGuiComboFlags.None)){
+                for (Node node : variables) {
+                    DefineNode define_node = (DefineNode) node;
+                    if(define_node.getVariableName().isEmpty()){
+                        continue; // If the variable does not have a name we will skip over it.
+                    }
 
-        if (ImGui.beginCombo("##"+super.getID()+"_var", variable_name, ImGuiComboFlags.None)){
-            for (Node node : variables) {
-                DefineNode define_node = (DefineNode) node;
-                if(define_node.getVariableName().isEmpty()){
-                    continue; // If the variable does not have a name we will skip over it.
+                    boolean is_selected = reference != null && reference.equals(define_node);
+                    if (ImGui.selectable(define_node.getVariableName(), is_selected)){
+                        reference = define_node;
+                    }
+                    if (is_selected) {
+                        ImGui.setItemDefaultFocus();
+                    }
                 }
-
-                boolean is_selected = reference != null && reference.equals(define_node);
-                if (ImGui.selectable(define_node.getVariableName(), is_selected)){
-                    reference = define_node;
-                }
-                if (is_selected) {
-                    ImGui.setItemDefaultFocus();
-                }
-            }
 
 //            if (ImGui.selectable("Select a Variable", reference == null)){
 //                attribute.setType(type);
@@ -64,8 +64,13 @@ public class SetNode extends Node {
 //            if (is_selected) {
 //                ImGui.setItemDefaultFocus();
 //            }
-            ImGui.endCombo();
+                ImGui.endCombo();
+            }
+        } else{
+            ImGui.text("No variables exist in this sketch.");
         }
+
+
 
         if(reference != null){
             value.setType(reference.getVariableDataType());

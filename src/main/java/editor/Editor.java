@@ -365,8 +365,15 @@ public class Editor {
             node_editor_width = ImGui.getWindowWidth();
             node_editor_height = ImGui.getWindowHeight();
             renderNodeEditor();
-            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
             ImGui.endChild();
+
+            if(SimulationManager.getInstance().hasActiveSimulation()){
+//                ImGui.setWindowFocus("Simulation");
+                if(ImGui.begin("Simulation")){
+                    ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
+                }
+                ImGui.end();
+            }
 
             ImGui.end();
         }

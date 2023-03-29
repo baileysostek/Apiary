@@ -3,6 +3,7 @@ package editor;
 import com.google.gson.JsonObject;
 import imgui.ImGui;
 import imgui.ImVec2;
+import imgui.extension.imnodes.ImNodes;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import nodegraph.Node;
@@ -15,9 +16,12 @@ public class AddNodePopup implements EditorComponent {
 
     // Properties to help with rendering.
     private String ADD_NODE_POPUP = "Add Node";
-    private ImVec2 popup_screen_pos = new ImVec2();
+    private ImVec2 mouse_pos = new ImVec2();
     private ImString search_data = new ImString();
     private boolean popup_opened_this_frame = false;
+
+    private float parent_window_pos_x = 0;
+    private float parent_window_pos_y = 0;
 
     // Members taken from parent.
     private NodeGraph graph;
@@ -38,10 +42,12 @@ public class AddNodePopup implements EditorComponent {
     @Override
     public void render() {
         if(popup_opened_this_frame){
-            ImGui.getMousePosOnOpeningCurrentPopup(popup_screen_pos);
+            parent_window_pos_x = ImGui.getWindowPosX();
+            parent_window_pos_y = ImGui.getWindowPosY();
+
+            ImGui.getMousePosOnOpeningCurrentPopup(mouse_pos);
+
             ImGui.openPopup(ADD_NODE_POPUP);
-            popup_screen_pos.x -= ImGui.getWindowPosX() + 100; // Translate by window pos.
-            popup_screen_pos.y -= ImGui.getWindowPosY() + 100;
         }
 
         // if the popup is open we can render the content.
@@ -60,8 +66,16 @@ public class AddNodePopup implements EditorComponent {
                 if(node_name.contains(search_data.get().toLowerCase(Locale.ROOT))) {
                     if(ImGui.button(node_class.getSimpleName())){
                         JsonObject initialization_data = new JsonObject();
-                        initialization_data.addProperty("pos_x", popup_screen_pos.x);
-                        initialization_data.addProperty("pos_y", popup_screen_pos.y);
+
+                        // Calculate the position nodes should be created at.
+                        ImVec2 camera_pos = new ImVec2();
+                        ImNodes.editorContextGetPanning(camera_pos);
+
+                        float node_pos_x = (mouse_pos.x - parent_window_pos_x) - camera_pos.x; // Translate by window pos.
+                        float node_pos_y = (mouse_pos.y - parent_window_pos_y) - camera_pos.y;
+
+                        initialization_data.addProperty("pos_x", node_pos_x);
+                        initialization_data.addProperty("pos_y", node_pos_y);
                         graph.addNode(NodeRegistry.getInstance().getNodeFromClass(node_class, initialization_data));
                         ImGui.closeCurrentPopup();
                     }
