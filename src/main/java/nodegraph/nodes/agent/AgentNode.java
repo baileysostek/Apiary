@@ -196,6 +196,7 @@ public class AgentNode extends Node {
         }
         // Attach our attributes to agent data.
         agent_data.add("attributes", attributes_data);
+        evaluation_stack.add(agent_data);
     }
 
     @Override

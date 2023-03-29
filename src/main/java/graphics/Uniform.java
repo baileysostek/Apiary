@@ -76,6 +76,7 @@ public class Uniform {
             }
         }else{
             System.err.println(String.format("error : Trying to get the uniform location of uniform %s, however there is no currently bound shader program.", name));
+            System.exit(1);
         }
     }
 

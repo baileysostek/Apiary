@@ -7,9 +7,7 @@ import compiler.GLSLCompiler;
 import simulation.SimulationManager;
 import util.StringUtils;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 public class ShaderManager {
 
@@ -26,6 +24,7 @@ public class ShaderManager {
     private static final String WRITE_NAME = "_write";
 
     // Allocated
+    private final HashSet<Integer> reserved_shaders = new HashSet<>(); // any default shaders cannot be deleted.
     private final HashSet<Integer> allocated_shaders = new HashSet<>();
     private final HashSet<Integer> allocated_programs = new HashSet<>();
 
@@ -38,7 +37,9 @@ public class ShaderManager {
     private final int DEFAULT_FRAGMENT_SHADER;
 
     // Indies used for SSBO location binding
-    private static int next_available_location = 0;
+    private final int MAX_SHADER_STORAGE_BLOCK_LOCATIONS;
+    private final HashSet<Integer> locations_buffer = new HashSet<>();
+    private final LinkedList<Integer> available_layout_locations = new LinkedList<>();
 
     // GLSL libraries
     private LinkedHashSet<String> custom_directives = new LinkedHashSet<>();
@@ -55,6 +56,13 @@ public class ShaderManager {
     private ShaderManager() {
         // Register any custom directives we want to support
         custom_directives.add("#include");
+
+        MAX_SHADER_STORAGE_BLOCK_LOCATIONS = GL43.glGetInteger(GL43.GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS);
+        for(int i = 0; i < MAX_SHADER_STORAGE_BLOCK_LOCATIONS; i++){
+            available_layout_locations.add(i);
+            locations_buffer.add(i);
+        }
+
 
         // Define our typeMapping
         // By default we just use the name of the enum values
@@ -94,6 +102,7 @@ public class ShaderManager {
             "gl_Position = vec4(position, 1.0);\n" +
             "}\n";
         DEFAULT_VERTEX_SHADER = compileShader(GL43.GL_VERTEX_SHADER, default_vertex_source);
+        reserved_shaders.add(DEFAULT_VERTEX_SHADER);
 
         String default_geometry_source =
             generateVersionString() +
@@ -105,6 +114,7 @@ public class ShaderManager {
             "    EndPrimitive();\n" +
             "}\n";
         DEFAULT_GEOMETRY_SHADER = compileShader(GL43.GL_GEOMETRY_SHADER, default_geometry_source);
+        reserved_shaders.add(DEFAULT_GEOMETRY_SHADER);
 
         String default_fragment_source =
             generateVersionString() +
@@ -121,6 +131,7 @@ public class ShaderManager {
 //            "out_color = vec4(1.0);" +
             "}\n";
         DEFAULT_FRAGMENT_SHADER = compileShader(GL43.GL_FRAGMENT_SHADER, default_fragment_source);
+        reserved_shaders.add(DEFAULT_FRAGMENT_SHADER);
 
         this.u_window_size.set(Apiary.getWindowWidth(), Apiary.getWindowHeight());
         this.u_aspect_ratio.set(Apiary.getAspectRatio());
@@ -341,7 +352,28 @@ public class ShaderManager {
     }
 
     public int getNextAvailableSSBOLocation() {
-        return next_available_location++;
+        locations_buffer.clear();
+        available_layout_locations.sort(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return (o1 > o2) ? 1 : -1 ;
+            }
+        });
+
+        int smallest_value = available_layout_locations.pop();
+
+        for(int i : available_layout_locations){
+            locations_buffer.add(i);
+        }
+
+        return smallest_value;
+    }
+
+    public void freeSSBOLocation(int layout_location){
+        if(!locations_buffer.contains(layout_location) && layout_location < MAX_SHADER_STORAGE_BLOCK_LOCATIONS){
+            locations_buffer.add(layout_location);
+            available_layout_locations.add(layout_location);
+        }
     }
 
     public String getSSBOReadIdentifier() {
@@ -377,6 +409,12 @@ public class ShaderManager {
     }
 
     public void deleteShader(int id) {
+        if(reserved_shaders.contains(id)){
+            // Not allowed to delete the default shaders.
+            // This can happen accidentally in the cleanup section of your code if you
+            // are using a default shader and pass it to delete shader.
+            return;
+        }
         GL43.glDeleteShader(id);
         this.allocated_shaders.remove(id);
     }
@@ -512,6 +550,7 @@ public class ShaderManager {
             "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
             "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
             "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
+            "int instance = x_pos + (y_pos * int(u_window_size.x));\n" +
             "{{include_in_main}}" +
             "{{fragment_source}}"+
             "}\n";

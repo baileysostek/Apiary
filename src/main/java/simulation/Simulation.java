@@ -11,6 +11,7 @@ import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.MathUtil;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
@@ -34,6 +35,8 @@ public class Simulation {
 
     // Variables used in simulation
     private int frame = 0;
+
+    private HashSet<SSBO> agent_ssbos = new HashSet<>();
 
     protected Simulation(JsonObject object){
         // First thing we do is set the active simulation to this one
@@ -65,6 +68,7 @@ public class Simulation {
 
             // This is where we will hold attributes for this agent.
             SSBO agent_ssbo = new SSBO(agent_name, agent_types);
+            agent_ssbos.add(agent_ssbo);
 
             // Buffer for holding strings while we are generating the agent.
             String attribute_initializer_setup_data = "";
@@ -230,11 +234,23 @@ public class Simulation {
         for(AgentInitializationShader initialization_shader : agent_initialization_shaders){
             initialization_shader.destroy();
         }
+        agent_initialization_shaders.clear();
+
         // Destroy our Steps
         for(ComputeShader step : steps){
             step.destroy();
         }
+        steps.clear();
+
+        // We also need to free our SSBOs
+        for(SSBO agent_ssbo : agent_ssbos){
+            agent_ssbo.cleanup();
+        }
+        agent_ssbos.clear();
+
         // Destroy our world
         this.simulation_world.destroy();
+
+        System.out.println("Shaders:" + ShaderManager.getInstance());
     }
 }

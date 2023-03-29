@@ -200,6 +200,10 @@ public class InflowPin extends Pin {
         }
     }
 
+    public void setValue(String value){
+        this.value.set(value);
+    }
+
     public void onConnect(InflowPinConnectionCallback callback){
         this.callback = callback;
     }

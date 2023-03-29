@@ -147,6 +147,9 @@ public class SSBO extends GLStruct{
     public void cleanup(){
         MemoryUtil.memFree(this.buffer);
         GL43.glDeleteBuffers(id_read);
+
+        ShaderManager.getInstance().freeSSBOLocation(location_read);
+        ShaderManager.getInstance().freeSSBOLocation(location_write);
     }
 
     public int getCapacity() {

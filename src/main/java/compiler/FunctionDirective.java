@@ -308,7 +308,7 @@ public enum FunctionDirective {
     RANDOM_BOOL("@random_bool",
         new String[]{},
         new String[]{},
-        (stack, params) -> String.format("((random(vec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, %s%sf)) > 0.5) ? true : false)", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
+        (stack, params) -> String.format("((random(vec3(instance, %s, %s)) > 0.5) ? true : false)", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
         new String[]{"u_time_seconds"}, // Uniforms
         new String[]{"noise"} // Libraries
     ),
@@ -317,7 +317,7 @@ public enum FunctionDirective {
     RANDOM_FLOAT("@random_float",
         new String[]{},
         new String[]{},
-        (stack, params) ->   String.format("random(vec3(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, %s%sf))", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
+        (stack, params) ->   String.format("random(vec3(instance, %s, %s))", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
         new String[]{"u_time_seconds"}, // Uniforms
         new String[]{"noise"} // Libraries
     ),

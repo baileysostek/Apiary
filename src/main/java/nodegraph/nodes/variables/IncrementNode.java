@@ -1,4 +1,4 @@
-package nodegraph.nodes.math;
+package nodegraph.nodes.variables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

@@ -52,7 +52,7 @@ public abstract class World extends GLStruct {
         ShaderManager.getInstance().deleteShader(vertex_id);
         ShaderManager.getInstance().deleteShader(geometry_id);
         ShaderManager.getInstance().deleteShader(fragment_id_primary);
-        ShaderManager.getInstance().deleteProgram(fragment_id_secondary);
+        ShaderManager.getInstance().deleteShader(fragment_id_secondary);
     }
 
     protected abstract int generateVertex(boolean is_read);

@@ -110,14 +110,28 @@ public class NodeGraph {
         Collection<Node> agent_nodes = this.getNodesOfType(AgentNode.class);
         for(Node node : agent_nodes){
             AgentNode agent_node = ((AgentNode) node);
-            agents.add(agent_node.title, agent_node.serialize(null));
+            JsonArray agent_initialization_data = new JsonArray();
+            agent_node.serialize(agent_initialization_data);
+            // Get the first element
+            agents.add(agent_node.title, agent_initialization_data.get(0));
         }
         out.add("agents", agents);
 
         // Steps definitions
+        JsonArray steps = new JsonArray();
         Collection<Node> step_nodes = this.getNodesOfType(StepNode.class);
-        JsonArray steps = new JsonArray(agent_nodes.size());
+        for(Node node : step_nodes){
+            StepNode step_node = ((StepNode) node);
+            JsonArray step_logic = new JsonArray();
+            step_node.generateIntermediate(step_logic);
+            // Get the first element
+            JsonObject step_object = new JsonObject();
+            step_object.add("logic", step_logic);
+            steps.add(step_object);
+        }
         out.add("steps", steps);
+
+        SimulationManager.getInstance().load(out);
 
         return out;
     }
