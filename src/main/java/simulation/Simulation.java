@@ -11,6 +11,7 @@ import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.MathUtil;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -252,5 +253,13 @@ public class Simulation {
         this.simulation_world.destroy();
 
         System.out.println("Shaders:" + ShaderManager.getInstance());
+    }
+
+    public HashMap<String, Integer> getAgentCounts(){
+        HashMap<String, Integer> agent_instances = new HashMap<>();
+        for(SSBO ssbo : agent_ssbos){
+            agent_instances.put(ssbo.getName(), ssbo.getCapacity());
+        }
+        return agent_instances;
     }
 }

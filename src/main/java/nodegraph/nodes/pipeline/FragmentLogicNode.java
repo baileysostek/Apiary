@@ -5,8 +5,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
+import imgui.ImGui;
 import nodegraph.Node;
 import nodegraph.pin.OutflowPin;
+import simulation.SimulationManager;
 
 public class FragmentLogicNode extends Node {
 
@@ -28,5 +30,13 @@ public class FragmentLogicNode extends Node {
         evaluation_stack.add("out_color");
         super.serialize(evaluation_stack);
         evaluation_stack.add(FunctionDirective.SET.getNodeID());
+    }
+
+    @Override
+    public void render() {
+        super.render();
+        if(SimulationManager.getInstance().hasActiveSimulation()){
+            ImGui.image(SimulationManager.getInstance().getSimulationTexture(), 256, 256);
+        }
     }
 }

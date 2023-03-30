@@ -2,7 +2,6 @@ package nodegraph;
 
 import com.google.gson.*;
 import input.Keyboard;
-import nodegraph.nodes.OutflowNode;
 import nodegraph.nodes.agent.AgentNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
@@ -11,15 +10,10 @@ import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 import nodegraph.pin.Pin;
 import org.lwjgl.glfw.GLFW;
-import simulation.SimulationManager;
 import util.JsonUtils;
-import util.ObservableLinkedHashMap;
 import util.StringUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 public class NodeGraph {
     private LinkedHashMap<Integer, Integer> node_id_to_reference = new LinkedHashMap<>();
@@ -27,11 +21,6 @@ public class NodeGraph {
     private LinkedHashMap<Class<Node>, LinkedList<Node>> typed_nodes = new LinkedHashMap<>();
 
     public NodeGraph() {
-        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_F1, () -> {
-            JsonObject object = NodeGraph.this.serialize();
-            System.out.println(object);
-        });
-
         Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_F2, () -> {
             saveToFile("simulations/gol_test.jsonc");
         });
@@ -119,19 +108,38 @@ public class NodeGraph {
 
         // Steps definitions
         JsonArray steps = new JsonArray();
-        Collection<Node> step_nodes = this.getNodesOfType(StepNode.class);
+        LinkedList<Node> step_nodes = this.getNodesOfType(StepNode.class);
+        step_nodes.sort(new Comparator<Node>() {
+            @Override
+            public int compare(Node o1, Node o2) {
+                return (((StepNode) o1).getStepIndex() > ((StepNode) o2).getStepIndex()) ? 1 : -1;
+            }
+        });
+        // TODO we need to sort this collection by step index.
         for(Node node : step_nodes){
-            StepNode step_node = ((StepNode) node);
+            StepNode step_node = ((StepNode) node); // Cast to StepNode
+
+            // Create a json object to hold the data we use to represent this step.
+            JsonObject step_object = new JsonObject();
+
+            // Compute how many times we need to perform this logic loop
+            if(step_node.hasIterationCountSet()) {
+                if(step_node.useAgent()){
+                    step_object.addProperty("for_each", step_node.getSelectedAgent());
+                }else{
+                    step_object.addProperty("for_each", step_node.getIterationCount());
+                }
+            }
+
+            // Generate the logic that is required to perform this step.
             JsonArray step_logic = new JsonArray();
             step_node.generateIntermediate(step_logic);
-            // Get the first element
-            JsonObject step_object = new JsonObject();
             step_object.add("logic", step_logic);
+
+            // Add this object to our list of steps.
             steps.add(step_object);
         }
         out.add("steps", steps);
-
-        SimulationManager.getInstance().load(out);
 
         return out;
     }
@@ -273,7 +281,7 @@ public class NodeGraph {
                 // After all the nodes have been added we can call the onLoad function.
                 for(int i = 0; i < nodes_array.size(); i++){
                     JsonObject initialization_data = nodes_array.get(i).getAsJsonObject();
-                    id_to_node.get(initialization_data.get("id").getAsInt()).onLoad(initialization_data);
+                    id_to_node.get(initialization_data.get("id").getAsInt()).init(initialization_data);
                 }
             }
         }

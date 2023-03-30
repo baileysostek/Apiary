@@ -25,11 +25,6 @@ public class OutflowNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
-
-    }
-
-    @Override
     public JsonElement getValueOfPin(OutflowPin outflow) {
 
         // If we are asking for the Inflow

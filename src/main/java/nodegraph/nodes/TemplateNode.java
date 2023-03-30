@@ -40,32 +40,6 @@ public abstract class TemplateNode extends Node {
         // add back in any values which were modified to be non-default
     }
 
-    @Override
-    public void onLoad(JsonObject initialization_data) {
-        if(initialization_data.has("non_default_values")){
-            JsonObject non_default_values = initialization_data.get("non_default_values").getAsJsonObject();
-            for(String inflow_name : non_default_values.keySet()){
-                InflowPin inflow = (InflowPin) super.getPinFromName(inflow_name);
-                inflow.setValue(non_default_values.get(inflow_name).getAsString());
-            }
-        }
-    }
-
-    @Override
-    public JsonObject nodeSpecificSaveData() {
-        JsonObject out = new JsonObject();
-        JsonObject non_default_values = new JsonObject();
-        for (InflowPin inflow : super.getNodeInflowPins()) {
-            if(!inflow.isConnected() && inflow.hasNonDefaultValue()){
-                non_default_values.add(inflow.getAttributeName(), inflow.getValue());
-            }
-        }
-        if(non_default_values.size() > 0) {
-            out.add("non_default_values", non_default_values);
-        }
-        return out;
-    }
-
     /**
      * Here we are generating the VM code to be interpreted by our VM.
      * @return

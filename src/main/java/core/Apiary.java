@@ -31,17 +31,13 @@ public class Apiary {
 
     private static int FRAMES = 0;
 
+    private static String FPS = "";
+
     public void run() {
 
         System.out.println("LWJGL:" + Version.getVersion());
 
         init();
-
-        // Setup our exit callback
-        Keyboard.getInstance().addPressCallback(GLFW_KEY_ESCAPE, () -> {
-            RUNNING = false;
-        });
-
         loop();
         clean();
     }
@@ -120,7 +116,8 @@ public class Apiary {
                         FRAMES = frames;
                         frames = 0;
                         runningDelta -= 1;
-                        System.out.println("Frames: " + FRAMES);
+                        FPS = "Frames: " + FRAMES;
+                        System.out.println(FPS);
                     }
                     render();
 
@@ -193,6 +190,14 @@ public class Apiary {
 
     public static long getWindowPointer(){
         return window.getWindowPointer();
+    }
+
+    public static String getFPS(){
+        return FPS;
+    }
+
+    public static void close(){
+        RUNNING = false;
     }
 
     public static void main(String[] args) {

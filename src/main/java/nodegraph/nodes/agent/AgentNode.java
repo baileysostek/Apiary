@@ -6,6 +6,7 @@ import imgui.ImGui;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.flag.ImGuiComboFlags;
 import imgui.flag.ImGuiInputTextFlags;
+import imgui.type.ImInt;
 import imgui.type.ImString;
 import nodegraph.Node;
 import nodegraph.NodeColors;
@@ -19,6 +20,7 @@ public class AgentNode extends Node {
     private static int attribute_id = 0;
 
     private ImString agent_name = new ImString();
+    private ImInt agent_instances = new ImInt();
 
     private LinkedHashMap<String, Attribute> attributes = new LinkedHashMap<>();
     private final LinkedList<Attribute> to_remove   = new LinkedList<>();
@@ -33,6 +35,10 @@ public class AgentNode extends Node {
         if(initialization_data.has("agent_name")){
             super.setTitle(initialization_data.get("agent_name").getAsString());
             agent_name.set(super.getTitle());
+        }
+
+        if(initialization_data.has("agent_instances")){
+            agent_instances.set(initialization_data.get("agent_instances").getAsInt());
         }
 
         if(initialization_data.has("attributes")){
@@ -52,6 +58,7 @@ public class AgentNode extends Node {
         JsonObject out = new JsonObject();
 
         out.addProperty("agent_name", this.getTitle());
+        out.addProperty("agent_instances", this.agent_instances.get());
 
         JsonArray attributes = new JsonArray();
         for (Attribute attribute : getAttributes()) {
@@ -67,9 +74,13 @@ public class AgentNode extends Node {
 
     @Override
     public void render() {
-        ImGui.setNextItemWidth(100);
+        ImGui.setNextItemWidth(this.width);
         if(ImGui.inputText("##"+super.getID()+"_agent_name", agent_name)){
             setTitle(agent_name.get());
+        }
+        ImGui.setNextItemWidth(this.width);
+        if(ImGui.inputInt("##"+super.getID()+"_agent_instances", agent_instances)){
+            // Nothing
         }
         ImGui.newLine();
         if(ImGui.button("Add Attribute")){
@@ -171,6 +182,11 @@ public class AgentNode extends Node {
     @Override
     public void serialize(JsonArray evaluation_stack) {
         JsonObject agent_data = new JsonObject();
+
+        // Add the number of instances
+        if(agent_instances.get() > 0){
+            agent_data.add("instances", new JsonPrimitive(agent_instances.get()));
+        }
 
         JsonObject attributes_data = new JsonObject();
         // Encode all of our attributes by looping through them and checking if they are connected.

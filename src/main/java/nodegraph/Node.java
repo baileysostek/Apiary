@@ -97,9 +97,18 @@ public abstract class Node{
         // Reserve some Pins
         this.inflow = new InflowPin(this, INFLOW, PinType.FLOW);
         this.outflow = new OutflowPin(this, OUTFLOW, PinType.FLOW, null);
+    }
 
-        // Do a render just so the node exists in the internal state?
-//        this.render();
+    public final void init(JsonObject initialization_data){
+        this.onLoad(initialization_data);
+        // In here we have anything that relies on data that may have been added about this node in a child classe's constructor
+        if(initialization_data.has("non_default_values")){
+            JsonObject non_default_values = initialization_data.get("non_default_values").getAsJsonObject();
+            for(String inflow_name : non_default_values.keySet()){
+                InflowPin inflow = (InflowPin) getPinFromName(inflow_name);
+                inflow.setValue(non_default_values.get(inflow_name).getAsString());
+            }
+        }
     }
 
     // Guarenteed to run after all nodes and links have been loaded.
@@ -108,9 +117,6 @@ public abstract class Node{
 
     public final JsonObject generateSaveData(){
         JsonObject save_object = nodeSpecificSaveData();
-        // Add the ID
-
-        // Add the pins
 
         // We dont need to add inflow and outflow IDS because they are implicit.
         save_object.addProperty("class", this.getClass().getName());
@@ -118,6 +124,17 @@ public abstract class Node{
         // We are going to encode the screen position of this object.
         save_object.addProperty("pos_x", ImNodes.getNodeGridSpacePosX(id)); // The 100 here is kindof a magic number. For whatever reason when you set a node to 0,0 it appears at 100,100
         save_object.addProperty("pos_y", ImNodes.getNodeGridSpacePosY(id));
+
+        // Add any default values
+        JsonObject non_default_values = new JsonObject();
+        for (InflowPin inflow : getNodeInflowPins()) {
+            if(!inflow.isConnected() && inflow.hasNonDefaultValue()){
+                non_default_values.add(inflow.getAttributeName(), inflow.getValue());
+            }
+        }
+        if(non_default_values.size() > 0) {
+            save_object.add("non_default_values", non_default_values);
+        }
 
         return save_object;
     }

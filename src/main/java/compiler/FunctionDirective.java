@@ -305,6 +305,11 @@ public enum FunctionDirective {
         (stack, params) -> "0.7853981"
     ),
 
+    PIPI("@2_pi",
+            new String[]{},
+            (stack, params) -> String.valueOf(Math.PI * 2.0f)
+    ),
+
     RANDOM_BOOL("@random_bool",
         new String[]{},
         new String[]{},
@@ -320,6 +325,14 @@ public enum FunctionDirective {
         (stack, params) ->   String.format("random(vec3(instance, %s, %s))", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
         new String[]{"u_time_seconds"}, // Uniforms
         new String[]{"noise"} // Libraries
+    ),
+
+    REF("@ref",
+        new String[]{
+            "object",
+            "property"
+        },
+        (stack, params) -> String.format("(%s.%s)", params[0], params[1])
     ),
 
     ROTATE_2D("@rotate_2d",

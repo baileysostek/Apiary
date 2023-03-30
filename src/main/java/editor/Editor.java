@@ -24,6 +24,7 @@ import nodegraph.NodeGraph;
 import nodegraph.NodeRegistry;
 import nodegraph.nodes.math.AddNode;
 import nodegraph.pin.Pin;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
 import util.StringUtils;
@@ -232,6 +233,16 @@ public class Editor {
             }
         });
 
+        // Escape
+        // Setup our exit callback
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_ESCAPE, () -> {
+            if(!SimulationManager.getInstance().hasActiveSimulation()){
+                Apiary.close();
+            }else{
+                SimulationManager.getInstance().unloadSimulation();
+            }
+        });
+
 
         // Delete
         Keyboard.getInstance().addPressCallback(GLFW_KEY_DELETE, () -> {
@@ -258,13 +269,15 @@ public class Editor {
             }
         });
 
-        Keyboard.getInstance().addPressCallback(GLFW_KEY_SPACE, () -> {
-            try {
-
-            }catch(Exception e) {
-
+        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_F1, () -> {
+            if(!SimulationManager.getInstance().hasActiveSimulation()) {
+                JsonObject simulation_data = this.getNodeGraph().serialize();
+                SimulationManager.getInstance().load(simulation_data);
+            }else{
+                SimulationManager.getInstance().unloadSimulation();
             }
         });
+
 
         add_node_popup = new AddNodePopup(graph);
 
@@ -360,20 +373,25 @@ public class Editor {
             ImGui.beginChild("Simulation Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse| ImGuiWindowFlags.AlwaysAutoResize);
             renderSimulationEditor();
             ImGui.endChild();
+
             ImGui.nextColumn();
             ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
             node_editor_width = ImGui.getWindowWidth();
             node_editor_height = ImGui.getWindowHeight();
-            renderNodeEditor();
+            if(!SimulationManager.getInstance().hasActiveSimulation()) {
+                renderNodeEditor();
+            }else{
+                ImGui.image(SimulationManager.getInstance().getSimulationTexture(), node_editor_width, node_editor_height);
+            }
             ImGui.endChild();
 
-            if(SimulationManager.getInstance().hasActiveSimulation()){
-//                ImGui.setWindowFocus("Simulation");
-                if(ImGui.begin("Simulation")){
-                    ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getWindowWidth(), ImGui.getWindowHeight());
-                }
-                ImGui.end();
-            }
+//            if(SimulationManager.getInstance().hasActiveSimulation()){
+////                ImGui.setWindowFocus("Simulation");
+//                if(ImGui.begin("Simulation")){
+//                    ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
+//                }
+//                ImGui.end();
+//            }
 
             ImGui.end();
         }
@@ -395,6 +413,19 @@ public class Editor {
         ImGui.separator();
         // Render our uniforms
         UniformManager.getInstance().render(null);
+        ImGui.separator();
+        // Metrics?
+        if(SimulationManager.getInstance().hasActiveSimulation()){
+            HashMap<String, Integer> agent_counts = SimulationManager.getInstance().getActiveSimulation().getAgentCounts();
+            for(String agent_name : agent_counts.keySet()){
+                ImGui.newLine();
+                ImGui.text(agent_name);
+                ImGui.sameLine();
+                ImGui.text(agent_counts.get(agent_name) + "");
+                ImGui.separator();
+            }
+            ImGui.text(Apiary.getFPS());
+        }
     }
 
     private void renderNodeEditor(){

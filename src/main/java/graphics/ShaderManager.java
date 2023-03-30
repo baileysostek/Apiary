@@ -231,12 +231,12 @@ public class ShaderManager {
                 String errorMesssage = GL43.glGetShaderInfoLog(shader_id);
                 String line_number = "unknown";
                 try {
-                    line_number = errorMesssage.substring(errorMesssage.indexOf("(") + 1, errorMesssage.indexOf(")"));
+                    line_number = errorMesssage.substring(errorMesssage.indexOf(":")+1, errorMesssage.indexOf("("));
                 } catch (Exception e){
                     e.printStackTrace();
                 }
                 System.err.println(String.format("Error compiling %s shader| %s | %s", shader_type_name, line_number, GL43.glGetShaderInfoLog(shader_id)));
-                System.err.println(precompiled_shader_source.split("\n")[Integer.parseInt(line_number) - 1]);
+                System.err.println(precompiled_shader_source);
                 //Cleanup our broken shader
                 this.deleteShader(shader_id);
 
