@@ -313,16 +313,18 @@ public enum FunctionDirective {
     RANDOM_BOOL("@random_bool",
         new String[]{},
         new String[]{},
-        (stack, params) -> String.format("((random(vec3(instance, %s, %s)) > 0.5) ? true : false)", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
+        (stack, params) -> String.format("((random(vec3(instance, %s, %s)) > 0.5) ? true : false)", SimulationManager.getInstance().getFrameDelta().getName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
         new String[]{"u_time_seconds"}, // Uniforms
         new String[]{"noise"} // Libraries
     ),
 
     //TODO seeded random
     RANDOM_FLOAT("@random_float",
+        new String[]{
+            "cpu_random" // Unique per instance, per time, per node.
+        },
         new String[]{},
-        new String[]{},
-        (stack, params) ->   String.format("random(vec3(instance, %s, %s))", SimulationManager.getInstance().getTimeUniformName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
+        (stack, params) -> String.format("random(vec3(instance, %s, %s))", SimulationManager.getInstance().getFrameDelta().getName(), params[0]),
         new String[]{"u_time_seconds"}, // Uniforms
         new String[]{"noise"} // Libraries
     ),

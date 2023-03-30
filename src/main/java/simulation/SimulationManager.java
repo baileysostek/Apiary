@@ -11,8 +11,6 @@ import simulation.world.AgentGrid2D;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.JsonUtils;
-import util.Promise;
-import util.ThreadUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -151,8 +149,8 @@ public class SimulationManager {
         return this.simulation;
     }
 
-    public String getTimeUniformName(){
-        return u_time_seconds.getName();
+    public Uniform getFrameDelta(){
+        return u_time_seconds;
     }
 
     public void addAgent(String agent_name, SSBO agent){
