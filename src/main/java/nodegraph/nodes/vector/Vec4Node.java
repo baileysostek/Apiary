@@ -1,4 +1,4 @@
-package nodegraph.nodes.data;
+package nodegraph.nodes.vector;
 
 import com.google.gson.JsonObject;
 import compiler.FunctionDirective;

@@ -37,9 +37,6 @@ public class Editor {
 
     private static Editor instance;
 
-    // We need to buffer our keypresses
-    private LinkedList<Integer> key_presses = new LinkedList<>();
-
     // Mouse cursors provided by GLFW
     private static final long[] MOUSE_CURSORS = new long[ImGuiMouseCursor.COUNT];
 
@@ -287,9 +284,6 @@ public class Editor {
         if(instance == null){
             instance = new Editor();
             instance.graph.load("simulations/gol_test.jsonc");
-
-
-
         }
     }
 
@@ -297,7 +291,7 @@ public class Editor {
         return instance;
     }
 
-    // Mouse methids
+    // Mouse methods
     private void onRightClick(){
         // Check if anything is hovered
         int pin = ImNodes.getHoveredPin();
@@ -313,7 +307,6 @@ public class Editor {
     }
 
     public void update(double delta){
-        final ImGuiIO io = ImGui.getIO();
         io.setDisplaySize(Apiary.getWindowWidth(), Apiary.getWindowHeight());
         io.setDisplayFramebufferScale((float) 1, (float) 1);
 
@@ -331,14 +324,6 @@ public class Editor {
 
     public void render(){
         ImGui.newFrame();
-
-        for(int key : key_presses){
-//            io.addInputCharactersUTF8(String.valueOf((char)key));
-        }
-        key_presses.clear();
-
-        GL43.glClearColor(0f, 0f, 0f, 1.0f);
-        GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
 
         renderEditorWindow();
 
