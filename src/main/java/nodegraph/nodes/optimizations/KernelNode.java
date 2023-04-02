@@ -1,15 +1,13 @@
 package nodegraph.nodes.agent;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.flag.ImGuiComboFlags;
+import imgui.type.ImInt;
 import nodegraph.Node;
 import nodegraph.NodeColors;
 import nodegraph.pin.InflowPin;
@@ -17,29 +15,50 @@ import nodegraph.pin.OutflowPin;
 
 import java.util.LinkedList;
 
-public class AgentWriteNode extends Node {
+public class KernelNode extends Node {
 
     private AgentNode agent = null;
-    private InflowPin instance;
+    private InflowPin instance; // This represents the point to start the kernel at
 
-    public AgentWriteNode(JsonObject initialization_data) {
+    private ImInt kernel_width = new ImInt(3);
+    private ImInt kernel_height = new ImInt(3);
+
+    private OutflowPin then;
+    private OutflowPin count;
+
+    public KernelNode(JsonObject initialization_data) {
         super(initialization_data);
 
-        super.setTitle("Agent Write");
+        super.setTitle("Convolution Kernel");
 
         this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.AGENT_NODE_TITLE);
         this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
+
+        super.setNodeProcessesOwnFlow(true);
 
         // This is a node that needs to be evaluated.
         super.forceRenderInflow();
         super.forceRenderOutflow();
 
+        //
+
         //TODO maybe change instance to agent_id
         instance = super.addInputPin("instance", GLDataType.INT);
+        then = super.addOutflowPin("then");
+        count = super.addOutputPin("count", GLDataType.INT);
     }
 
     @Override
     public void onLoad(JsonObject initialization_data) {
+
+        // Initialize our Kernel data
+        if(initialization_data.has("kernel_width")){
+            kernel_width.set(initialization_data.get("kernel_width").getAsInt());
+        }
+        if(initialization_data.has("kernel_height")){
+            kernel_height.set(initialization_data.get("kernel_height").getAsInt());
+        }
+
         if(initialization_data.has("agent_reference")){
             // We are going to look for our node
             int node_id = initialization_data.get("agent_reference").getAsInt();
@@ -49,10 +68,11 @@ public class AgentWriteNode extends Node {
             }
         }
     }
-
     @Override
     public JsonObject nodeSpecificSaveData() {
         JsonObject out = new JsonObject();
+        out.addProperty("kernel_width", kernel_width.get());
+        out.addProperty("kernel_height", kernel_height.get());
         if(this.agent != null) {
             out.addProperty("agent_reference", this.agent.getReferenceID());
         }
@@ -83,74 +103,63 @@ public class AgentWriteNode extends Node {
         }
         ImGui.popItemWidth();
 
+        // Render the controls to adjust the kernel size.
+        ImGui.setNextItemWidth(this.width / 2.0f);
+        ImGui.inputInt("##"+super.getID()+"_kernel_width", kernel_width);
+        ImGui.sameLine();
+        ImGui.setNextItemWidth(this.width / 2.0f);
+        ImGui.inputInt("##"+super.getID()+"_kernel_height", kernel_height);
+
+        ImGui.image(0, this.width, 2);
+        // Render the agent attributes
         if (!(agent == null)) {
-            // Render outflow attributes for this agentNode.
-            for(InflowPin inflow_pin : super.getNodeInflowPins()){
-                if(inflow_pin.equals(instance)){
-                    continue;
+            for(OutflowPin outflow : super.getNodeOutflowPins()){
+                if(agent.hasPinWithName(outflow.getAttributeName())) {
+                    super.renderOutputAttribute(outflow.getAttributeName());
                 }
-                super.renderInputAttribute(inflow_pin.getAttributeName());
             }
         }
+
+        // Now we need to render a divider
+        ImGui.image(0, this.width, 2);
+        super.renderOutputAttribute(then.getAttributeName());
+        super.renderOutputAttribute(count.getAttributeName());
     }
 
     public void setAgent(AgentNode agent) {
         if(this.agent == null || !this.agent.equals(agent)) {
             // We need to update out outflows
             this.agent = agent;
-            setInflowPins(this.agent);
+            setOutflowPins(this.agent);
         }
     }
 
-    private void setInflowPins (AgentNode agent) {
-        super.clearInflowPins();
+    private void setOutflowPins(AgentNode agent){
+        super.clearOutflowPins();
         for(InflowPin pin : agent.getNodeInflowPins()){
             LinkedList<GLDataType> pin_data_types = pin.getAcceptedTypes();
             if(pin_data_types.size() == 1) {
                 GLDataType type = pin_data_types.getFirst();
-                super.addInputPin(pin.getAttributeName(), type);
+                super.addOutputPin(pin.getAttributeName(), type);
             }
         }
     }
 
     @Override
     public void serialize (JsonArray evaluation_stack) {
-        // Each attribute we are trying to write to needs to have its own VM code.
-        JsonArray agent_writes = new JsonArray();
-
-        // We can buffer some information for later so we dont need to compute it per attribute we are trying to modify.
-        String agent_name = this.agent.getTitle();
-        JsonElement index = instance.getValue();
-
-        for (InflowPin inflow : super.getNodeInflowPins()) {
-
-            // Dont process the instance pin.
-            if(inflow.equals(instance)){
-                continue;
-            }
-
-            if(inflow.hasNonDefaultValue()) {
-                JsonArray agent_write_instance = new JsonArray();
-
-                agent_write_instance.add(agent_name); // First we say which agent we are reference
-                agent_write_instance.add(index);
-                agent_write_instance.add(inflow.getAttributeName()); // Which property we are getting.
-                agent_write_instance.add(inflow.getValue());
-                agent_write_instance.add(FunctionDirective.AGENT_WRITE.getNodeID()); // Get the reference to the AgentRead function directive.
-
-                // Add this to the set of agent_writes
-                agent_writes.add(agent_write_instance);
-            }
-        }
-
-        // If we were able to resolve
-        if(agent_writes.size() > 0){
-            evaluation_stack.add(agent_writes);
-        }
+        JsonArray kernel_evaluation = new JsonArray();
+        evaluation_stack.add(kernel_evaluation);
     }
 
     @Override
     public JsonElement getValueOfPin(OutflowPin outflow) {
-        return JsonNull.INSTANCE;
+        JsonArray agent_read_reference = new JsonArray();
+
+        agent_read_reference.add(this.agent.getTitle()); // First we say which agent we are reference
+        agent_read_reference.add(instance.getValue());
+        agent_read_reference.add(outflow.getAttributeName()); // Which property we are getting.
+        agent_read_reference.add(FunctionDirective.AGENT_READ.getNodeID()); // Get the reference to the AgentRead function directive.
+
+        return agent_read_reference;
     }
 }

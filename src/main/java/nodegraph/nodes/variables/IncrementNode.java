@@ -36,6 +36,22 @@ public class IncrementNode extends Node {
     }
 
     @Override
+    public void onLoad(JsonObject initialization_data) {
+        if(initialization_data.has("reference")){
+            this.reference = (DefineNode) Editor.getInstance().getNodeGraph().getNodeFromReference(initialization_data.get("reference").getAsInt());
+        }
+    }
+
+    @Override
+    public JsonObject nodeSpecificSaveData() {
+        JsonObject out = new JsonObject();
+        if(reference != null) {
+            out.addProperty("reference", this.reference.getReferenceID());
+        }
+        return out;
+    }
+
+    @Override
     public void render() {
         ImGui.setNextItemWidth(super.width);
 

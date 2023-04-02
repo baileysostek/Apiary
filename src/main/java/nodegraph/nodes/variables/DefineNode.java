@@ -4,17 +4,19 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
+import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.flag.ImGuiComboFlags;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import nodegraph.Node;
+import nodegraph.nodes.agent.AgentNode;
 import nodegraph.pin.OutflowPin;
 
 public class DefineNode extends Node {
 
-    private ImString variable_name = new ImString("Variable");
+    private ImString variable_name = new ImString();
     private ImString variable_value = new ImString();
 
     private OutflowPin output;
@@ -30,6 +32,28 @@ public class DefineNode extends Node {
 
         super.forceRenderInflow();
         super.forceRenderOutflow();
+    }
+
+    @Override
+    public void onLoad(JsonObject initialization_data) {
+        if(initialization_data.has("variable_name")){
+            this.variable_name.set(initialization_data.get("variable_name").getAsString());
+        }
+        if(initialization_data.has("variable_type")){
+            this.type = GLDataType.valueOf(initialization_data.get("variable_type").getAsString());
+        }
+        if(initialization_data.has("variable_value")){
+            this.variable_value.set(initialization_data.get("variable_value").getAsString());
+        }
+    }
+
+    @Override
+    public JsonObject nodeSpecificSaveData() {
+        JsonObject out = new JsonObject();
+        out.addProperty("variable_name", this.variable_name.get());
+        out.addProperty("variable_type", this.type.name());
+        out.addProperty("variable_value", this.variable_value.get());
+        return out;
     }
 
     @Override

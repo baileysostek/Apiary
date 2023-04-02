@@ -21,9 +21,7 @@ public class NodeGraph {
     private LinkedHashMap<Class<Node>, LinkedList<Node>> typed_nodes = new LinkedHashMap<>();
 
     public NodeGraph() {
-        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_F2, () -> {
-            saveToFile("simulations/gol_test.jsonc");
-        });
+
     }
 
     public void addNode(Node node){
@@ -218,7 +216,7 @@ public class NodeGraph {
 
     public void saveToFile (String file_path) {
         JsonObject save_object = serializeNodes(this.nodes.values());
-        StringUtils.write(save_object.toString(), file_path);
+        StringUtils.write(JsonUtils.prettyPrint(save_object), file_path);
         this.clearNodes();
         load(file_path);
     }

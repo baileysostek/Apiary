@@ -152,8 +152,9 @@ public class AgentNode extends Node {
     }
 
     private void removeAttribute(Attribute to_remove){
-        super.removePin(to_remove.attribute_name.get());
-        this.attributes.remove(to_remove);
+        String attribute_name = to_remove.attribute_name.get();
+        super.removePin(attribute_name);
+        this.attributes.remove(attribute_name);
     }
 
     private class Attribute{

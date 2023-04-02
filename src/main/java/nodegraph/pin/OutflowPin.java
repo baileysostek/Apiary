@@ -39,7 +39,7 @@ public class OutflowPin extends Pin{
             return;
         }
 
-        if(canLink(other)){
+        if(canLink(other) && !isConnectedTo(other)){
             // Check if this is a flow
             if(this.getType().equals(PinType.FLOW)){
                 if(isConnected()){
@@ -87,11 +87,6 @@ public class OutflowPin extends Pin{
     public boolean canLink(Pin other) {
         if(other == null){
             return false; // Cant link to nothing.
-        }
-
-        // If we are already linked to the other pin do not allow duplicate links.
-        if(isConnectedTo(other)){
-            return false;
         }
 
         if(!(this.getType().equals(other.getType()))){

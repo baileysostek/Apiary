@@ -37,6 +37,20 @@ public class FileManager {
         return "";
     }
 
+    public String saveToFile(String path, String[] accepted_extensions) {
+        try (MemoryStack stack = stackPush()) {
+            PointerBuffer pp = stack.mallocPointer(1);
+
+            String comma_delimited_accepted_extensions = String.join(",", accepted_extensions);
+
+            return checkResult(NativeFileDialog.NFD_SaveDialog(comma_delimited_accepted_extensions, path, pp), pp);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
     private String checkResult(int result, PointerBuffer path) {
         switch (result) {
             case NativeFileDialog.NFD_OKAY:

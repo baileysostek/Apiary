@@ -61,9 +61,9 @@ public class AgentReadNode extends Node {
     public void render() {
         // Render our index
         super.renderInputAttribute("instance");
-
+        ImGui.sameLine();
         // Render the drop down of different
-        ImGui.pushItemWidth(96);
+        ImGui.pushItemWidth(this.width / 2.0f);
         String agent_name = (agent != null) ? agent.getTitle() : "Select an Agent.";
         if (ImGui.beginCombo("##"+super.getID()+"_type", agent_name, ImGuiComboFlags.None)){
             for (Node node : Editor.getInstance().getNodeGraph().getNodesOfType(AgentNode.class)) {
@@ -82,7 +82,7 @@ public class AgentReadNode extends Node {
         ImGui.popItemWidth();
 
         if (!(agent == null)) {
-            ImGui.newLine(); // Render outflow attributes for this agentNode.
+            // Render outflow attributes for this agentNode.
             for(OutflowPin outflow : super.getNodeOutflowPins()){
                 super.renderOutputAttribute(outflow.getAttributeName());
             }

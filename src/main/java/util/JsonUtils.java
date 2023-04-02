@@ -1,5 +1,7 @@
 package util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
@@ -15,6 +17,7 @@ public class JsonUtils {
     // Singleton variables
 
     private static JsonParser parser;
+    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public JsonSchema SCHEMA_SCHEMA;
     public JsonSchema SIMULATION_SCHEMA;
@@ -89,5 +92,12 @@ public class JsonUtils {
         return true;
     }
 
+    public static String prettyPrint(JsonObject source){
+        return gson.toJson(source);
+    }
+
+    public static String prettyPrint(String source){
+        return gson.toJson(source);
+    }
 
 }
