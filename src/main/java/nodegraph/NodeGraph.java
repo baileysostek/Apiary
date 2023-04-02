@@ -73,6 +73,8 @@ public class NodeGraph {
         // Add our world properties
         world.add("name", new JsonPrimitive("Conway's Game of Life"));
         world.add("type", new JsonPrimitive("AgentGrid2D"));
+        world.add("width", new JsonPrimitive(4096 * 2));
+        world.add("height", new JsonPrimitive(4096 * 2));
 
         JsonObject arguments = new JsonObject();
         if(hasNodesOfType(FragmentLogicNode.class)){
@@ -249,6 +251,9 @@ public class NodeGraph {
 
     public Collection<Node> load (String file_path) {
         JsonObject save_data = JsonUtils.loadJson(file_path);
+        if(save_data == null){
+            save_data = new JsonObject();
+        }
         return load(save_data, false);
     }
 

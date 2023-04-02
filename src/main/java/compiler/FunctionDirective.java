@@ -348,6 +348,27 @@ public enum FunctionDirective {
         new String[]{"rotation_2d"} // Libraries
     ),
 
+    SCOPE_START("@scope_start",
+        new String[]{},
+        (stack, params) -> "{"
+    ),
+
+    SCOPE_END("@scope_end",
+        new String[]{},
+        (stack, params) -> "}"
+    ),
+
+        SCREEN_INDEX_TO_XY("@screen_index_to_xy",
+        new String[]{
+            "index",
+        },
+        new String[]{},
+
+        (stack, params) -> String.format("vec2(mod(%s,window_width_pixels), floor(%s / window_width_pixels))", params[0], params[0]),
+        new String[]{ShaderManager.getInstance().getWindowSize().getName()}, // Uniforms
+        new String[]{} // Libraries
+    ),
+
     SET("@set",
         new String[]{
             "Variable",

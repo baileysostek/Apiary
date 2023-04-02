@@ -24,8 +24,9 @@ public class BuiltInVariableNode extends Node {
         // No flow controls
         super.disableFlowControls();
 
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.PINK);
-        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.WHITE);
+        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(type));
+        this.setWidth(128);
+//        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.WHITE);
     }
 
     @Override

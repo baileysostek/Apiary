@@ -72,7 +72,7 @@ public class Editor {
     private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
-    private static String save_file = "simulations/gol_test.jsonc";
+    private static String save_file = "simulations/gol.jsonc";
 
     private Editor(){
         // Initialize the other singletons that we need

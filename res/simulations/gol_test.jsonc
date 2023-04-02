@@ -290,10 +290,11 @@
     {
       "kernel_width": 3,
       "kernel_height": 3,
+      "ignore_self": true,
       "agent_reference": 1,
       "class": "nodegraph.nodes.agent.KernelNode",
-      "pos_x": 1854.0,
-      "pos_y": 641.0,
+      "pos_x": 1849.0,
+      "pos_y": 598.0,
       "id": 38
     },
     {
@@ -308,23 +309,33 @@
     {
       "reference": 39,
       "class": "nodegraph.nodes.variables.IncrementNode",
-      "pos_x": 2204.553,
-      "pos_y": 640.8382,
+      "pos_x": 2211.553,
+      "pos_y": 597.8382,
       "id": 40
     },
     {
       "agent_reference": 1,
       "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 2423.3943,
-      "pos_y": 740.36816,
+      "pos_x": 2579.3943,
+      "pos_y": 743.36816,
       "id": 41
     },
     {
       "output_type": "VEC3",
       "class": "nodegraph.nodes.math.DivNode",
-      "pos_x": 2204.3943,
-      "pos_y": 739.36816,
+      "pos_x": 2360.3943,
+      "pos_y": 742.36816,
       "id": 42
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 2175.4656,
+      "pos_y": 792.37555,
+      "non_default_values": {
+        "y_pos": ".005"
+      },
+      "id": 43
     }
   ],
   "links": [
@@ -850,12 +861,22 @@
     },
     {
       "src": {
-        "node_id": 38,
-        "attribute_name": "count"
+        "node_id": 43,
+        "attribute_name": "Add"
       },
       "dst": {
         "node_id": 42,
         "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 38,
+        "attribute_name": "count"
+      },
+      "dst": {
+        "node_id": 43,
+        "attribute_name": "x_pos"
       }
     }
   ]

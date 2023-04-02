@@ -30,6 +30,9 @@ public class DefineNode extends Node {
 
         output = super.addOutputPin("output", type);
 
+        // Small node
+        this.setWidth(128);
+
         super.forceRenderInflow();
         super.forceRenderOutflow();
     }
@@ -40,7 +43,7 @@ public class DefineNode extends Node {
             this.variable_name.set(initialization_data.get("variable_name").getAsString());
         }
         if(initialization_data.has("variable_type")){
-            this.type = GLDataType.valueOf(initialization_data.get("variable_type").getAsString());
+            this.setType(GLDataType.valueOf(initialization_data.get("variable_type").getAsString()));
         }
         if(initialization_data.has("variable_value")){
             this.variable_value.set(initialization_data.get("variable_value").getAsString());
@@ -58,21 +61,19 @@ public class DefineNode extends Node {
 
     @Override
     public void render() {
-        ImGui.pushItemWidth(128);
+        ImGui.pushItemWidth(this.width);
         String initial_name = variable_name.get();
         if(ImGui.inputText("##"+super.getID(), variable_name, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
             String new_name = variable_name.get();
             super.renameAttribute(initial_name, new_name);
         }
         ImGui.popItemWidth();
-        ImGui.sameLine();
-        ImGui.pushItemWidth(128);
+        ImGui.pushItemWidth(this.width);
         if (ImGui.beginCombo("##"+super.getID()+"_type", type.getGLSL(), ImGuiComboFlags.None)){
             for (GLDataType type : GLDataType.values()) {
                 boolean is_selected = type.equals(type);
                 if (ImGui.selectable(type.getGLSL(), is_selected)){
-                    this.type = type;
-                    output.setType(type);
+                    this.setType(type);
                 }
                 if (is_selected) {
                     ImGui.setItemDefaultFocus();
@@ -81,14 +82,18 @@ public class DefineNode extends Node {
             ImGui.endCombo();
         }
         ImGui.popItemWidth();
-        ImGui.sameLine();
-        ImGui.pushItemWidth(128);
+        ImGui.pushItemWidth(this.width);
         if(ImGui.inputText("##"+super.getID()+"_value", variable_value, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
 
         }
         ImGui.popItemWidth();
 
         super.renderOutputAttribute(output.getAttributeName());
+    }
+
+    private void setType(GLDataType type){
+        this.type = type;
+        output.setType(type);
     }
 
     @Override

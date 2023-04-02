@@ -3,10 +3,13 @@ package nodegraph.nodes.controlflow;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
+import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.flag.ImGuiComboFlags;
+import nodegraph.Node;
 import nodegraph.nodes.TemplateNode;
+import nodegraph.nodes.agent.AgentNode;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 
@@ -30,6 +33,20 @@ public class TernaryNode extends TemplateNode {
     }
 
     @Override
+    public void onLoad(JsonObject initialization_data) {
+        if(initialization_data.has("type")){
+            this.setType(GLDataType.valueOf(initialization_data.get("type").getAsString()));
+        }
+    }
+
+    @Override
+    public JsonObject nodeSpecificSaveData() {
+        JsonObject out = new JsonObject();
+        out.addProperty("type", this.return_type.name());
+        return out;
+    }
+
+    @Override
     public void render() {
         super.render();
         // Render some fields
@@ -38,10 +55,7 @@ public class TernaryNode extends TemplateNode {
             for (GLDataType type : GLDataType.values()) {
                 boolean is_selected = return_type.equals(type);
                 if (ImGui.selectable(type.getGLSL(), is_selected)){
-                    return_type = type;
-                    consequent.setType(type);
-                    alternate.setType(type);
-                    outflow_data.setType(type);
+                    setType(type);
                 }
                 if (is_selected) {
                     ImGui.setItemDefaultFocus();
@@ -50,5 +64,12 @@ public class TernaryNode extends TemplateNode {
             ImGui.endCombo();
         }
         ImGui.popItemWidth();
+    }
+
+    private void setType(GLDataType type){
+        return_type = type;
+        consequent.setType(type);
+        alternate.setType(type);
+        outflow_data.setType(type);
     }
 }
