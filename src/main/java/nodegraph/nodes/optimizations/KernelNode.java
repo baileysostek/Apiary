@@ -52,6 +52,7 @@ public class KernelNode extends Node {
         super.forceRenderOutflow();
 
         //
+        super.setWidth(256);
 
         //TODO maybe change instance to agent_id
         instance = super.addInputPin("instance", GLDataType.INT);

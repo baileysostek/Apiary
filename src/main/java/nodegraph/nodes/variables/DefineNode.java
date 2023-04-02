@@ -108,6 +108,10 @@ public class DefineNode extends Node {
         evaluation_stack.add(define_variable);
     }
 
+    public JsonElement getOutputValue(){
+        return this.getValueOfPin(output);
+    }
+
     @Override
     public JsonElement getValueOfPin(OutflowPin outflow) {
         JsonArray out_elements = new JsonArray();

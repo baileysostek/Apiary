@@ -4,7 +4,9 @@ import com.google.gson.*;
 import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
+import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import nodegraph.Node;
+import nodegraph.NodeColors;
 import nodegraph.nodes.agent.AgentNode;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
@@ -30,6 +32,7 @@ public class RandomFloatNode extends Node {
         super.disableFlowControls();
         super.setWidth(128);
 
+        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(GLDataType.FLOAT));
         // add back in any values which were modified to be non-default
     }
 

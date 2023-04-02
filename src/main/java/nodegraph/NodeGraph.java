@@ -326,6 +326,7 @@ public class NodeGraph {
                     // Bidirectional link
                     source_pin.link(dest_pin);
                     dest_pin.link(source_pin);
+                    System.out.println("Test");
                 }
             }
         }

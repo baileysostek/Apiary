@@ -285,7 +285,7 @@
     {
       "reference": 36,
       "class": "nodegraph.nodes.variables.IncrementNode",
-      "pos_x": 1839.553,
+      "pos_x": 1853.553,
       "pos_y": 599.8382,
       "id": 37
     },
@@ -746,16 +746,6 @@
       "dst": {
         "node_id": 37,
         "attribute_name": "inflow"
-      }
-    },
-    {
-      "src": {
-        "node_id": 35,
-        "attribute_name": "concentration"
-      },
-      "dst": {
-        "node_id": 37,
-        "attribute_name": "value"
       }
     },
     {

@@ -33,6 +33,8 @@ public class AgentReadNode extends Node {
 
         super.disableFlowControls();
 
+        super.setWidth(256);
+
         instance = super.addInputPin("instance", GLDataType.INT);
     }
 

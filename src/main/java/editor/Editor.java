@@ -28,6 +28,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
 import util.FileManager;
+import util.Promise;
 import util.StringUtils;
 
 import java.util.*;
@@ -72,7 +73,7 @@ public class Editor {
     private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
-    private static String save_file = "simulations/gol.jsonc";
+    private static String save_file = "simulations/gol_test.jsonc";
 
     private Editor(){
         // Initialize the other singletons that we need

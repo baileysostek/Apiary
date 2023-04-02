@@ -51,6 +51,8 @@ public class AgentNode extends Node {
                 }
             }
         }
+
+        super.setWidth(256);
     }
 
     @Override

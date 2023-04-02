@@ -48,7 +48,7 @@ public abstract class Node{
     private final float initial_node_pos_y;
 
     protected String title = "";
-    protected int width = 256;
+    protected int width = 128;
 
     private final int id; // A unique ID used by ImNodes to guarantee that this node is unique.
     private final int reference_id; // An ID used internally for addressing an ID when loading data.

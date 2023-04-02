@@ -2,14 +2,16 @@ package nodegraph.nodes.variables;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
+import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
-import nodegraph.nodes.variables.DefineNode;
+import nodegraph.NodeColors;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 
@@ -38,7 +40,13 @@ public class IncrementNode extends Node {
     @Override
     public void onLoad(JsonObject initialization_data) {
         if(initialization_data.has("reference")){
-            this.reference = (DefineNode) Editor.getInstance().getNodeGraph().getNodeFromReference(initialization_data.get("reference").getAsInt());
+            Node reference = Editor.getInstance().getNodeGraph().getNodeFromReference(initialization_data.get("reference").getAsInt());
+            if(reference instanceof DefineNode){
+                this.setReference((DefineNode) reference);
+            }else{
+                // Error
+                System.err.println("Error: reference node is not a Define node:" + reference);
+            }
         }
     }
 
@@ -68,24 +76,14 @@ public class IncrementNode extends Node {
 
                 boolean is_selected = reference != null && reference.equals(define_node);
                 if (ImGui.selectable(define_node.getVariableName(), is_selected)){
-                    reference = define_node;
+                    this.setReference(define_node);
                 }
                 if (is_selected) {
                     ImGui.setItemDefaultFocus();
                 }
             }
 
-//            if (ImGui.selectable("Select a Variable", reference == null)){
-//                attribute.setType(type);
-//            }
-//            if (is_selected) {
-//                ImGui.setItemDefaultFocus();
-//            }
             ImGui.endCombo();
-        }
-
-        if(reference != null){
-            value.setType(reference.getVariableDataType());
         }
 
         // Render the value
@@ -105,7 +103,15 @@ public class IncrementNode extends Node {
 
     @Override
     public JsonElement getValueOfPin(OutflowPin outflow) {
-        return null;
+        return JsonNull.INSTANCE;
+    }
+
+    public void setReference(DefineNode node){
+        this.reference = node;
+        if(reference != null){
+            value.setType(reference.getVariableDataType());
+        }
+        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(this.reference.getVariableDataType()));
     }
 
 }
