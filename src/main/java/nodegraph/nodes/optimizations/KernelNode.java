@@ -223,27 +223,21 @@ public class KernelNode extends Node {
                 // From our kernel we need to lookup the offsets
                 JsonArray agent_read_index = new JsonArray();
                 // X offset
-//                agent_read_index.add(instance.getValue());
-//                agent_read_index.add(FunctionDirective.SCREEN_INDEX_TO_XY.getNodeID());
-//                agent_read_index.add("x");
-//                agent_read_index.add(FunctionDirective.REF.getNodeID());
-//                agent_read_index.add(current_iteration_x - 1);
-//                agent_read_index.add(FunctionDirective.ADD.getNodeID());
-                agent_read_index.add("x_pos");
-                agent_read_index.add(FunctionDirective.GET.getNodeID());
+                agent_read_index.add(instance.getValue());
+                agent_read_index.add(FunctionDirective.SCREEN_INDEX_TO_XY.getNodeID());
+                agent_read_index.add("x");
+                agent_read_index.add(FunctionDirective.REF.getNodeID());
                 agent_read_index.add(current_iteration_x - 1);
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
+
                 // Y offset
-//                agent_read_index.add(instance.getValue());
-//                agent_read_index.add(FunctionDirective.SCREEN_INDEX_TO_XY.getNodeID());
-//                agent_read_index.add("y");
-//                agent_read_index.add(FunctionDirective.REF.getNodeID());
-//                agent_read_index.add(current_iteration_y - 1);
-//                agent_read_index.add(FunctionDirective.ADD.getNodeID());
-                agent_read_index.add("y_pos");
-                agent_read_index.add(FunctionDirective.GET.getNodeID());
+                agent_read_index.add(instance.getValue());
+                agent_read_index.add(FunctionDirective.SCREEN_INDEX_TO_XY.getNodeID());
+                agent_read_index.add("y");
+                agent_read_index.add(FunctionDirective.REF.getNodeID());
                 agent_read_index.add(current_iteration_y - 1);
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
+
                 // Convert to screen coordinates
                 agent_read_index.add(FunctionDirective.XY_TO_SCREEN_INDEX.getNodeID());
                 agent_read_reference.add(agent_read_index);

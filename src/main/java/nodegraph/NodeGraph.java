@@ -1,7 +1,13 @@
 package nodegraph;
 
-import com.google.gson.*;
-import input.Keyboard;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import imgui.ImGui;
+import imgui.type.ImBoolean;
+import imgui.type.ImInt;
+import imgui.type.ImString;
 import nodegraph.nodes.agent.AgentNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
@@ -9,16 +15,24 @@ import nodegraph.nodes.pipeline.FragmentLogicNode;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 import nodegraph.pin.Pin;
-import org.lwjgl.glfw.GLFW;
 import util.JsonUtils;
 import util.StringUtils;
 
 import java.util.*;
 
 public class NodeGraph {
+
+    // Hold references to our nodes.
     private LinkedHashMap<Integer, Integer> node_id_to_reference = new LinkedHashMap<>();
     private LinkedHashMap<Integer, Node> nodes = new LinkedHashMap<>();
     private LinkedHashMap<Class<Node>, LinkedList<Node>> typed_nodes = new LinkedHashMap<>();
+
+    // Simulation Parameters
+    private ImString simulation_name = new ImString();
+    private ImBoolean override_default_size = new ImBoolean(true);
+    private ImInt simulation_width = new ImInt();
+    private ImInt simulation_height = new ImInt();
+
 
     public NodeGraph() {
 
@@ -57,10 +71,21 @@ public class NodeGraph {
         }
     }
 
+    // These functions are used from the editor to render information about this simulation
+    public void renderSimulationParamEditor(){
+        if(ImGui.inputText("Simulation Name", simulation_name)){
+
+        }
+        if(ImGui.inputInt("Simulation Width", simulation_width)){
+
+        }
+        if(ImGui.inputInt("Simulation Height", simulation_height)){
+
+        }
+    }
+
     public JsonObject serialize(){
         JsonObject out = new JsonObject();
-
-
 
 //        for(Node node : this.getNodesOfType(InitializationNode.class)){
 //            JsonArray test = new JsonArray();
@@ -73,8 +98,15 @@ public class NodeGraph {
         // Add our world properties
         world.add("name", new JsonPrimitive("Conway's Game of Life"));
         world.add("type", new JsonPrimitive("AgentGrid2D"));
-        world.add("width", new JsonPrimitive(4096 * 2));
-        world.add("height", new JsonPrimitive(4096 * 2));
+        // If the user indicated to override the default size, use those overriden sizes.
+        if (override_default_size.get()) {
+            if(simulation_width.get() > 0) {
+                world.add("width", new JsonPrimitive(simulation_width.get()));
+            }
+            if(simulation_height.get() > 0) {
+                world.add("height", new JsonPrimitive(simulation_height.get()));
+            }
+        }
 
         JsonObject arguments = new JsonObject();
         if(hasNodesOfType(FragmentLogicNode.class)){
@@ -250,6 +282,10 @@ public class NodeGraph {
     }
 
     public Collection<Node> load (String file_path) {
+        // Clear this file
+        this.clearNodes();
+
+        // Load the new file
         JsonObject save_data = JsonUtils.loadJson(file_path);
         if(save_data == null){
             save_data = new JsonObject();
@@ -326,7 +362,6 @@ public class NodeGraph {
                     // Bidirectional link
                     source_pin.link(dest_pin);
                     dest_pin.link(source_pin);
-                    System.out.println("Test");
                 }
             }
         }

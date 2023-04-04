@@ -97,14 +97,6 @@ public class SimulationManager {
     private void onLoad(Simulation simulation){
         fbo = new FBO(simulation.getWorldWidth(), simulation.getWorldHeight());
         fbo.unbindFrameBuffer();
-
-        // SCREENSHOT
-        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_INSERT, () -> {
-            if(hasActiveSimulation()){
-                System.out.println("Start");
-                TextureManager.getInstance().saveTextureToFile(fbo.getTextureID(), String.format("screenshot_%s.png", (System.currentTimeMillis()+"")));
-            }
-        });
     }
 
     public void render(){
@@ -150,6 +142,10 @@ public class SimulationManager {
     }
 
     public Uniform getFrameDelta(){
+        return u_time_delta;
+    }
+
+    public Uniform getTimeSeconds(){
         return u_time_seconds;
     }
 

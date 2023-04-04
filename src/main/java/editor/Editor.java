@@ -7,7 +7,6 @@ import graphics.texture.TextureManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImGuiViewport;
-import imgui.ImVec2;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.extension.imnodes.ImNodes;
@@ -16,21 +15,17 @@ import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
-import imgui.type.ImString;
 import input.Keyboard;
 import input.Mouse;
 import nodegraph.Node;
 import nodegraph.NodeGraph;
-import nodegraph.NodeRegistry;
-import nodegraph.nodes.math.AddNode;
 import nodegraph.pin.Pin;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL43;
 import simulation.SimulationManager;
 import util.FileManager;
-import util.Promise;
 import util.StringUtils;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -54,9 +49,6 @@ public class Editor {
 
     NodeGraph graph = new NodeGraph();
 
-//    Node test_0 = new TemplateNode(FunctionDirectives.ON_SCREEN);
-//    Node test_1 = new TemplateNode(FunctionDirectives.CONDITIONAL);
-
     Pin start_pin = null;
 
     float node_editor_width  = 1;
@@ -64,7 +56,14 @@ public class Editor {
 
     boolean initialize = true;
 
+    // Textures
     final int APIARY_TEXTURE_ID;
+
+    final int SVG_PLAY;
+    final int SVG_STOP;
+    final int SVG_SAVE;
+    final int SVG_LOAD;
+    final int SVG_TRASH;
 
     private AddNodePopup add_node_popup;
 
@@ -73,7 +72,7 @@ public class Editor {
     private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
-    private static String save_file = "simulations/gol_test.jsonc";
+    private static String save_file = "simulations/gol.jsonc";
 
     private Editor(){
         // Initialize the other singletons that we need
@@ -84,7 +83,14 @@ public class Editor {
         ImNodes.createContext();
 
         // Load our textures
-        APIARY_TEXTURE_ID = TextureManager.getInstance().load(StringUtils.getPathToResources() + "/textures/" + "apiary.png", FilterOption.NEAREST);
+        APIARY_TEXTURE_ID = TextureManager.getInstance().load(StringUtils.getPathToResources() + "textures/" + "apiary.png", FilterOption.NEAREST);
+        // SVG
+        SVG_PLAY = TextureManager.getInstance().loadSVG("textures/svg/" + "play-circle.svg");
+        SVG_STOP = TextureManager.getInstance().loadSVG("textures/svg/" + "stop-circle.svg");
+        SVG_SAVE = TextureManager.getInstance().loadSVG("textures/svg/" + "save.svg");
+        SVG_LOAD = TextureManager.getInstance().loadSVG("textures/svg/" + "download.svg");
+        SVG_TRASH = TextureManager.getInstance().loadSVG("textures/svg/" + "trash-alt.svg");
+
 
         //Now that we have our instance
         // Initialize ImGuiIO config
@@ -240,7 +246,7 @@ public class Editor {
             if(!SimulationManager.getInstance().hasActiveSimulation()){
                 Apiary.close();
             }else{
-                SimulationManager.getInstance().unloadSimulation();
+                this.stopSimulation();
             }
         });
 
@@ -272,10 +278,10 @@ public class Editor {
 
         Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_F1, () -> {
             if(!SimulationManager.getInstance().hasActiveSimulation()) {
-                JsonObject simulation_data = this.getNodeGraph().serialize();
-                SimulationManager.getInstance().load(simulation_data);
+                this.runSimulation();
             }else{
                 SimulationManager.getInstance().unloadSimulation();
+                this.stopSimulation();
             }
         });
 
@@ -289,14 +295,31 @@ public class Editor {
             graph.saveToFile(path);
         });
 
+        // Screenshot
+        Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_INSERT, () -> {
+            if(SimulationManager.getInstance().hasActiveSimulation()){
+                System.out.println("Start");
+                TextureManager.getInstance().saveTextureToFile(SimulationManager.getInstance().getSimulationTexture(), String.format("screenshot_%s.png", (System.currentTimeMillis()+"")));
+            }
+        });
+
 
         add_node_popup = new AddNodePopup(graph);
+    }
+
+    private void runSimulation() {
+        JsonObject simulation_data = this.getNodeGraph().serialize();
+        SimulationManager.getInstance().load(simulation_data);
+    }
+
+    private void stopSimulation(){
+        SimulationManager.getInstance().unloadSimulation();
     }
 
     public static void initialize(){
         if(instance == null){
             instance = new Editor();
-            instance.graph.load(save_file);
+            instance.load(save_file);
         }
     }
 
@@ -396,34 +419,108 @@ public class Editor {
     }
 
     private void renderSimulationEditor(){
-//        renderNodeEditor();
         // First we have the Apiary logo and some file options.
         ImGui.image(APIARY_TEXTURE_ID, 32, 32);
-//        if(ImGui.button("Open File")){
-//            Promise promise = new Promise(() -> {
-//                String resource = FileManager.getInstance().openFilePicker("", new String[]{"png", "jpg"});
-//                this.test = TextureManager.getInstance().load(resource);
-//            });
-//        }
-        ImGui.separator();
-        // Render All of the different Agents which we have in simulation.
+
+        // Load Button?
+        ImGui.sameLine();
+        if(ImGui.imageButton(SVG_LOAD, 32, 32)){
+            String path = FileManager.getInstance().openFilePicker("", new String[]{"json", "jsonc"});
+            System.out.println(path);
+            if(SimulationManager.getInstance().hasActiveSimulation()){
+                SimulationManager.getInstance().unloadSimulation();
+            }
+            path = path.replace(StringUtils.getPathToResources(), "");
+
+
+            this.load(path);
+        }
+        if(ImGui.isItemHovered()){
+            ImGui.beginTooltip();
+            ImGui.setTooltip("Load");
+            ImGui.endTooltip();
+        }
+
+        ImGui.sameLine();
+        if(ImGui.imageButton(SVG_SAVE, 32, 32)){
+            this.stopSimulation();
+        }
+        if(ImGui.isItemHovered()){
+            ImGui.beginTooltip();
+            ImGui.setTooltip("Save");
+            ImGui.endTooltip();
+        }
+
+        ImGui.sameLine();
+        if(ImGui.imageButton(SVG_SAVE, 32, 32)){
+            this.stopSimulation();
+        }
+        if(ImGui.isItemHovered()){
+            ImGui.beginTooltip();
+            ImGui.setTooltip("Save As");
+            ImGui.endTooltip();
+        }
+
+        // Start and Stop Simulation Button
+        if(!SimulationManager.getInstance().hasActiveSimulation()){
+            ImGui.sameLine();
+            if(ImGui.imageButton(SVG_PLAY, 32, 32)){
+                this.runSimulation();
+            }
+            if(ImGui.isItemHovered()){
+                ImGui.beginTooltip();
+                ImGui.setTooltip("Run");
+                ImGui.endTooltip();
+            }
+        }else{
+            ImGui.sameLine();
+            if(ImGui.imageButton(SVG_STOP, 32, 32)){
+                this.stopSimulation();
+            }
+            if(ImGui.isItemHovered()){
+                ImGui.beginTooltip();
+                ImGui.setTooltip("Stop");
+                ImGui.endTooltip();
+            }
+        }
 
         ImGui.separator();
+
+        // Render all simulation controls from nodegraph
+        if(getNodeGraph() != null){
+            this.graph.renderSimulationParamEditor();
+        }
+
         // Render our uniforms
         UniformManager.getInstance().render(null);
         ImGui.separator();
+
         // Metrics?
         if(SimulationManager.getInstance().hasActiveSimulation()){
             HashMap<String, Integer> agent_counts = SimulationManager.getInstance().getActiveSimulation().getAgentCounts();
+
+            long memory = 0;
+
             for(String agent_name : agent_counts.keySet()){
                 ImGui.newLine();
                 ImGui.text(agent_name);
                 ImGui.sameLine();
-                ImGui.text(agent_counts.get(agent_name) + "");
+                ImGui.text(NumberFormat.getInstance().format(agent_counts.get(agent_name)) + "");
                 ImGui.separator();
+
+                memory += SimulationManager.getInstance().getAgent(agent_name).getBufferSizeInBytes();
             }
             ImGui.text(Apiary.getFPS());
+            ImGui.separator();
+            ImGui.text(numBytesToString(memory));
         }
+    }
+
+    private String numBytesToString(long num_bytes){
+        String[] suffix = new String[]{"bytes", "KB", "MB", "GB", "TB"};
+        String num_bytes_string = String.valueOf(num_bytes);
+        int index = Math.min(suffix.length, Math.max(0, (num_bytes_string.length() - 1) / 3));
+        return String.format("%.3f %s", num_bytes / Math.pow(10, index * 3), suffix[index]);
     }
 
     private void renderNodeEditor(){
@@ -469,7 +566,8 @@ public class Editor {
     }
 
     public void load(String file_path){
-
+        this.save_file = file_path;
+        this.graph.load(file_path);
     }
 
     public void save(String file_path){
@@ -520,5 +618,9 @@ public class Editor {
             Collection<Node> new_nodes = Editor.instance.graph.load(serialized_clipboard_data, true);
             to_select.addAll(new_nodes);
         }
+    }
+
+    public int getTrashIcon() {
+        return this.SVG_TRASH;
     }
 }

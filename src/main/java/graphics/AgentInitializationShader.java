@@ -27,20 +27,24 @@ public class AgentInitializationShader {
     int invocations_width;
     int invocations_height;
 
-    public AgentInitializationShader(String agent_name, JsonObject agent_attributes) {
+    public AgentInitializationShader(String agent_name, int instance_width, int instance_height, JsonObject agent_attributes) {
         // Get the SSBO
         SSBO agent_ssbo = SimulationManager.getInstance().getAgent(agent_name);
 
-        int allocated = agent_ssbo.getCapacity();
+//        int allocated = agent_ssbo.getCapacity();
 
-        int[] factors = MathUtil.factor(allocated);
+//        int[] factors = MathUtil.factor(allocated);
+//
+//        instance_width  = factors[(factors.length / 2) - 1];
+//        instance_height = factors[factors.length / 2];
+//
 
-        instance_width  = factors[(factors.length / 2) - 1];
-        instance_height = factors[factors.length / 2];
+        this.instance_width = instance_width;
+        this.instance_height = instance_height;
 
-        Vector2i optimal = MathUtil.find_optimal_tiling(instance_width, instance_height, ShaderManager.getInstance().getMaxWorkgroupInvocations());
-        workgroup_width  = optimal.x;
-        workgroup_height = optimal.y;
+        Vector2i optimal = MathUtil.find_optimal_tiling(this.instance_width, this.instance_height, ShaderManager.getInstance().getMaxWorkgroupInvocations());
+        this.workgroup_width  = optimal.x;
+        this.workgroup_height = optimal.y;
 
         this.invocations_width = this.instance_width / workgroup_width;
         this.invocations_height = this.instance_height/ workgroup_height;

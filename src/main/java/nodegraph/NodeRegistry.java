@@ -33,7 +33,6 @@ public class NodeRegistry {
                 templates.add(node_child_class); // Populate our templates based on reflection.
             }
         }
-        System.out.println(templates);
     }
 
     public static void initialize() {
@@ -75,7 +74,6 @@ public class NodeRegistry {
         // Check if we have an entry for this type of object.
         if(templates.contains(node_class)){
             // Instantiate a new instance of this class.
-            System.out.println(node_class.getConstructors());
             for(Constructor constructor : node_class.getConstructors()){
                 if(constructor.getParameterCount() == 1){
                     try {

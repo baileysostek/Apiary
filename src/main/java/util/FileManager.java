@@ -4,6 +4,8 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.nfd.NativeFileDialog;
 
+import java.io.File;
+
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class FileManager {
@@ -23,13 +25,14 @@ public class FileManager {
         return instance;
     }
 
-    public String openFilePicker(String path, String[] accepted_extensions) {
+    public String openFilePicker(String base_path, String[] accepted_extensions) {
         try (MemoryStack stack = stackPush()) {
             PointerBuffer pp = stack.mallocPointer(1);
 
             String comma_delimited_accepted_extensions = String.join(",", accepted_extensions);
 
-            return checkResult(NativeFileDialog.NFD_OpenDialog(comma_delimited_accepted_extensions, path, pp), pp);
+            String resource_path = checkResult(NativeFileDialog.NFD_OpenDialog(comma_delimited_accepted_extensions, base_path, pp), pp);
+            return resource_path.replaceAll("\\\\", "/");
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -65,5 +68,34 @@ public class FileManager {
                 System.err.format("Error: %s\n", NativeFileDialog.NFD_GetError());
         }
         return "";
+    }
+
+    public static boolean exists(String filePath){
+        String path = StringUtils.getPathToResources() + filePath;
+        return new File(path).exists();
+    }
+
+    public String[] getFilenamesInDirectory(String directoryPath){
+        File file = new File(directoryPath);
+
+        if(file.exists()){
+            if(file.isDirectory()){
+                return file.list();
+            }
+        }
+
+        return new String[]{};
+    }
+
+    public boolean isDirectory(String directoryPath){
+        File file = new File(directoryPath);
+
+        if(file.exists()){
+            if(file.isDirectory()){
+                return true;
+            }
+        }
+
+        return false;
     }
 }

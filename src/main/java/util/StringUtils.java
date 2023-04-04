@@ -68,11 +68,6 @@ public class StringUtils {
         return loadNoCache(filePath);
     }
 
-    public static boolean exists(String filePath){
-        String path = PATH + RESOURCES_DIRECTORY  + filePath;
-        return new File(path).exists();
-    }
-
     /**
      * Reads the specified resource and returns the raw data as a ByteBuffer.
      *

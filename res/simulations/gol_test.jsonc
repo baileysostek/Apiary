@@ -10,33 +10,33 @@
         }
       ],
       "class": "nodegraph.nodes.agent.AgentNode",
-      "pos_x": -89.0,
-      "pos_y": 395.0,
+      "pos_x": 620.55774,
+      "pos_y": -229.16026,
       "id": 1
     },
     {
       "class": "nodegraph.nodes.controlflow.InitializationNode",
-      "pos_x": -527.0,
-      "pos_y": 397.0,
+      "pos_x": 182.5592,
+      "pos_y": -227.16028,
       "id": 2
     },
     {
       "class": "nodegraph.nodes.pipeline.FragmentLogicNode",
-      "pos_x": 1590.0,
-      "pos_y": 1212.0,
+      "pos_x": 1020.0,
+      "pos_y": 1517.0,
       "id": 3
     },
     {
       "agent_reference": 1,
       "class": "nodegraph.nodes.agent.AgentReadNode",
-      "pos_x": 537.0,
-      "pos_y": 1251.0,
+      "pos_x": 372.0,
+      "pos_y": 1535.0,
       "id": 4
     },
     {
       "class": "nodegraph.nodes.controlflow.InitializationNode",
-      "pos_x": 178.0,
-      "pos_y": 1202.0,
+      "pos_x": 180.0,
+      "pos_y": 1516.0,
       "id": 5
     },
     {
@@ -47,7 +47,7 @@
     },
     {
       "agent_name": "physarum",
-      "agent_instances": 100000,
+      "agent_instances": 100000000,
       "attributes": [
         {
           "name": "pos",
@@ -112,63 +112,64 @@
     {
       "step_index": 1,
       "use_agent": true,
+      "agent_reference": 7,
       "class": "nodegraph.nodes.controlflow.StepNode",
-      "pos_x": -1.0,
-      "pos_y": 922.0,
+      "pos_x": 176.0,
+      "pos_y": 913.0,
       "id": 15
     },
     {
       "agent_reference": 7,
       "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 1189.0,
-      "pos_y": 920.0,
+      "pos_x": 1595.0,
+      "pos_y": 909.0,
       "id": 16
     },
     {
       "agent_reference": 7,
       "class": "nodegraph.nodes.agent.AgentReadNode",
-      "pos_x": 329.0,
-      "pos_y": 940.0,
+      "pos_x": 402.0,
+      "pos_y": 980.0,
       "id": 17
     },
     {
       "output_type": "VEC2",
       "class": "nodegraph.nodes.math.AddNode",
-      "pos_x": 1012.0,
-      "pos_y": 974.0,
+      "pos_x": 1066.0,
+      "pos_y": 952.0,
       "id": 18
     },
     {
       "class": "nodegraph.nodes.optimizations.ScreenPosToIndex",
-      "pos_x": 1201.0,
-      "pos_y": 1082.0,
+      "pos_x": 1622.0,
+      "pos_y": 1066.0,
       "id": 19
     },
     {
       "agent_reference": 1,
       "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 1549.8237,
-      "pos_y": 919.6071,
+      "pos_x": 1955.8237,
+      "pos_y": 908.6071,
       "id": 20
     },
     {
       "output_type": "VEC2",
       "class": "nodegraph.nodes.math.MulNode",
-      "pos_x": 648.0,
-      "pos_y": 1045.0,
+      "pos_x": 764.0,
+      "pos_y": 1099.0,
       "id": 21
     },
     {
       "class": "nodegraph.nodes.variables.common.FrameDeltaNode",
-      "pos_x": 327.0,
-      "pos_y": 1119.0,
+      "pos_x": 516.0,
+      "pos_y": 1129.0,
       "id": 22
     },
     {
       "output_type": "VEC2",
       "class": "nodegraph.nodes.math.MulNode",
-      "pos_x": 828.58704,
-      "pos_y": 1045.0499,
+      "pos_x": 930.58704,
+      "pos_y": 1098.0499,
       "non_default_values": {
         "y_pos": "0.1"
       },
@@ -209,14 +210,14 @@
       "use_agent": true,
       "agent_reference": 1,
       "class": "nodegraph.nodes.controlflow.StepNode",
-      "pos_x": 1155.1173,
-      "pos_y": 600.66455,
+      "pos_x": 176.61035,
+      "pos_y": 559.14233,
       "id": 27
     },
     {
       "class": "nodegraph.nodes.vector.Vec4Node",
-      "pos_x": 1393.0878,
-      "pos_y": 1244.834,
+      "pos_x": 830.08777,
+      "pos_y": 1553.834,
       "non_default_values": {
         "w": "1.0"
       },
@@ -224,38 +225,38 @@
     },
     {
       "class": "nodegraph.nodes.vector.DecomposeVec3",
-      "pos_x": 1097.0,
-      "pos_y": 1245.0,
+      "pos_x": 662.0,
+      "pos_y": 1554.0,
       "id": 29
     },
     {
       "class": "nodegraph.nodes.vector.Vec3Node",
-      "pos_x": 864.6279,
-      "pos_y": 374.10596,
+      "pos_x": 919.6279,
+      "pos_y": 365.10596,
       "id": 30
     },
     {
       "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 511.0,
-      "pos_y": 446.0,
+      "pos_x": 683.0,
+      "pos_y": 454.0,
       "id": 31
     },
     {
       "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 512.0,
-      "pos_y": 383.0,
+      "pos_x": 684.0,
+      "pos_y": 391.0,
       "id": 32
     },
     {
       "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 512.0,
-      "pos_y": 318.0,
+      "pos_x": 684.0,
+      "pos_y": 326.0,
       "id": 33
     },
     {
       "class": "nodegraph.nodes.vector.Vec3Node",
-      "pos_x": -294.0,
-      "pos_y": 479.0,
+      "pos_x": 415.5595,
+      "pos_y": -145.16043,
       "non_default_values": {
         "x": "0",
         "y": "0",
@@ -266,11 +267,11 @@
     {
       "kernel_width": 3,
       "kernel_height": 3,
-      "ignore_self": true,
+      "ignore_self": false,
       "agent_reference": 1,
       "class": "nodegraph.nodes.agent.KernelNode",
-      "pos_x": 1501.0,
-      "pos_y": 600.0,
+      "pos_x": 558.49316,
+      "pos_y": 559.4778,
       "id": 35
     },
     {
@@ -278,36 +279,36 @@
       "variable_type": "VEC3",
       "variable_value": "vec3(0)",
       "class": "nodegraph.nodes.variables.DefineNode",
-      "pos_x": 1324.0,
-      "pos_y": 601.0,
+      "pos_x": 381.49316,
+      "pos_y": 560.4778,
       "id": 36
     },
     {
       "reference": 36,
       "class": "nodegraph.nodes.variables.IncrementNode",
-      "pos_x": 1839.553,
-      "pos_y": 599.8382,
+      "pos_x": 897.0464,
+      "pos_y": 559.316,
       "id": 37
     },
     {
       "agent_reference": 1,
       "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 2431.3943,
-      "pos_y": 729.36816,
+      "pos_x": 1488.8871,
+      "pos_y": 688.8449,
       "id": 38
     },
     {
       "output_type": "VEC3",
       "class": "nodegraph.nodes.math.DivNode",
-      "pos_x": 2063.3943,
-      "pos_y": 785.36816,
+      "pos_x": 1120.8867,
+      "pos_y": 744.8449,
       "id": 39
     },
     {
       "output_type": "INT",
       "class": "nodegraph.nodes.math.AddNode",
-      "pos_x": 1886.4656,
-      "pos_y": 830.37555,
+      "pos_x": 943.95886,
+      "pos_y": 789.8523,
       "non_default_values": {
         "y_pos": ".005"
       },
@@ -315,16 +316,22 @@
     },
     {
       "class": "nodegraph.nodes.variables.common.InstanceNode",
-      "pos_x": 2219.039,
-      "pos_y": 740.9963,
+      "pos_x": 1276.5315,
+      "pos_y": 700.473,
       "id": 41
     },
     {
       "variable_reference": 36,
       "class": "nodegraph.nodes.variables.VariableReferenceNode",
-      "pos_x": 1887.3503,
-      "pos_y": 747.36005,
+      "pos_x": 944.8436,
+      "pos_y": 706.8368,
       "id": 42
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1313.5544,
+      "pos_y": 924.147,
+      "id": 43
     }
   ],
   "links": [
@@ -490,7 +497,7 @@
     },
     {
       "src": {
-        "node_id": 15,
+        "node_id": 43,
         "attribute_name": "instance"
       },
       "dst": {

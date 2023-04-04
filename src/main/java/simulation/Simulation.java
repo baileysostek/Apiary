@@ -43,7 +43,7 @@ public class Simulation {
         // First thing we do is set the active simulation to this one
         SimulationManager.getInstance().setActiveSimulation(this);
 
-        // Get refernce to our world template
+        // Get reference to our world template
         JsonObject simulation_world_template = object.getAsJsonObject("world");
         world_width  = Apiary.getWindowWidth();
         world_height = Apiary.getWindowHeight();
@@ -102,8 +102,13 @@ public class Simulation {
 
             // If no instances are specified, we just allocate one agent per pixel.
             int agent_instances = world_width * world_height;
+            int agent_width = world_width;
+            int agent_height = world_height;
             if(agent.has("instances")){
                 agent_instances = agent.get("instances").getAsInt();
+                int[] factors = MathUtil.factor(agent_instances);
+                agent_width  = factors[(factors.length / 2) - 1];
+                agent_height = factors[factors.length / 2];
             }
             agent_ssbo.allocate(agent_instances);
             agent_ssbo.flush();
@@ -112,7 +117,7 @@ public class Simulation {
             SimulationManager.getInstance().addAgent(agent_name, agent_ssbo);
 
             // Generate the initialization data for this agent
-            AgentInitializationShader agent_initializer = new AgentInitializationShader(agent_name, agent_attributes);
+            AgentInitializationShader agent_initializer = new AgentInitializationShader(agent_name, agent_width, agent_height, agent_attributes);
             this.agent_initialization_shaders.addLast(agent_initializer);
 
             // Now that the agent is added, we can get the SSBO accessor code

@@ -313,7 +313,7 @@ public enum FunctionDirective {
     RANDOM_BOOL("@random_bool",
         new String[]{},
         new String[]{},
-        (stack, params) -> String.format("((random(vec3(instance, %s, %s)) > 0.5) ? true : false)", SimulationManager.getInstance().getFrameDelta().getName(), ((float)Math.random() > 0.5 ? " - " : " + ") + ((float)Math.random())+""),
+        (stack, params) -> String.format("((random(vec4(instance, %s, x_pos, y_pos)) > 0.5) ? true : false)", SimulationManager.getInstance().getTimeSeconds().getName()),
         new String[]{"u_time_seconds"}, // Uniforms
         new String[]{"noise"} // Libraries
     ),
@@ -324,7 +324,7 @@ public enum FunctionDirective {
             "cpu_random" // Unique per instance, per time, per node.
         },
         new String[]{},
-        (stack, params) -> String.format("random(vec3(instance, %s, %s))", SimulationManager.getInstance().getFrameDelta().getName(), params[0]),
+        (stack, params) -> String.format("random(vec3(instance, %s, %s))", SimulationManager.getInstance().getTimeSeconds().getName(), params[0]),
         new String[]{"u_time_seconds"}, // Uniforms
         new String[]{"noise"} // Libraries
     ),

@@ -154,4 +154,12 @@ public class Mouse {
     public void addMouseEventCallback(MouseEventCallback callback){
         this.mouse_event_callbacks.add(callback);
     }
+
+    public Uniform getScrollUniform() {
+        return this.u_mouse_scroll;
+    }
+
+    public Uniform getPositionUniform() {
+        return this.u_mouse_pos_pixels;
+    }
 }

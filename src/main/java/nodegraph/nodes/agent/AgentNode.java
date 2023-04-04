@@ -1,6 +1,7 @@
 package nodegraph.nodes.agent;
 
 import com.google.gson.*;
+import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.extension.imnodes.flag.ImNodesColorStyle;
@@ -138,7 +139,7 @@ public class AgentNode extends Node {
                 ImGui.popItemWidth();
                 ImGui.sameLine();
                 ImGui.pushItemWidth(16);
-                if(ImGui.imageButton(0, 16, 16)){
+                if(ImGui.imageButton(Editor.getInstance().getTrashIcon(), 16, 16)){
                     to_remove.add(attribute);
                 }
                 if(ImGui.isItemHovered()){

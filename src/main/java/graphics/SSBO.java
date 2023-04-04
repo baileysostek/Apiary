@@ -1,10 +1,8 @@
 package graphics;
 
 import org.lwjgl.opengl.GL43;
-import org.lwjgl.system.MemoryUtil;
 import util.StringUtils;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -29,7 +27,8 @@ public class SSBO extends GLStruct{
     private int capacity = 1;
 
     // This is a byte buffer representing the content stored in our SSBO.
-    private ByteBuffer buffer;
+//    private ByteBuffer buffer;
+    private long buffer_size;
 
     public SSBO (String name, LinkedHashMap<String, GLDataType> attributes){
         super(name);
@@ -62,25 +61,18 @@ public class SSBO extends GLStruct{
      Thread Safe
      */
     public void flush(){
-        bind();
-        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.buffer, GL43.GL_DYNAMIC_DRAW);
+        bind(); // Bind Read
+        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, buffer_size, GL43.GL_DYNAMIC_DRAW);
         unbind();
-        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_write);
-        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, this.buffer, GL43.GL_DYNAMIC_DRAW);
-        // Load data based on our initial capacity
-        this.unbind();
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, id_write); // Bind write
+        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, buffer_size, GL43.GL_DYNAMIC_DRAW);
+        unbind();
     }
 
     public void allocate(int number_of_agents){
         this.capacity = number_of_agents; //Temp
         int delta = 16 - (this.computeSizeInBytes() % 16);
-        int buffer_capacity = (this.computeSizeInBytes() + delta) * capacity ;
-        this.buffer = MemoryUtil.memAlloc(buffer_capacity);
-        for(int i = 0; i < buffer_capacity; i++){
-//            this.buffer.put((byte)(255*Math.random()));
-            this.buffer.put((byte)127);
-        }
-        this.buffer.flip();
+        buffer_size = ((long) (this.computeSizeInBytes() + delta) * capacity);
     }
 
     private void bind(){
@@ -146,14 +138,17 @@ public class SSBO extends GLStruct{
      * On Shutdown we will execute all cleanup functions to correctly deallocate buffers and such.
      */
     public void cleanup(){
-        MemoryUtil.memFree(this.buffer);
         GL43.glDeleteBuffers(id_read);
-
+        GL43.glDeleteBuffers(id_write);
         ShaderManager.getInstance().freeSSBOLocation(location_read);
         ShaderManager.getInstance().freeSSBOLocation(location_write);
     }
 
     public int getCapacity() {
         return this.capacity;
+    }
+
+    public long getBufferSizeInBytes() {
+        return buffer_size;
     }
 }
