@@ -13,7 +13,7 @@ Apiary was initially designed and developed as the thesis project I pursued to c
 
 [Thesis Proposal]( https://github.com/baileysostek/Apiary/blob/main/Programming_Abstractions_for_Agent_Based_Simulations.pdf)
 
-# What is Apiary?
+# What can you do with Apiary?
 
 Apiary is a framework to allow users to create Agent Based Simulations through a visual-programming interface. We have Implemented a nodegraph which allows users to qucikly create performant simulations which run entirly on the GPU. 
 
