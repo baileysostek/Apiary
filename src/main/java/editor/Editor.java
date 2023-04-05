@@ -2,6 +2,7 @@ package editor;
 
 import com.google.gson.JsonObject;
 import core.Apiary;
+import graphics.ShaderManager;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
 import imgui.ImGui;
@@ -512,7 +513,15 @@ public class Editor {
             }
             ImGui.text(Apiary.getFPS());
             ImGui.separator();
-            ImGui.text(numBytesToString(memory));
+
+            // Compute the free and used memory
+            String used_memory_string = numBytesToString(memory);
+            long free_gpu_memory = ShaderManager.getInstance().getAvailableGPUMemoryInBytes();
+            String free_memory_string = numBytesToString(free_gpu_memory);
+            int longest_string_length = Math.max(free_memory_string.length(), used_memory_string.length());
+
+            ImGui.text(String.format("Used Memory:%s", StringUtils.padStart(used_memory_string, longest_string_length, " ")));
+            ImGui.textColored(0, 255, 0, 255, String.format("Free Memory:%s", StringUtils.padStart(free_memory_string, longest_string_length, " ")));
         }
     }
 

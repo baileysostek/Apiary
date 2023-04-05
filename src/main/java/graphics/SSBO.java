@@ -149,6 +149,6 @@ public class SSBO extends GLStruct{
     }
 
     public long getBufferSizeInBytes() {
-        return buffer_size;
+        return buffer_size * 2; // We need to x2 here because we are double buffering.
     }
 }

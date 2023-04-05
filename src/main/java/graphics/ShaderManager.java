@@ -2,8 +2,10 @@ package graphics;
 
 import com.google.gson.JsonElement;
 import core.Apiary;
+import org.lwjgl.opengl.ATIMeminfo;
 import org.lwjgl.opengl.GL43;
 import compiler.GLSLCompiler;
+import org.lwjgl.opengl.NVXGPUMemoryInfo;
 import simulation.SimulationManager;
 import util.StringUtils;
 
@@ -22,6 +24,9 @@ public class ShaderManager {
     public static final int GL_MINOR_VERSION = 3;
     private static final String READ_NAME  = "_read";
     private static final String WRITE_NAME = "_write";
+
+    // check which GPU we have
+    private static GPUType gpu;
 
     // Allocated
     private final HashSet<Integer> reserved_shaders = new HashSet<>(); // any default shaders cannot be deleted.
@@ -54,6 +59,15 @@ public class ShaderManager {
     private HashMap<String, GLDataType> type_mapping = new HashMap<>();
 
     private ShaderManager() {
+        // Determine which GPU we have
+        for(GPUType type : GPUType.values()){
+            GL43.glGetInteger(type.getQueryAddress());
+            if(!checkForError(String.format("no drivers found for an %s graphics card.", type))){
+                gpu = type; // We have found our card
+                break;
+            }
+        }
+
         // Register any custom directives we want to support
         custom_directives.add("#include");
 
@@ -294,15 +308,15 @@ public class ShaderManager {
         return program_id;
     }
 
-    public void checkForError(String error_cause){
-//        System.out.println("check - 1");
-//        int error_check = GL43.glGetError();
-//        System.out.println("check - 2");
-//        while (error_check != GL43.GL_NO_ERROR) {
-//            System.out.println("check - 3");
-//            System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
-//            error_check = GL43.glGetError();
-//        }
+    public boolean checkForError(String error_cause){
+        int error_check = GL43.glGetError();
+        boolean had_error = false;
+        while (error_check != GL43.GL_NO_ERROR) {
+            System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
+            error_check = GL43.glGetError();
+            had_error = true;
+        }
+        return had_error;
     }
 
     // Uniform stuff
@@ -556,6 +570,10 @@ public class ShaderManager {
         return ShaderManager.getInstance().compileShader(GL43.GL_FRAGMENT_SHADER, StringUtils.format(source, substitutions));
     }
 
+    public long getAvailableGPUMemoryInBytes(){
+        return GL43.glGetInteger(gpu.getQueryAddress()) * 1000L;
+    }
+
     public int getDefaultVertexShader() {
         return DEFAULT_VERTEX_SHADER;
     }
@@ -572,4 +590,5 @@ public class ShaderManager {
         System.out.println("Shaders:" + allocated_shaders);
         System.out.println("Programs:" + allocated_programs);
     }
+
 }
