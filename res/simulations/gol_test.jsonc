@@ -47,7 +47,7 @@
     },
     {
       "agent_name": "physarum",
-      "agent_instances": 100000000,
+      "agent_instances": 1000,
       "attributes": [
         {
           "name": "pos",
