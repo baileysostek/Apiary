@@ -219,6 +219,23 @@ public class AgentNode extends Node {
         evaluation_stack.add(agent_data);
     }
 
+    public boolean overridesInstances(){
+        return this.agent_instances.get() > 0;
+    }
+
+    public int getAgentInstances(){
+        return this.agent_instances.get();
+    }
+
+    public long getBufferSizeInBytes(){
+        long size_in_bytes = 0;
+        for(Attribute attribute : attributes.values()){
+            size_in_bytes += attribute.type.getSizeInBytes();
+        }
+        size_in_bytes *= 2L;
+        return size_in_bytes;
+    }
+
     @Override
     public JsonElement getValueOfPin(OutflowPin outflow) {
         return JsonNull.INSTANCE;

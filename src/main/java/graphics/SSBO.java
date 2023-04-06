@@ -72,7 +72,7 @@ public class SSBO extends GLStruct{
     public void allocate(int number_of_agents){
         this.capacity = number_of_agents; //Temp
         int delta = 16 - (this.computeSizeInBytes() % 16);
-        buffer_size = ((long) (this.computeSizeInBytes() + delta) * capacity);
+        buffer_size = ((long) (this.computeSizeInBytes() + delta) * capacity); //TODO maybe remove?
     }
 
     private void bind(){

@@ -100,7 +100,7 @@ public class NodeGraph {
         world.add("type", new JsonPrimitive("AgentGrid2D"));
         // If the user indicated to override the default size, use those overriden sizes.
         if (override_default_size.get()) {
-            if(simulation_width.get() > 0) {
+            if(this.overridesWidth()) {
                 world.add("width", new JsonPrimitive(simulation_width.get()));
             }
             if(simulation_height.get() > 0) {
@@ -389,5 +389,21 @@ public class NodeGraph {
             }
             parent = parent.getInflow().getLink().getParent();
         }
+    }
+
+    public boolean overridesWidth() {
+        return simulation_width.get() > 0;
+    }
+
+    public int getSimulationWidth(){
+        return simulation_width.get();
+    }
+
+    public boolean overridesHeight() {
+        return simulation_height.get() > 0;
+    }
+
+    public int getSimulationHeight(){
+        return simulation_height.get();
     }
 }

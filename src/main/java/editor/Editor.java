@@ -20,6 +20,7 @@ import input.Keyboard;
 import input.Mouse;
 import nodegraph.Node;
 import nodegraph.NodeGraph;
+import nodegraph.nodes.agent.AgentNode;
 import nodegraph.pin.Pin;
 import org.lwjgl.glfw.GLFW;
 import simulation.SimulationManager;
@@ -522,6 +523,16 @@ public class Editor {
 
             ImGui.text(String.format("Used Memory:%s", StringUtils.padStart(used_memory_string, longest_string_length, " ")));
             ImGui.textColored(0, 255, 0, 255, String.format("Free Memory:%s", StringUtils.padStart(free_memory_string, longest_string_length, " ")));
+        } else {
+            // Predict memory usage
+            long total_memory = 0;
+            LinkedList<Node> agent_nodes = this.graph.getNodesOfType(AgentNode.class);
+            for(Node node : agent_nodes){
+                AgentNode agent_node = (AgentNode) node;
+                total_memory += (agent_node.getBufferSizeInBytes() * (agent_node.overridesInstances() ? agent_node.getAgentInstances() : this.getAllocatedScreenSize()));
+            }
+            String free_memory_string = numBytesToString(total_memory);
+            ImGui.text(String.format("Simulation Size:%s", free_memory_string));
         }
     }
 
@@ -631,5 +642,19 @@ public class Editor {
 
     public int getTrashIcon() {
         return this.SVG_TRASH;
+    }
+
+    public long getAllocatedScreenSize(){
+        int width = Apiary.getWindowWidth();
+        int height = Apiary.getWindowHeight();
+        if (getNodeGraph() != null) {
+            if(getNodeGraph().overridesWidth()){
+                width = getNodeGraph().getSimulationWidth();
+            }
+            if(getNodeGraph().overridesHeight()){
+                height = getNodeGraph().getSimulationHeight();
+            }
+        }
+        return (long) width * height;
     }
 }

@@ -138,9 +138,10 @@ public class ShaderManager {
             "out vec4 out_color; \n" +
             "void main(void){\n" +
             "vec2 screen_pos = (pass_position.xy / vec2(u_mouse_scroll.y) + vec2(1.0)) / vec2(2.0);\n" +
-            "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
-            "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
-            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
+            "uint x_pos = uint(floor(screen_pos.x * u_window_size.x));\n" +
+            "uint y_pos = uint(floor(screen_pos.y * u_window_size.y));\n" +
+            "uint fragment_index = x_pos + (y_pos * uint(u_window_size.x));\n" +
+            "uint instance = uint(fragment_index);\n" +
             "out_color = vec4(screen_pos.xy, 0.0, 1.0);" +
 //            "out_color = vec4(1.0);" +
             "}\n";
@@ -559,10 +560,10 @@ public class ShaderManager {
             "{{agents_ssbos}}" +
             "void main() {\n" +
             "vec2 screen_pos = (pass_position.xy / vec2(u_mouse_scroll.y) + vec2(1.0)) / vec2(2.0);\n" +
-            "int x_pos = int(floor(screen_pos.x * u_window_size.x));\n" +
-            "int y_pos = int(floor(screen_pos.y * u_window_size.y));\n" +
-            "int fragment_index = x_pos + (y_pos * int(u_window_size.x));\n" +
-            "int instance = x_pos + (y_pos * int(u_window_size.x));\n" +
+            "uint x_pos = uint(floor(screen_pos.x * u_window_size.x));\n" +
+            "uint y_pos = uint(floor(screen_pos.y * u_window_size.y));\n" +
+            "uint fragment_index = x_pos + (y_pos * uint(u_window_size.x));\n" +
+            "uint instance = uint(fragment_index);\n" +
             "{{include_in_main}}" +
             "{{fragment_source}}"+
             "}\n";

@@ -3,6 +3,7 @@ package graphics;
 import core.Apiary;
 import graphics.texture.TextureManager;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -34,6 +35,8 @@ public class FBO {
 
     //If we unbind a frame buffer from within a framebuffer, we want to return the last item on the stack, not just 0
     private static LinkedList<Integer> bufferStack = new LinkedList<>();
+    private long depth_buffer_attachment_address = 0;
+    private long texture_attachment_buffer_address = 0;
 
     public FBO(){
         this(Apiary.getWindowWidth(), Apiary.getWindowHeight(), 0);
@@ -143,15 +146,9 @@ public class FBO {
         if(!isMultisampled()){
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, potentiallyMultisampledTextureID);
             // IF this is not a multisampled FBO we will just create a regular FBO with the below buffer
-            ByteBuffer buffer = ByteBuffer.allocateDirect((this.WIDTH * this.HEIGHT) * 4);
-            for (int i = 0; i < (this.WIDTH * this.HEIGHT); i++) {
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-            }
-            buffer.flip();
-            GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGBA, this.WIDTH, this.HEIGHT, 0, GL46.GL_RGBA, GL46.GL_UNSIGNED_BYTE, buffer);
+
+            texture_attachment_buffer_address = MemoryUtil.nmemCalloc(1,((long) this.WIDTH * this.HEIGHT) * 4);
+            GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGBA, this.WIDTH, this.HEIGHT, 0, GL46.GL_RGBA, GL46.GL_UNSIGNED_BYTE, texture_attachment_buffer_address);
 
             GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MAG_FILTER, GL46.GL_LINEAR);
             GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MIN_FILTER, GL46.GL_LINEAR);
@@ -184,15 +181,8 @@ public class FBO {
             GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, texture2DTargetFramebufferID);
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, screenTextureID);
             // IF this is not a multisampled FBO we will just create a regular FBO with the below buffer
-            ByteBuffer buffer = ByteBuffer.allocateDirect((this.WIDTH * this.HEIGHT) * 4);
-            for (int i = 0; i < (this.WIDTH * this.HEIGHT); i++) {
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-            }
-            buffer.flip();
-            GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGBA16F, this.WIDTH, this.HEIGHT, 0, GL46.GL_RGBA, GL46.GL_UNSIGNED_BYTE, buffer);
+            long address = MemoryUtil.nmemCalloc(1,((long) this.WIDTH * this.HEIGHT) * 4);
+            GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGBA16F, this.WIDTH, this.HEIGHT, 0, GL46.GL_RGBA, GL46.GL_UNSIGNED_BYTE, address);
 
             GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MAG_FILTER, GL46.GL_LINEAR);
             GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MIN_FILTER, GL46.GL_LINEAR);
@@ -214,16 +204,8 @@ public class FBO {
     private void createDepthBufferAttachment(){
         if(!isMultisampled()) {
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, depthTextureID);
-            ByteBuffer buffer = ByteBuffer.allocateDirect((this.WIDTH * this.HEIGHT) * 4);
-            for (int i = 0; i < (this.WIDTH * this.HEIGHT); i++) {
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-                buffer.put((byte) 0x00);
-            }
-            buffer.flip();
-
-            GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_DEPTH_COMPONENT32, this.WIDTH, this.HEIGHT, 0, GL46.GL_DEPTH_COMPONENT, GL46.GL_FLOAT, buffer);
+            depth_buffer_attachment_address = MemoryUtil.nmemCalloc(1,((long) this.WIDTH * this.HEIGHT) * 4);
+            GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_DEPTH_COMPONENT32, this.WIDTH, this.HEIGHT, 0, GL46.GL_DEPTH_COMPONENT, GL46.GL_FLOAT, depth_buffer_attachment_address);
             GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MAG_FILTER, GL46.GL_NEAREST);
             GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MIN_FILTER, GL46.GL_NEAREST);
             GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_S, GL46.GL_CLAMP_TO_BORDER);
@@ -245,17 +227,22 @@ public class FBO {
         if(renderBufferID > 0) {
             GL46.glDeleteRenderbuffers(renderBufferID);
         }
-
         if(potentiallyMultisampledTextureID > 0) {
             GL46.glDeleteTextures(potentiallyMultisampledTextureID);
         }
-
         if(screenTextureID > 0) {
             GL46.glDeleteTextures(screenTextureID);
         }
-
         if(depthTextureID > 0) {
             GL46.glDeleteTextures(depthTextureID);
+        }
+
+        // Free our memory
+        if(texture_attachment_buffer_address > 0) {
+            MemoryUtil.nmemFree(texture_attachment_buffer_address);
+        }
+        if(depth_buffer_attachment_address > 0) {
+            MemoryUtil.nmemFree(depth_buffer_attachment_address);
         }
     }
 
