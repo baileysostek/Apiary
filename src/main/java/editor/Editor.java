@@ -74,7 +74,7 @@ public class Editor {
     private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
-    private static String save_file = "simulations/gol.jsonc";
+    private static String save_file = "simulations/gol_test.jsonc";
 
     private Editor(){
         // Initialize the other singletons that we need
@@ -421,6 +421,21 @@ public class Editor {
     }
 
     private void renderSimulationEditor(){
+        // First we compute some memory stuff
+        long free_gpu_memory = ShaderManager.getInstance().getAvailableGPUMemoryInBytes();
+        String free_memory_string = numBytesToString(free_gpu_memory);
+
+        long predicted_memory = 0;
+        if(!SimulationManager.getInstance().hasActiveSimulation()){
+            // Predict memory usage
+            LinkedList<Node> agent_nodes = this.graph.getNodesOfType(AgentNode.class);
+            for(Node node : agent_nodes){
+                AgentNode agent_node = (AgentNode) node;
+                predicted_memory += (agent_node.getBufferSizeInBytes() * (agent_node.overridesInstances() ? agent_node.getAgentInstances() : this.getAllocatedScreenSize()));
+            }
+        }
+        String predicted_memory_string = numBytesToString(predicted_memory);
+
         // First we have the Apiary logo and some file options.
         ImGui.image(APIARY_TEXTURE_ID, 32, 32);
 
@@ -466,13 +481,22 @@ public class Editor {
         // Start and Stop Simulation Button
         if(!SimulationManager.getInstance().hasActiveSimulation()){
             ImGui.sameLine();
-            if(ImGui.imageButton(SVG_PLAY, 32, 32)){
-                this.runSimulation();
-            }
-            if(ImGui.isItemHovered()){
-                ImGui.beginTooltip();
-                ImGui.setTooltip("Run");
-                ImGui.endTooltip();
+            if(predicted_memory < free_gpu_memory){
+                if(ImGui.imageButton(SVG_PLAY, 32, 32)){
+                    this.runSimulation();
+                }
+                if(ImGui.isItemHovered()){
+                    ImGui.beginTooltip();
+                    ImGui.setTooltip("Run");
+                    ImGui.endTooltip();
+                }
+            }else{
+                ImGui.image(SVG_PLAY, 32, 32);
+                if(ImGui.isItemHovered()){
+                    ImGui.beginTooltip();
+                    ImGui.setTooltip("Simulation would consume too much memory.");
+                    ImGui.endTooltip();
+                }
             }
         }else{
             ImGui.sameLine();
@@ -517,22 +541,13 @@ public class Editor {
 
             // Compute the free and used memory
             String used_memory_string = numBytesToString(memory);
-            long free_gpu_memory = ShaderManager.getInstance().getAvailableGPUMemoryInBytes();
-            String free_memory_string = numBytesToString(free_gpu_memory);
+
             int longest_string_length = Math.max(free_memory_string.length(), used_memory_string.length());
 
             ImGui.text(String.format("Used Memory:%s", StringUtils.padStart(used_memory_string, longest_string_length, " ")));
             ImGui.textColored(0, 255, 0, 255, String.format("Free Memory:%s", StringUtils.padStart(free_memory_string, longest_string_length, " ")));
         } else {
-            // Predict memory usage
-            long total_memory = 0;
-            LinkedList<Node> agent_nodes = this.graph.getNodesOfType(AgentNode.class);
-            for(Node node : agent_nodes){
-                AgentNode agent_node = (AgentNode) node;
-                total_memory += (agent_node.getBufferSizeInBytes() * (agent_node.overridesInstances() ? agent_node.getAgentInstances() : this.getAllocatedScreenSize()));
-            }
-            String free_memory_string = numBytesToString(total_memory);
-            ImGui.text(String.format("Simulation Size:%s", free_memory_string));
+            ImGui.text(String.format("Estimated Simulation Size:%s", predicted_memory_string));
         }
     }
 

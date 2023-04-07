@@ -195,6 +195,15 @@ public class NodeGraph {
         JsonArray nodes_array = new JsonArray();
         JsonArray links_array = new JsonArray();
 
+        if (override_default_size.get()) {
+            if(this.overridesWidth()) {
+                serialization_object.add("width", new JsonPrimitive(simulation_width.get()));
+            }
+            if(simulation_height.get() > 0) {
+                serialization_object.add("height", new JsonPrimitive(simulation_height.get()));
+            }
+        }
+
         HashMap<Node, Integer> node_ids = new HashMap<>();
         int node_index = 0;
         for(Node node : nodes){
@@ -294,6 +303,14 @@ public class NodeGraph {
     }
 
     public Collection<Node> load (JsonObject serialized_node_data, boolean is_clone) {
+
+        if(serialized_node_data.has("width")) {
+            simulation_width.set(serialized_node_data.get("width").getAsInt());
+        }
+        if(serialized_node_data.has("height")) {
+            simulation_height.set(serialized_node_data.get("height").getAsInt());
+        }
+
         /**
          *  Since ImNodes uses an internal representation for the nodes that we don't have access to we need to give each node a random ID each time it is generated
          *  to avoid the problem of linking to arbitrary IDs we construct a linear list of incremental IDs at save time. At load time we reference this map of IDs but

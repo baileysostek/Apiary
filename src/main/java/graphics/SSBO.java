@@ -70,9 +70,12 @@ public class SSBO extends GLStruct{
     }
 
     public void allocate(int number_of_agents){
+        // I am not sire if this memory alignement is needed at all.
         this.capacity = number_of_agents; //Temp
-        int delta = 16 - (this.computeSizeInBytes() % 16);
-        buffer_size = ((long) (this.computeSizeInBytes() + delta) * capacity); //TODO maybe remove?
+        int alignment_4 = 4 - (this.computeSizeInBytes() % 4);
+        int alignment_16 = 16 - (this.computeSizeInBytes() % 16);
+        buffer_size = ((long) (this.computeSizeInBytes() + alignment_4) * capacity); //TODO maybe remove?
+//        buffer_size = ((long) (this.computeSizeInBytes() + (this.computeSizeInBytes() < 4 ? alignment_4 : (this.computeSizeInBytes() == 4) ? 0 :alignment_16)) * capacity);
     }
 
     private void bind(){

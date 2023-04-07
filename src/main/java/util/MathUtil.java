@@ -92,4 +92,8 @@ public class MathUtil {
         }
         return -1;
     }
+
+    public static int computeAlignment(int bytes, int value) {
+        return value - (bytes % value);
+    }
 }

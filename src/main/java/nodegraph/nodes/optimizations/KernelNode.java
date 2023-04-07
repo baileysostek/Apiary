@@ -224,17 +224,13 @@ public class KernelNode extends Node {
                 JsonArray agent_read_index = new JsonArray();
                 // X offset
                 agent_read_index.add(instance.getValue());
-                agent_read_index.add(FunctionDirective.SCREEN_INDEX_TO_XY.getNodeID());
-                agent_read_index.add("x");
-                agent_read_index.add(FunctionDirective.REF.getNodeID());
+                agent_read_index.add(FunctionDirective.KERNEL_INDEX_X.getNodeID());
                 agent_read_index.add(current_iteration_x - 1);
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
 
                 // Y offset
                 agent_read_index.add(instance.getValue());
-                agent_read_index.add(FunctionDirective.SCREEN_INDEX_TO_XY.getNodeID());
-                agent_read_index.add("y");
-                agent_read_index.add(FunctionDirective.REF.getNodeID());
+                agent_read_index.add(FunctionDirective.KERNEL_INDEX_Y.getNodeID());
                 agent_read_index.add(current_iteration_y - 1);
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
 

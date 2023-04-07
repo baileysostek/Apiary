@@ -1,4 +1,6 @@
 {
+  "width": 5000,
+  "height": 4000,
   "nodes": [
     {
       "agent_name": "pheromone",
@@ -171,7 +173,7 @@
       "pos_x": 930.58704,
       "pos_y": 1098.0499,
       "non_default_values": {
-        "y_pos": "0.1"
+        "y_pos": "0.01"
       },
       "id": 23
     },
@@ -243,7 +245,7 @@
     },
     {
       "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 684.0,
+      "pos_x": 683.0,
       "pos_y": 391.0,
       "id": 32
     },
@@ -733,16 +735,6 @@
       "dst": {
         "node_id": 35,
         "attribute_name": "instance"
-      }
-    },
-    {
-      "src": {
-        "node_id": 27,
-        "attribute_name": "outflow"
-      },
-      "dst": {
-        "node_id": 36,
-        "attribute_name": "inflow"
       }
     },
     {

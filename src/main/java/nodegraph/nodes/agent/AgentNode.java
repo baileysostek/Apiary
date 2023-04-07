@@ -1,6 +1,7 @@
 package nodegraph.nodes.agent;
 
 import com.google.gson.*;
+import core.Apiary;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
@@ -13,6 +14,7 @@ import nodegraph.Node;
 import nodegraph.NodeColors;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
+import util.MathUtil;
 
 import java.util.*;
 
@@ -223,14 +225,15 @@ public class AgentNode extends Node {
         return this.agent_instances.get() > 0;
     }
 
-    public int getAgentInstances(){
-        return this.agent_instances.get();
+    public long getAgentInstances(){
+        return this.overridesInstances() ? this.agent_instances.get() : Editor.getInstance().getAllocatedScreenSize();
     }
 
     public long getBufferSizeInBytes(){
         long size_in_bytes = 0;
         for(Attribute attribute : attributes.values()){
-            size_in_bytes += attribute.type.getSizeInBytes();
+            int bytes = attribute.type.getSizeInBytes();
+            size_in_bytes += bytes + MathUtil.computeAlignment(bytes, 4);
         }
         size_in_bytes *= 2L;
         return size_in_bytes;

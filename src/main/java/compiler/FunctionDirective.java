@@ -358,13 +358,33 @@ public enum FunctionDirective {
         (stack, params) -> "}"
     ),
 
-        SCREEN_INDEX_TO_XY("@screen_index_to_xy",
+    SCREEN_INDEX_TO_XY("@screen_index_to_xy",
         new String[]{
             "index",
         },
         new String[]{},
 
-        (stack, params) -> String.format("vec2(mod(%s,window_width_pixels), floor(%s / window_width_pixels))", params[0], params[0]),
+        (stack, params) -> String.format("vec2(uint(mod(%s,window_width_pixels)), uint(floor(%s / window_width_pixels)))", params[0], params[0]),
+        new String[]{ShaderManager.getInstance().getWindowSize().getName()}, // Uniforms
+        new String[]{} // Libraries
+    ),
+
+    KERNEL_INDEX_X("@kernel_index_x",
+        new String[]{
+            "index",
+        },
+        new String[]{},
+        (stack, params) -> String.format("uint(mod(%s,window_width_pixels))", params[0]),
+        new String[]{ShaderManager.getInstance().getWindowSize().getName()}, // Uniforms
+        new String[]{} // Libraries
+    ),
+
+    KERNEL_INDEX_Y("@kernel_index_y",
+        new String[]{
+            "index",
+        },
+        new String[]{},
+        (stack, params) -> String.format("uint(floor(%s / window_width_pixels))", params[0]),
         new String[]{ShaderManager.getInstance().getWindowSize().getName()}, // Uniforms
         new String[]{} // Libraries
     ),
@@ -449,7 +469,8 @@ public enum FunctionDirective {
             "B"
         },
         new String[]{},
-        (stack, params) -> String.format("int(mod(%s, window_width_pixels)) + (int(mod(%s, window_height_pixels)) * window_width_pixels)", params[0], params[1]),
+        (stack, params) -> String.format("uint(mod(%s, window_width_pixels)) + (uint(mod(%s, window_height_pixels)) * window_width_pixels)", params[0], params[1]),
+//        (stack, params) -> String.format("uint(mod(%s, window_width_pixels)) + (uint(mod(%s, window_height_pixels)) * window_width_pixels)", params[0], params[1]),
         new String[]{ShaderManager.getInstance().getWindowSize().getName()}, // Uniforms
         new String[]{} // Libraries
     ),
