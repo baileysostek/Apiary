@@ -59,15 +59,6 @@ public class ShaderManager {
     private HashMap<String, GLDataType> type_mapping = new HashMap<>();
 
     private ShaderManager() {
-        // Determine which GPU we have
-        for(GPUType type : GPUType.values()){
-            GL43.glGetInteger(type.getQueryAddress());
-            if(!checkForError(String.format("no drivers found for an %s graphics card.", type))){
-                gpu = type; // We have found our card
-                break;
-            }
-        }
-
         // Register any custom directives we want to support
         custom_directives.add("#include");
 
@@ -158,6 +149,18 @@ public class ShaderManager {
         if (singleton == null) {
             singleton = new ShaderManager();
             singleton.onResize();
+
+            // Determine which GPU we have
+            long max = -1;
+            GPUType system_gpu = null;
+            for(GPUType known_gpu_type : GPUType.values()){
+                long available_memory = known_gpu_type.getAvailableMemoryInBytes();
+                if(available_memory > max){
+                    max = available_memory;
+                    system_gpu = known_gpu_type;
+                }
+            }
+            gpu = system_gpu;
         }
     }
 
@@ -572,7 +575,7 @@ public class ShaderManager {
     }
 
     public long getAvailableGPUMemoryInBytes(){
-        return GL43.glGetInteger(gpu.getQueryAddress()) * 1000L;
+        return gpu.getAvailableMemoryInBytes();
     }
 
     public int getDefaultVertexShader() {
