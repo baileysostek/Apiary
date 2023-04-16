@@ -51,7 +51,7 @@ public class DefineNode extends Node {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
         out.addProperty("variable_name", this.variable_name.get());
         out.addProperty("variable_type", this.type.name());
@@ -97,7 +97,7 @@ public class DefineNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         JsonArray define_variable = new JsonArray();
 
         define_variable.add(type.getGLSL());       // Type

@@ -30,7 +30,7 @@ public class BuiltInVariableNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         // Built in are not serialized to anything on the object stack. They dont do any evaluation they are just a value.
     }
 

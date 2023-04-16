@@ -26,9 +26,9 @@ public class FragmentLogicNode extends Node {
     }
 
     @Override
-    public void serialize (JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         evaluation_stack.add("out_color");
-        super.serialize(evaluation_stack);
+        super.transpile(evaluation_stack);
         evaluation_stack.add(FunctionDirective.SET.getNodeID());
     }
 

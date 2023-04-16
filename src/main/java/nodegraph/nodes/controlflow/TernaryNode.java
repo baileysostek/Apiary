@@ -40,7 +40,7 @@ public class TernaryNode extends TemplateNode {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
         out.addProperty("type", this.return_type.name());
         return out;

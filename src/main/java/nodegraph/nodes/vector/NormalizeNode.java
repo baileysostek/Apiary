@@ -29,7 +29,7 @@ public class NormalizeNode extends TemplateNode {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
         out.addProperty("output_type",target_type.name());
         return out;

@@ -1,5 +1,5 @@
 {
-  "width": 5000,
+  "width": 8000,
   "height": 4000,
   "nodes": [
     {
@@ -735,6 +735,16 @@
       "dst": {
         "node_id": 35,
         "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 27,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 36,
+        "attribute_name": "inflow"
       }
     },
     {

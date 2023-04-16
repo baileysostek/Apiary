@@ -22,16 +22,16 @@ import java.util.LinkedList;
 public class KernelNode extends Node {
 
     private AgentNode agent = null;
-    private InflowPin instance; // This represents the point to start the kernel at
+    private final InflowPin instance; // This represents the point to start the kernel at
 
-    private ImBoolean ignore_self = new ImBoolean(false);
+    private final ImBoolean ignore_self = new ImBoolean(false);
 
-    private ImInt kernel_width = new ImInt(3);
-    private ImInt kernel_height = new ImInt(3);
-    private Vector2i[][] convolution = new Vector2i[kernel_width.get()][kernel_height.get()];
+    private final ImInt kernel_width = new ImInt(3);
+    private final ImInt kernel_height = new ImInt(3);
+    private final Vector2i[][] convolution = new Vector2i[kernel_width.get()][kernel_height.get()];
 
-    private OutflowPin then;
-    private OutflowPin count;
+    private final OutflowPin then;
+    private final OutflowPin count;
 
     private int current_iteration_x = 0;
     private int current_iteration_y = 0;
@@ -84,7 +84,7 @@ public class KernelNode extends Node {
         }
     }
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
         out.addProperty("kernel_width", kernel_width.get());
         out.addProperty("kernel_height", kernel_height.get());
@@ -170,7 +170,7 @@ public class KernelNode extends Node {
     }
 
     @Override
-    public void serialize (JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         // Reset state
         this.current_iteration_x = 0;
         this.current_iteration_y = 0;
@@ -219,23 +219,38 @@ public class KernelNode extends Node {
 
                 JsonArray agent_read_reference = new JsonArray();
 
-                agent_read_reference.add(this.agent.getTitle()); // First we say which agent we are reference
                 // From our kernel we need to lookup the offsets
                 JsonArray agent_read_index = new JsonArray();
                 // X offset
                 agent_read_index.add(instance.getValue());
-                agent_read_index.add(FunctionDirective.KERNEL_INDEX_X.getNodeID());
-                agent_read_index.add(current_iteration_x - 1);
+                agent_read_index.add(current_iteration_x - (kernel_width.get() / 2));
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
+                agent_read_index.add(String.format("u_%s_width", this.agent.getTitle()));
+                agent_read_index.add(FunctionDirective.GET.getNodeID());
+                agent_read_index.add(FunctionDirective.MOD.getNodeID());
 
                 // Y offset
                 agent_read_index.add(instance.getValue());
-                agent_read_index.add(FunctionDirective.KERNEL_INDEX_Y.getNodeID());
-                agent_read_index.add(current_iteration_y - 1);
+                agent_read_index.add(String.format("u_%s_width", this.agent.getTitle()));
+                agent_read_index.add(FunctionDirective.GET.getNodeID());
+                agent_read_index.add(FunctionDirective.DIV.getNodeID());
+                agent_read_index.add(FunctionDirective.FLOOR.getNodeID());
+                agent_read_index.add(current_iteration_y - (kernel_height.get() / 2));
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
+                agent_read_index.add(String.format("u_%s_height", this.agent.getTitle()));
+                agent_read_index.add(FunctionDirective.GET.getNodeID());
+                agent_read_index.add(FunctionDirective.MOD.getNodeID());
+                agent_read_index.add(String.format("u_%s_width", this.agent.getTitle()));
+                agent_read_index.add(FunctionDirective.GET.getNodeID());
+                agent_read_index.add(FunctionDirective.MUL.getNodeID());
 
                 // Convert to screen coordinates
-                agent_read_index.add(FunctionDirective.XY_TO_SCREEN_INDEX.getNodeID());
+                agent_read_index.add(FunctionDirective.ADD.getNodeID());
+                agent_read_index.add("int");
+                agent_read_index.add(FunctionDirective.CAST.getNodeID());
+
+                // Agent Read
+                agent_read_reference.add(this.agent.getTitle()); // First we say which agent we are reference
                 agent_read_reference.add(agent_read_index);
                 agent_read_reference.add(outflow.getAttributeName()); // Which property we are getting.
                 agent_read_reference.add(FunctionDirective.AGENT_READ.getNodeID()); // Get the reference to the AgentRead function directive.

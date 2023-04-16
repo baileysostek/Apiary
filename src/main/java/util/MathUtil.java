@@ -96,4 +96,27 @@ public class MathUtil {
     public static int computeAlignment(int bytes, int value) {
         return value - (bytes % value);
     }
+
+    public static boolean isMultipleOf(int bytes, int i) {
+        return bytes % i == 0;
+    }
+
+    public static boolean isFactorOf(int bytes, int i) {
+        if (bytes <= 0 || bytes > i) {
+            return false;
+        }
+
+        int[] factors = factor(i);
+        for(int factor : factors){
+
+            if(factor == bytes){
+                return true;
+            }
+
+            if(factor > bytes){
+                return false;
+            }
+        }
+        return false;
+    }
 }

@@ -1,5 +1,6 @@
 package core;
 
+import com.google.gson.JsonObject;
 import editor.Editor;
 import graphics.ShaderManager;
 import graphics.texture.TextureManager;
@@ -7,6 +8,7 @@ import graphics.ui.FontLoader;
 import input.Keyboard;
 import input.Mouse;
 import compiler.GLSLCompiler;
+import nodegraph.Node;
 import nodegraph.NodeRegistry;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
@@ -79,6 +81,20 @@ public class Apiary {
         NodeRegistry.initialize();
 
         Editor.initialize();
+
+        // Generate Documentation for the Thesis Writeup
+        System.out.print("\\begin{tabular}{ | m{2cm} | m{4cm}| m{4cm} | } \n");
+        for(Class<? extends Node> template : NodeRegistry.getInstance().getRegisteredNodes()){
+            System.out.print("  \\hline\n");
+            Node node = NodeRegistry.getInstance().getNodeFromClass(template, new JsonObject());
+            // Node info
+            if(node != null){
+                System.out.print(String.format("%s&%s&%s \\\\ \n", node.getTitle(), node.getInputNames(), node.getOutputNames()));
+            }else{
+//                System.err.println("Class could not deserialize:" + template.getName());
+            }
+        }
+        System.out.print("\\end{tabular}");
 
 //        SimulationManager.getInstance().load("simulations/gol.json");
 //        SimulationManager.getInstance().load("simulations/physarum.jsonc");

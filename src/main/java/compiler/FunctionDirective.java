@@ -97,6 +97,13 @@ public enum FunctionDirective {
         (stack, params) -> String.format("clamp(%s, %s, %s)", params[0], params[1], params[2])
     ),
 
+    CODE("@code",
+        new String[]{
+            "code"
+        },
+        (stack, params) -> params[0]
+    ),
+
     CONDITIONAL("@conditional",
         new String[]{
             "Predicate",
@@ -169,6 +176,13 @@ public enum FunctionDirective {
             "B"
         },
         (stack, params) -> String.format("(%s == %s)", params[0], params[1])
+    ),
+
+    FLOOR("@floor",
+        new String[]{
+            "A",
+        },
+        (stack, params) -> String.format("floor(%s)", params[0])
     ),
 
     GET("@get",

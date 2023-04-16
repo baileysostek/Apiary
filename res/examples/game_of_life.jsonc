@@ -139,8 +139,8 @@
     },
     {
       "class": "nodegraph.nodes.logic.OrNode",
-      "pos_x": 1410.4019,
-      "pos_y": 707.65845,
+      "pos_x": 1386.4019,
+      "pos_y": 694.65845,
       "id": 17
     },
     {
@@ -155,8 +155,8 @@
     {
       "type": "BOOL",
       "class": "nodegraph.nodes.controlflow.TernaryNode",
-      "pos_x": 1627.671,
-      "pos_y": 650.81604,
+      "pos_x": 1646.671,
+      "pos_y": 677.81604,
       "id": 19
     },
     {
@@ -168,8 +168,8 @@
     },
     {
       "class": "nodegraph.nodes.variables.common.InstanceNode",
-      "pos_x": 1626.7909,
-      "pos_y": 582.6615,
+      "pos_x": 1646.7909,
+      "pos_y": 590.6615,
       "id": 21
     },
     {
@@ -190,6 +190,12 @@
       "pos_x": 999.6719,
       "pos_y": 710.81604,
       "id": 24
+    },
+    {
+      "class": "nodegraph.nodes.random.RandomBoolNode",
+      "pos_x": 1642.0,
+      "pos_y": 803.0,
+      "id": 25
     }
   ],
   "links": [

@@ -14,6 +14,7 @@ import nodegraph.Node;
 import nodegraph.NodeColors;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
+import org.joml.Vector2i;
 import util.MathUtil;
 
 import java.util.*;
@@ -59,7 +60,7 @@ public class AgentNode extends Node {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
 
         out.addProperty("agent_name", this.getTitle());
@@ -186,7 +187,7 @@ public class AgentNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         JsonObject agent_data = new JsonObject();
 
         // Add the number of instances

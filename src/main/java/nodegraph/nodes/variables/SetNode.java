@@ -81,7 +81,7 @@ public class SetNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         JsonArray define_variable = new JsonArray();
 
         define_variable.add(reference.getVariableName());// Type

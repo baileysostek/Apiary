@@ -51,7 +51,7 @@ public class IncrementNode extends Node {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
         if(reference != null) {
             out.addProperty("reference", this.reference.getReferenceID());
@@ -91,7 +91,7 @@ public class IncrementNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         JsonArray define_variable = new JsonArray();
 
         define_variable.add(reference.getVariableName());// Type

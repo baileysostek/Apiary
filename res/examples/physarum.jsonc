@@ -1,4 +1,6 @@
 {
+  "width": 20000,
+  "height": 20000,
   "nodes": [
     {
       "agent_name": "pheromone",
@@ -746,6 +748,16 @@
       "dst": {
         "node_id": 37,
         "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 35,
+        "attribute_name": "concentration"
+      },
+      "dst": {
+        "node_id": 37,
+        "attribute_name": "value"
       }
     },
     {

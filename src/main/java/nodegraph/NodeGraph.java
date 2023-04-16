@@ -132,7 +132,7 @@ public class NodeGraph {
         for(Node node : agent_nodes){
             AgentNode agent_node = ((AgentNode) node);
             JsonArray agent_initialization_data = new JsonArray();
-            agent_node.serialize(agent_initialization_data);
+            agent_node.transpile(agent_initialization_data);
             // Get the first element
             agents.add(agent_node.title, agent_initialization_data.get(0));
         }
@@ -209,7 +209,7 @@ public class NodeGraph {
         for(Node node : nodes){
             int id = ++node_index;
             node_ids.put(node, id);
-            JsonObject node_save_data = node.generateSaveData();
+            JsonObject node_save_data = node.serializeBase();
             node_save_data.addProperty("id", id);
             nodes_array.add(node_save_data);
         }

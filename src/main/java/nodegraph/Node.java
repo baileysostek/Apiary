@@ -3,7 +3,6 @@ package nodegraph;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
@@ -115,8 +114,8 @@ public abstract class Node{
     // Any data which relies on other nodes to exist should be intereacted with at this point.
     public void onLoad(JsonObject initialization_data){}
 
-    public final JsonObject generateSaveData(){
-        JsonObject save_object = nodeSpecificSaveData();
+    public final JsonObject serializeBase(){
+        JsonObject save_object = serializeNode();
 
         // We dont need to add inflow and outflow IDS because they are implicit.
         save_object.addProperty("class", this.getClass().getName());
@@ -139,7 +138,7 @@ public abstract class Node{
         return save_object;
     }
 
-    public JsonObject nodeSpecificSaveData(){
+    public JsonObject serializeNode(){
         return new JsonObject();
     }
 
@@ -463,7 +462,7 @@ public abstract class Node{
     public final void generateIntermediate(JsonArray evaluation_stack){
         // First we are going to push our serialization onto the stack.
         // This serialization is anything we want to
-        serialize(evaluation_stack);
+        transpile(evaluation_stack);
 
         if(!node_processes_own_flow) {
             LinkedList<OutflowPin> outflows = new LinkedList<>();
@@ -509,7 +508,7 @@ public abstract class Node{
     }
 
     // Default serialize dose nothing.
-    public void serialize (JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         // Each attribute we are trying to write to needs to have its own VM code.
         JsonArray node_inputs_serialized = new JsonArray();
 
@@ -656,7 +655,7 @@ public abstract class Node{
     }
 
     public Node clone(){
-        JsonObject initialization_data = this.generateSaveData();
+        JsonObject initialization_data = this.serializeBase();
         return NodeRegistry.getInstance().getNodeFromClass(initialization_data);
     }
 

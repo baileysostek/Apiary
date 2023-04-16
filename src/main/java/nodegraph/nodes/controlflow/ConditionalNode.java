@@ -32,7 +32,7 @@ public class ConditionalNode extends Node {
     }
 
     @Override
-    public void serialize(JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         JsonArray conditional_logic = new JsonArray();
 
         // Add conditional

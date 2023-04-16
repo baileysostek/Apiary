@@ -53,7 +53,7 @@ public class AgentWriteNode extends Node {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
         if(this.agent != null) {
             out.addProperty("agent_reference", this.agent.getReferenceID());
@@ -116,7 +116,7 @@ public class AgentWriteNode extends Node {
     }
 
     @Override
-    public void serialize (JsonArray evaluation_stack) {
+    public void transpile(JsonArray evaluation_stack) {
         // Each attribute we are trying to write to needs to have its own VM code.
         JsonArray agent_writes = new JsonArray();
 

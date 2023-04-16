@@ -27,7 +27,17 @@ public class AgentInitializationShader {
     int invocations_width;
     int invocations_height;
 
+    private Uniform u_agent_width;
+    private Uniform u_agent_height;
+
     public AgentInitializationShader(String agent_name, int instance_width, int instance_height, JsonObject agent_attributes) {
+
+        // Add a uniform variable representing this sizeing.
+        u_agent_width  = ShaderManager.getInstance().createUniform(String.format("u_%s_width" , agent_name), GLDataType.INT);
+        u_agent_width.set(instance_width);
+        u_agent_height = ShaderManager.getInstance().createUniform(String.format("u_%s_height", agent_name), GLDataType.INT);
+        u_agent_height.set(instance_height);
+
         // Get the SSBO
         SSBO agent_ssbo = SimulationManager.getInstance().getAgent(agent_name);
 

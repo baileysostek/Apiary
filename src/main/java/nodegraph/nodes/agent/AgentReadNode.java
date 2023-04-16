@@ -51,7 +51,7 @@ public class AgentReadNode extends Node {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
         if(this.agent != null) {
             out.addProperty("agent_reference", this.agent.getReferenceID());

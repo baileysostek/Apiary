@@ -44,7 +44,7 @@ public class StepNode extends OutflowNode {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject out = new JsonObject();
 
         out.addProperty("step_index", step_index.get());

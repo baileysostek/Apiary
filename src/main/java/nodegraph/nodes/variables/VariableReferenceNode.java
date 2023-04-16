@@ -38,7 +38,7 @@ public class VariableReferenceNode extends Node {
     }
 
     @Override
-    public JsonObject nodeSpecificSaveData() {
+    public JsonObject serializeNode() {
         JsonObject node_specific_save_data = new JsonObject();
         if(variable_reference != null){
             node_specific_save_data.addProperty("variable_reference", variable_reference.getReferenceID());
