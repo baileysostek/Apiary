@@ -153,6 +153,14 @@ public enum FunctionDirective {
         (stack, params) -> String.format("cos(%s)", params[0])
     ),
 
+    CROSS_PRODUCT("@cross",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("cross(%s,%s)", params[0], params[1])
+    ),
+
     DEFINE("@define",
         new String[]{
             "Type",
@@ -168,6 +176,14 @@ public enum FunctionDirective {
             "B"
         },
         (stack, params) -> String.format("(%s / %s)", params[0], params[1])
+    ),
+
+    DOT_PRODUCT("@dot",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("dot(%s,%s)", params[0], params[1])
     ),
 
     EQUALS("@equals",
@@ -209,7 +225,15 @@ public enum FunctionDirective {
             "A",
             "B"
         },
-        (stack, params) -> String.format("%s > %s", params[0], params[1])
+        (stack, params) -> String.format("(%s) > (%s)", params[0], params[1])
+    ),
+
+    GREATER_OR_EQUAL("@greater_or_equal",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("(%s) >= (%s)", params[0], params[1])
     ),
 
     INCREMENT("@increment",
@@ -225,7 +249,15 @@ public enum FunctionDirective {
             "A",
             "B"
         },
-        (stack, params) -> String.format("%s < %s", params[0], params[1])
+        (stack, params) -> String.format("(%s) < (%s)", params[0], params[1])
+    ),
+
+    LESS_OR_EQUAL("@less_or_equal",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("(%s) <= (%s)", params[0], params[1])
     ),
 
     MAX("@max",
@@ -353,8 +385,8 @@ public enum FunctionDirective {
 
     ROTATE_2D("@rotate_2d",
         new String[]{
-            "A",
-            "B"
+            "vector",
+            "angle"
         },
         new String[]{},
         (stack, params) -> String.format("rotate(%s,%s)", params[0], params[1]),
@@ -439,7 +471,7 @@ public enum FunctionDirective {
             "Consequent",
             "Alternate"
         },
-        (stack, params) -> String.format("(%s ? %s : %s)", params[0], params[1], params[2])
+        (stack, params) -> String.format("((%s) ? %s : %s)", params[0], params[1], params[2])
     ),
 
     VEC2("@vec2",

@@ -217,10 +217,9 @@ public class KernelNode extends Node {
         if (!(agent == null) && instance.isConnected()) {
             if(agent.hasPinWithName(outflow.getAttributeName())) {
 
-                JsonArray agent_read_reference = new JsonArray();
-
                 // From our kernel we need to lookup the offsets
                 JsonArray agent_read_index = new JsonArray();
+
                 // X offset
                 agent_read_index.add(instance.getValue());
                 agent_read_index.add(current_iteration_x - (kernel_width.get() / 2));
@@ -228,6 +227,7 @@ public class KernelNode extends Node {
                 agent_read_index.add(String.format("u_%s_width", this.agent.getTitle()));
                 agent_read_index.add(FunctionDirective.GET.getNodeID());
                 agent_read_index.add(FunctionDirective.MOD.getNodeID());
+                // Produces value 0 - width in pixels
 
                 // Y offset
                 agent_read_index.add(instance.getValue());
@@ -235,21 +235,31 @@ public class KernelNode extends Node {
                 agent_read_index.add(FunctionDirective.GET.getNodeID());
                 agent_read_index.add(FunctionDirective.DIV.getNodeID());
                 agent_read_index.add(FunctionDirective.FLOOR.getNodeID());
+                // Gets value between 0 - height
+
                 agent_read_index.add(current_iteration_y - (kernel_height.get() / 2));
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
+                // Offset Y by some amount
+
                 agent_read_index.add(String.format("u_%s_height", this.agent.getTitle()));
                 agent_read_index.add(FunctionDirective.GET.getNodeID());
                 agent_read_index.add(FunctionDirective.MOD.getNodeID());
+                agent_read_index.add("int");
+                agent_read_index.add(FunctionDirective.CAST.getNodeID());
+                // MOD Gets value between 0 - height
+
                 agent_read_index.add(String.format("u_%s_width", this.agent.getTitle()));
                 agent_read_index.add(FunctionDirective.GET.getNodeID());
                 agent_read_index.add(FunctionDirective.MUL.getNodeID());
+                // Pixel position y * width
 
                 // Convert to screen coordinates
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
-                agent_read_index.add("int");
+                agent_read_index.add("uint");
                 agent_read_index.add(FunctionDirective.CAST.getNodeID());
 
                 // Agent Read
+                JsonArray agent_read_reference = new JsonArray();
                 agent_read_reference.add(this.agent.getTitle()); // First we say which agent we are reference
                 agent_read_reference.add(agent_read_index);
                 agent_read_reference.add(outflow.getAttributeName()); // Which property we are getting.

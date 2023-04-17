@@ -1,6 +1,4 @@
 {
-  "width": 8000,
-  "height": 4000,
   "nodes": [
     {
       "agent_name": "pheromone",
@@ -49,7 +47,7 @@
     },
     {
       "agent_name": "physarum",
-      "agent_instances": 1000,
+      "agent_instances": 1000000,
       "attributes": [
         {
           "name": "pos",
@@ -65,8 +63,8 @@
         }
       ],
       "class": "nodegraph.nodes.agent.AgentNode",
-      "pos_x": 1411.0,
-      "pos_y": 28.0,
+      "pos_x": 1862.0,
+      "pos_y": 29.0,
       "id": 7
     },
     {
@@ -123,8 +121,8 @@
     {
       "agent_reference": 7,
       "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 1595.0,
-      "pos_y": 909.0,
+      "pos_x": 3225.0,
+      "pos_y": 879.0,
       "id": 16
     },
     {
@@ -137,44 +135,41 @@
     {
       "output_type": "VEC2",
       "class": "nodegraph.nodes.math.AddNode",
-      "pos_x": 1066.0,
-      "pos_y": 952.0,
+      "pos_x": 2961.5889,
+      "pos_y": 993.8374,
       "id": 18
     },
     {
       "class": "nodegraph.nodes.optimizations.ScreenPosToIndex",
-      "pos_x": 1622.0,
-      "pos_y": 1066.0,
+      "pos_x": 3258.0,
+      "pos_y": 1049.0,
       "id": 19
     },
     {
       "agent_reference": 1,
       "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 1955.8237,
-      "pos_y": 908.6071,
+      "pos_x": 3574.8237,
+      "pos_y": 880.6071,
       "id": 20
     },
     {
       "output_type": "VEC2",
       "class": "nodegraph.nodes.math.MulNode",
-      "pos_x": 764.0,
-      "pos_y": 1099.0,
+      "pos_x": 2439.5889,
+      "pos_y": 1085.8374,
       "id": 21
     },
     {
       "class": "nodegraph.nodes.variables.common.FrameDeltaNode",
-      "pos_x": 516.0,
-      "pos_y": 1129.0,
+      "pos_x": 2158.5889,
+      "pos_y": 1130.8373,
       "id": 22
     },
     {
       "output_type": "VEC2",
       "class": "nodegraph.nodes.math.MulNode",
-      "pos_x": 930.58704,
-      "pos_y": 1098.0499,
-      "non_default_values": {
-        "y_pos": "0.01"
-      },
+      "pos_x": 2784.1758,
+      "pos_y": 1100.8872,
       "id": 23
     },
     {
@@ -331,9 +326,212 @@
     },
     {
       "class": "nodegraph.nodes.variables.common.InstanceNode",
-      "pos_x": 1313.5544,
-      "pos_y": 924.147,
+      "pos_x": 2939.1436,
+      "pos_y": 893.9843,
       "id": 43
+    },
+    {
+      "class": "nodegraph.nodes.vector.RotateVec2Node",
+      "pos_x": 2948.0,
+      "pos_y": 1337.0,
+      "id": 44
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 2771.0,
+      "pos_y": 1398.0,
+      "id": 45
+    },
+    {
+      "output_type": "VEC2",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 767.0686,
+      "pos_y": 1202.1796,
+      "id": 46
+    },
+    {
+      "reference_uniform_name": "sensor",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 543.0686,
+      "pos_y": 1209.1796,
+      "id": 47
+    },
+    {
+      "class": "nodegraph.nodes.vector.RotateVec2Node",
+      "pos_x": 974.0686,
+      "pos_y": 1248.1796,
+      "id": 48
+    },
+    {
+      "reference_uniform_name": "angle",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 562.0686,
+      "pos_y": 1325.1796,
+      "id": 49
+    },
+    {
+      "class": "nodegraph.nodes.vector.RotateVec2Node",
+      "pos_x": 976.0686,
+      "pos_y": 1339.1796,
+      "id": 50
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 771.0686,
+      "pos_y": 1386.1796,
+      "non_default_values": {
+        "y_pos": "-1.0"
+      },
+      "id": 51
+    },
+    {
+      "output_type": "VEC2",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1187.0686,
+      "pos_y": 1271.1796,
+      "id": 52
+    },
+    {
+      "output_type": "VEC2",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1187.0686,
+      "pos_y": 1357.1796,
+      "id": 53
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.ScreenPosToIndex",
+      "pos_x": 1362.0,
+      "pos_y": 1272.0,
+      "id": 54
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.ScreenPosToIndex",
+      "pos_x": 1368.0,
+      "pos_y": 1355.0,
+      "id": 55
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 1589.0,
+      "pos_y": 1268.0,
+      "id": 56
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 1590.0,
+      "pos_y": 1357.0,
+      "id": 57
+    },
+    {
+      "class": "nodegraph.nodes.logic.GreaterNode",
+      "pos_x": 2109.0,
+      "pos_y": 1333.0,
+      "id": 58
+    },
+    {
+      "type": "FLOAT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2306.2253,
+      "pos_y": 1343.8909,
+      "non_default_values": {
+        "consequent": "1.0",
+        "alternate": "-1.0"
+      },
+      "id": 59
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 2519.0,
+      "pos_y": 1419.0,
+      "id": 60
+    },
+    {
+      "reference_uniform_name": "turn",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 2304.9656,
+      "pos_y": 1478.0084,
+      "id": 61
+    },
+    {
+      "reference_uniform_name": "speed",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 2428.6577,
+      "pos_y": 1176.0168,
+      "id": 62
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 2604.6626,
+      "pos_y": 1173.1887,
+      "non_default_values": {
+        "y_pos": "100"
+      },
+      "id": 63
+    },
+    {
+      "class": "nodegraph.nodes.logic.DotProductNode",
+      "pos_x": 1918.8857,
+      "pos_y": 1293.1912,
+      "id": 64
+    },
+    {
+      "class": "nodegraph.nodes.logic.DotProductNode",
+      "pos_x": 1917.8857,
+      "pos_y": 1373.1912,
+      "id": 65
+    },
+    {
+      "output_type": "VEC2",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 631.1644,
+      "pos_y": 1120.0796,
+      "id": 66
+    },
+    {
+      "reference_uniform_name": "u_simulation_width",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 343.16443,
+      "pos_y": 1113.0796,
+      "id": 67
+    },
+    {
+      "class": "nodegraph.nodes.random.RandomBoolNode",
+      "pos_x": 1414.8022,
+      "pos_y": 380.2287,
+      "id": 68
+    },
+    {
+      "type": "VEC3",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 1640.8022,
+      "pos_y": 430.2287,
+      "id": 69
+    },
+    {
+      "reference_uniform_name": "bg_color",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 1410.8019,
+      "pos_y": 530.4987,
+      "id": 70
+    },
+    {
+      "reference_uniform_name": "fg_color",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 1413.0,
+      "pos_y": 447.0,
+      "id": 71
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.FrameDeltaNode",
+      "pos_x": 2316.5889,
+      "pos_y": 1601.8373,
+      "id": 72
     }
   ],
   "links": [
@@ -519,6 +717,16 @@
     },
     {
       "src": {
+        "node_id": 44,
+        "attribute_name": "Rotate 2D"
+      },
+      "dst": {
+        "node_id": 16,
+        "attribute_name": "vel"
+      }
+    },
+    {
+      "src": {
         "node_id": 15,
         "attribute_name": "instance"
       },
@@ -615,6 +823,16 @@
       "dst": {
         "node_id": 23,
         "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 63,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 23,
+        "attribute_name": "y_pos"
       }
     },
     {
@@ -825,6 +1043,346 @@
       "dst": {
         "node_id": 40,
         "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "vel"
+      },
+      "dst": {
+        "node_id": 44,
+        "attribute_name": "vector"
+      }
+    },
+    {
+      "src": {
+        "node_id": 45,
+        "attribute_name": "Mul"
+      },
+      "dst": {
+        "node_id": 44,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 60,
+        "attribute_name": "Mul"
+      },
+      "dst": {
+        "node_id": 45,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 72,
+        "attribute_name": "u_time_delta"
+      },
+      "dst": {
+        "node_id": 45,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 66,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 46,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 47,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 46,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 46,
+        "attribute_name": "Mul"
+      },
+      "dst": {
+        "node_id": 48,
+        "attribute_name": "vector"
+      }
+    },
+    {
+      "src": {
+        "node_id": 49,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 48,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 46,
+        "attribute_name": "Mul"
+      },
+      "dst": {
+        "node_id": 50,
+        "attribute_name": "vector"
+      }
+    },
+    {
+      "src": {
+        "node_id": 51,
+        "attribute_name": "Mul"
+      },
+      "dst": {
+        "node_id": 50,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 49,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 51,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 48,
+        "attribute_name": "Rotate 2D"
+      },
+      "dst": {
+        "node_id": 52,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "pos"
+      },
+      "dst": {
+        "node_id": 52,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 50,
+        "attribute_name": "Rotate 2D"
+      },
+      "dst": {
+        "node_id": 53,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "pos"
+      },
+      "dst": {
+        "node_id": 53,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 52,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 54,
+        "attribute_name": "Screen Position"
+      }
+    },
+    {
+      "src": {
+        "node_id": 53,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 55,
+        "attribute_name": "Screen Position"
+      }
+    },
+    {
+      "src": {
+        "node_id": 54,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 56,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 55,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 57,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 64,
+        "attribute_name": "Dot Product"
+      },
+      "dst": {
+        "node_id": 58,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 65,
+        "attribute_name": "Dot Product"
+      },
+      "dst": {
+        "node_id": 58,
+        "attribute_name": "B"
+      }
+    },
+    {
+      "src": {
+        "node_id": 58,
+        "attribute_name": "Greater"
+      },
+      "dst": {
+        "node_id": 59,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 59,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 60,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 61,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 60,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 62,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 63,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 56,
+        "attribute_name": "concentration"
+      },
+      "dst": {
+        "node_id": 64,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "color"
+      },
+      "dst": {
+        "node_id": 64,
+        "attribute_name": "B"
+      }
+    },
+    {
+      "src": {
+        "node_id": 57,
+        "attribute_name": "concentration"
+      },
+      "dst": {
+        "node_id": 65,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "color"
+      },
+      "dst": {
+        "node_id": 65,
+        "attribute_name": "B"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "vel"
+      },
+      "dst": {
+        "node_id": 66,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 67,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 66,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 68,
+        "attribute_name": "random_bool"
+      },
+      "dst": {
+        "node_id": 69,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 71,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 69,
+        "attribute_name": "consequent"
+      }
+    },
+    {
+      "src": {
+        "node_id": 70,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 69,
+        "attribute_name": "alternate"
       }
     }
   ]

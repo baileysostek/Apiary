@@ -518,7 +518,7 @@ public class ShaderManager {
         String agent_ssbos = "";
         HashMap<String, SSBO> required_agents = GLSLCompiler.getInstance().getRequiredAgents();
         for(String agent_name : required_agents.keySet()){
-            agent_ssbos += required_agents.get(agent_name).generateGLSL(is_read);
+            agent_ssbos += required_agents.get(agent_name).generateGLSL(!is_read);
         }
         substitutions.put("agents_ssbos", agent_ssbos);
 
@@ -592,4 +592,7 @@ public class ShaderManager {
         System.out.println("Programs:" + allocated_programs);
     }
 
+    public Collection<String> getRegisteredUniforms() {
+        return this.uniforms.keySet();
+    }
 }

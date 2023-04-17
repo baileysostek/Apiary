@@ -29,7 +29,7 @@ public enum NodeColors {
     public static final int BLACK   = ImColor.rgba(0,  0, 0, 255);
     public static final int PINK    = ImColor.rgba(255, 200, 255, 255);
     public static final int GREY    = ImColor.rgba(128, 128, 128, 255);
-    public static final int BROWN   = ImColor.rgba(61, 28, 12, 255);
+    public static final int BROWN   = ImColor.rgba(165, 42, 42, 255);
 
     // Define a Map for our primitive types
     private static final Map<GLDataType, Integer> TYPE_COLORS = new HashMap<>();
