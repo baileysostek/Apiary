@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import editor.Editor;
 import imgui.ImGui;
+import imgui.flag.ImGuiComboFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
 import imgui.type.ImString;
@@ -12,9 +14,15 @@ import nodegraph.nodes.agent.AgentNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
 import nodegraph.nodes.pipeline.FragmentLogicNode;
+import nodegraph.nodes.variables.DefineNode;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 import nodegraph.pin.Pin;
+import simulation.SimulationManager;
+import simulation.world.AgentGrid2D;
+import simulation.world.DefaultWorld2D;
+import simulation.world.DefaultWorld3D;
+import simulation.world.World;
 import util.JsonUtils;
 import util.StringUtils;
 
@@ -32,6 +40,9 @@ public class NodeGraph {
     private ImBoolean override_default_size = new ImBoolean(true);
     private ImInt simulation_width = new ImInt();
     private ImInt simulation_height = new ImInt();
+
+    // Variables to use for this simulation instance
+    private Class<? extends World> world_template = DefaultWorld2D.class;
 
 
     public NodeGraph() {
@@ -82,6 +93,19 @@ public class NodeGraph {
         if(ImGui.inputInt("Simulation Height", simulation_height)){
 
         }
+        String variable_name = (world_template != null) ? world_template.getSimpleName() : "Select a World Template";
+        if (ImGui.beginCombo("##world_template", variable_name, ImGuiComboFlags.None)){
+            for (Class<? extends World> world_class : SimulationManager.getInstance().getWorldTemplates()) {
+                boolean is_selected = world_class.getSimpleName().equals(variable_name);
+                if (ImGui.selectable(world_class.getSimpleName(), is_selected)){
+                    this.world_template = world_class;
+                }
+                if (is_selected) {
+                    ImGui.setItemDefaultFocus();
+                }
+            }
+            ImGui.endCombo();
+        }
     }
 
     public JsonObject serialize(){
@@ -97,7 +121,7 @@ public class NodeGraph {
         JsonObject world = new JsonObject();
         // Add our world properties
         world.add("name", new JsonPrimitive("Conway's Game of Life"));
-        world.add("type", new JsonPrimitive("AgentGrid2D"));
+        world.add("template", new JsonPrimitive(this.world_template.getName()));
         // If the user indicated to override the default size, use those overriden sizes.
         if (override_default_size.get()) {
             if(this.overridesWidth()) {
@@ -129,47 +153,51 @@ public class NodeGraph {
         // Agents definitions
         JsonObject agents = new JsonObject();
         Collection<Node> agent_nodes = this.getNodesOfType(AgentNode.class);
-        for(Node node : agent_nodes){
-            AgentNode agent_node = ((AgentNode) node);
-            JsonArray agent_initialization_data = new JsonArray();
-            agent_node.transpile(agent_initialization_data);
-            // Get the first element
-            agents.add(agent_node.title, agent_initialization_data.get(0));
+        if (agent_nodes != null) {
+            for (Node node : agent_nodes) {
+                AgentNode agent_node = ((AgentNode) node);
+                JsonArray agent_initialization_data = new JsonArray();
+                agent_node.transpile(agent_initialization_data);
+                // Get the first element
+                agents.add(agent_node.title, agent_initialization_data.get(0));
+            }
         }
         out.add("agents", agents);
 
         // Steps definitions
         JsonArray steps = new JsonArray();
         LinkedList<Node> step_nodes = this.getNodesOfType(StepNode.class);
-        step_nodes.sort(new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-                return (((StepNode) o1).getStepIndex() > ((StepNode) o2).getStepIndex()) ? 1 : -1;
-            }
-        });
-        // TODO we need to sort this collection by step index.
-        for(Node node : step_nodes){
-            StepNode step_node = ((StepNode) node); // Cast to StepNode
-
-            // Create a json object to hold the data we use to represent this step.
-            JsonObject step_object = new JsonObject();
-
-            // Compute how many times we need to perform this logic loop
-            if(step_node.hasIterationCountSet()) {
-                if(step_node.useAgent()){
-                    step_object.addProperty("for_each", step_node.getSelectedAgent());
-                }else{
-                    step_object.addProperty("for_each", step_node.getIterationCount());
+        if (step_nodes != null) {
+            step_nodes.sort(new Comparator<Node>() {
+                @Override
+                public int compare(Node o1, Node o2) {
+                    return (((StepNode) o1).getStepIndex() > ((StepNode) o2).getStepIndex()) ? 1 : -1;
                 }
+            });
+            // TODO we need to sort this collection by step index.
+            for (Node node : step_nodes) {
+                StepNode step_node = ((StepNode) node); // Cast to StepNode
+
+                // Create a json object to hold the data we use to represent this step.
+                JsonObject step_object = new JsonObject();
+
+                // Compute how many times we need to perform this logic loop
+                if (step_node.hasIterationCountSet()) {
+                    if (step_node.useAgent()) {
+                        step_object.addProperty("for_each", step_node.getSelectedAgent());
+                    } else {
+                        step_object.addProperty("for_each", step_node.getIterationCount());
+                    }
+                }
+
+                // Generate the logic that is required to perform this step.
+                JsonArray step_logic = new JsonArray();
+                step_node.generateIntermediate(step_logic);
+                step_object.add("logic", step_logic);
+
+                // Add this object to our list of steps.
+                steps.add(step_object);
             }
-
-            // Generate the logic that is required to perform this step.
-            JsonArray step_logic = new JsonArray();
-            step_node.generateIntermediate(step_logic);
-            step_object.add("logic", step_logic);
-
-            // Add this object to our list of steps.
-            steps.add(step_object);
         }
         out.add("steps", steps);
 

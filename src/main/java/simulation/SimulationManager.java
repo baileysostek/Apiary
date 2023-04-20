@@ -5,15 +5,23 @@ import com.google.gson.JsonObject;
 import graphics.*;
 import graphics.texture.TextureManager;
 import input.Keyboard;
+import nodegraph.Node;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL43;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
 import simulation.world.AgentGrid2D;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.JsonUtils;
 
-import java.util.LinkedHashMap;
-import java.util.Locale;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 public class SimulationManager {
 
@@ -40,7 +48,24 @@ public class SimulationManager {
     // Store our output in an FBO
     private FBO fbo;
 
+    // World Templates
+    private HashSet<Class<? extends World>> templates = new HashSet<>();
+
     private SimulationManager() {
+        // Look for all world template classes
+        String SIMULATION_WORLD_PACKAGE = "simulation.world"; // All nodes live in this class.
+        Reflections reflections = new Reflections((new ConfigurationBuilder()).setScanners(new Scanners[]{Scanners.SubTypes, Scanners.TypesAnnotated}).setUrls(ClasspathHelper.forPackage(SIMULATION_WORLD_PACKAGE, new ClassLoader[0])).filterInputsBy((new FilterBuilder()).includePackage(SIMULATION_WORLD_PACKAGE)));
+        Set classes = reflections.getSubTypesOf(World.class);
+        Class[] world_child_classes = (Class[])classes.toArray(new Class[classes.size()]);
+        for(int i = 0; i < world_child_classes.length; i++){
+            Class world_child_class = world_child_classes[i];
+            // Prevent instantiation of new Abstract class instance. Always need to instantiate the child-class not parent abstract class.
+            if(!Modifier.isAbstract(world_child_class.getModifiers())){
+                templates.add(world_child_class); // Populate our templates based on reflection.
+            }
+        }
+
+        System.out.println(templates);
 
     }
 
@@ -161,17 +186,55 @@ public class SimulationManager {
         return this.agents.get(agent_name);
     }
 
-    public World getWorldTemplate(String template_name, JsonElement arguments){
-        if(template_name.toLowerCase(Locale.ROOT).equals("agentgrid2d")){
-            return new AgentGrid2D(template_name, arguments);
+    public World getWorldTemplate(JsonObject world_initialization_data){
+        // Default properties
+        String simulation_name = "Unnamed Simulation";
+        if(world_initialization_data.has("simulation_name")){
+            simulation_name = world_initialization_data.get("simulation_name").getAsString();
         }
-        // We didnt recognise the world type
-        System.err.println(String.format("Error: Simulation:\"%s\" uses a world template that we did not recognise. Unrecognised template:\"%s\"", template_name, template_name));
+
+        String template = DefaultWorld2D.class.getName();
+        if(world_initialization_data.has("template")){
+            template = world_initialization_data.get("template").getAsString();
+        }
+
+        try {
+            // Convert name to a class
+            Class<? extends World> node_class = (Class<? extends World>) Class.forName(template);
+
+            // If we have a template for this class instantiate an instance of it.
+            if(templates.contains(node_class)){
+                // Instantiate a new instance of this class.
+                for(Constructor constructor : node_class.getConstructors()){
+                    if(constructor.getParameterCount() == 1){
+                        try {
+                            World world = (World) constructor.newInstance(world_initialization_data);
+                            return world;
+                        } catch (InstantiationException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        // We didn't recognise the world type
+        System.err.println(String.format("Error: Simulation:\"%s\" uses a world template that we did not recognise. Unrecognised template:\"%s\"", simulation_name, template));
         // Default
-        return new DefaultWorld2D(template_name);
+        return new DefaultWorld2D(world_initialization_data);
     }
 
     public int getSimulationTexture(){
         return (fbo != null) ? fbo.getTextureID() : 0;
+    }
+
+    public Collection<Class<? extends World>> getWorldTemplates(){
+        return this.templates;
     }
 }

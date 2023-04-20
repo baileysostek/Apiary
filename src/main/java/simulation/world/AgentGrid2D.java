@@ -1,6 +1,7 @@
 package simulation.world;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import graphics.ShaderManager;
 import graphics.VAO;
 import org.lwjgl.opengl.GL43;
@@ -18,8 +19,12 @@ public class AgentGrid2D extends World{
         1.0f,  1.0f, 0.0f
     };
 
-    public AgentGrid2D(String name, JsonElement arguments) {
-        super(name, arguments, GL43.GL_TRIANGLES);
+    public AgentGrid2D(JsonObject world_initialization_data) {
+        super(
+            world_initialization_data.has("simulation_name") ? world_initialization_data.get("simulation_name").getAsString() : "Unnamed Simulation",
+            world_initialization_data.has("arguments") ? world_initialization_data.get("arguments").getAsJsonObject() : world_initialization_data,
+            GL43.GL_TRIANGLES
+        );
 
         this.vao = new VAO();
         this.vao.bind();

@@ -1,11 +1,12 @@
 package simulation.world;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import graphics.ShaderManager;
 import graphics.VAO;
 import org.lwjgl.opengl.GL43;
 
-public class DefaultWorld2D extends World{
+public class DefaultWorld3D extends World{
 
     private final VAO vao;
 
@@ -18,11 +19,11 @@ public class DefaultWorld2D extends World{
         1.0f,  1.0f, 0.0f
     };
 
-    public DefaultWorld2D(JsonObject world_initialization_data) {
+    public DefaultWorld3D(JsonObject world_initialization_data) {
         super(
             world_initialization_data.has("simulation_name") ? world_initialization_data.get("simulation_name").getAsString() : "Unnamed Simulation",
             world_initialization_data.has("arguments") ? world_initialization_data.get("arguments").getAsJsonObject() : world_initialization_data,
-            GL43.GL_TRIANGLES
+            GL43.GL_POINTS
         );
 
         this.vao = new VAO();
@@ -44,12 +45,17 @@ public class DefaultWorld2D extends World{
 
     @Override
     public int generateGeometryShader(boolean is_odd) {
-        return ShaderManager.getInstance().getDefaultGeometryShader();
+        return -1;
     }
 
     @Override
     public int generateFragmentShader(boolean is_odd) {
-        return ShaderManager.getInstance().getDefaultFragmentShader();
+
+        if(!this.arguments.has("fragment_logic")){
+            System.err.println("Error: no member \"fragment_logic\" exists in the arguments of this simulation's definition file.");
+            return ShaderManager.getInstance().getDefaultFragmentShader();
+        }
+        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"), is_odd);
     }
 
     @Override
@@ -57,6 +63,8 @@ public class DefaultWorld2D extends World{
         // Clear the Screen
         GL43.glClearColor(1f, 1f, 1f, 1.0f);
         GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
+
+        // Render a 3D cube in the world
 
         // This stage renders an input image to the screen.
         this.vao.bind();

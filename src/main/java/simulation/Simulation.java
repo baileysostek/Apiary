@@ -134,25 +134,7 @@ public class Simulation {
         }
 
         // Determine what world template we are using
-        resolve_world_template:{
-            // Check for a name
-            String simulation_world_name = "Default Simulation Name";
-            if(simulation_world_template.has("name")){
-                simulation_world_name = simulation_world_template.get("name").getAsString();
-
-            }
-            // Resolve the type
-            if (simulation_world_template.has("type")) {
-                String template_identifier = simulation_world_template.get("type").getAsString();
-                this.simulation_world = SimulationManager.getInstance().getWorldTemplate(template_identifier, simulation_world_template.get("arguments"));
-                break resolve_world_template;
-            } else {
-                System.err.println(String.format("Error: Simulation:\"%s\" does not specify a world template. Using default of World2D."));
-            }
-
-            // At this point we have not resolved the world template so use the default world template of World2D
-            this.simulation_world = new DefaultWorld2D(simulation_world_name);
-        }
+        this.simulation_world = SimulationManager.getInstance().getWorldTemplate(simulation_world_template);
 
         // Now we are going to determine the pipeline steps used
         JsonArray simulation_steps = object.getAsJsonArray("steps");

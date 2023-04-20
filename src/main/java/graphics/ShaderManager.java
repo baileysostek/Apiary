@@ -316,7 +316,7 @@ public class ShaderManager {
         int error_check = GL43.glGetError();
         boolean had_error = false;
         while (error_check != GL43.GL_NO_ERROR) {
-            System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
+//            System.out.println(String.format("Error[%s]: %s", error_cause, error_check));
             error_check = GL43.glGetError();
             had_error = true;
         }
