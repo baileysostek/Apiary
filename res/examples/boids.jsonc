@@ -1,0 +1,1532 @@
+{
+  "width": 512,
+  "height": 512,
+  "nodes": [
+    {
+      "agent_name": "gol_cell",
+      "agent_instances": 0,
+      "attributes": [
+        {
+          "name": "alive",
+          "type": "BOOL"
+        }
+      ],
+      "class": "nodegraph.nodes.agent.AgentNode",
+      "pos_x": 413.0,
+      "pos_y": 64.0,
+      "id": 1
+    },
+    {
+      "class": "nodegraph.nodes.controlflow.InitializationNode",
+      "pos_x": 65.0,
+      "pos_y": 64.0,
+      "id": 2
+    },
+    {
+      "class": "nodegraph.nodes.random.RandomBoolNode",
+      "pos_x": 236.0,
+      "pos_y": 139.0,
+      "id": 3
+    },
+    {
+      "class": "nodegraph.nodes.pipeline.FragmentLogicNode",
+      "pos_x": 799.9812,
+      "pos_y": 895.1681,
+      "id": 4
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 271.97815,
+      "pos_y": 928.1682,
+      "id": 5
+    },
+    {
+      "class": "nodegraph.nodes.vector.Vec4Node",
+      "pos_x": 405.98297,
+      "pos_y": 1015.1681,
+      "non_default_values": {
+        "x": "1.0",
+        "y": "1.0",
+        "z": "1.0",
+        "w": "1.0"
+      },
+      "id": 6
+    },
+    {
+      "class": "nodegraph.nodes.vector.Vec4Node",
+      "pos_x": 406.98303,
+      "pos_y": 1139.1682,
+      "non_default_values": {
+        "x": "0.0",
+        "y": "0.0",
+        "z": "0.0",
+        "w": "1.0"
+      },
+      "id": 7
+    },
+    {
+      "class": "nodegraph.nodes.controlflow.InitializationNode",
+      "pos_x": 62.97821,
+      "pos_y": 896.1681,
+      "id": 8
+    },
+    {
+      "step_index": 0,
+      "use_agent": true,
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.controlflow.StepNode",
+      "pos_x": 63.673706,
+      "pos_y": 447.81506,
+      "id": 9
+    },
+    {
+      "variable_name": "neighbors",
+      "variable_type": "INT",
+      "variable_value": "0",
+      "class": "nodegraph.nodes.variables.DefineNode",
+      "pos_x": 270.67297,
+      "pos_y": 448.81506,
+      "id": 10
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 1383.6727,
+      "pos_y": 696.81604,
+      "id": 11
+    },
+    {
+      "class": "nodegraph.nodes.logic.EqualNode",
+      "pos_x": 1384.403,
+      "pos_y": 786.65845,
+      "non_default_values": {
+        "B": "2"
+      },
+      "id": 12
+    },
+    {
+      "class": "nodegraph.nodes.logic.OrNode",
+      "pos_x": 1569.4019,
+      "pos_y": 795.65845,
+      "id": 13
+    },
+    {
+      "class": "nodegraph.nodes.logic.EqualNode",
+      "pos_x": 1382.4028,
+      "pos_y": 867.65845,
+      "non_default_values": {
+        "B": "3"
+      },
+      "id": 14
+    },
+    {
+      "type": "BOOL",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 1829.6709,
+      "pos_y": 778.81604,
+      "id": 15
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentWriteNode",
+      "pos_x": 2028.978,
+      "pos_y": 671.54016,
+      "id": 16
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1829.791,
+      "pos_y": 691.6615,
+      "id": 17
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1200.7925,
+      "pos_y": 694.6615,
+      "id": 18
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1329.6321,
+      "pos_y": -441.6919,
+      "id": 19
+    },
+    {
+      "variable_reference": 10,
+      "class": "nodegraph.nodes.variables.VariableReferenceNode",
+      "pos_x": 1182.6719,
+      "pos_y": 811.81604,
+      "id": 20
+    },
+    {
+      "class": "nodegraph.nodes.random.RandomBoolNode",
+      "pos_x": 1825.0,
+      "pos_y": 904.0,
+      "id": 21
+    },
+    {
+      "class": "nodegraph.SequenceNode",
+      "pos_x": 686.42505,
+      "pos_y": 450.9016,
+      "id": 22
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1517.8391,
+      "pos_y": -443.35242,
+      "id": 23
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1885.8391,
+      "pos_y": -444.35242,
+      "id": 24
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1704.8391,
+      "pos_y": -483.35242,
+      "non_default_values": {
+        "y_pos": "-1"
+      },
+      "id": 25
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1703.8391,
+      "pos_y": -390.3526,
+      "non_default_values": {
+        "y_pos": "-1"
+      },
+      "id": 26
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2077.839,
+      "pos_y": -443.35242,
+      "id": 27
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2372.839,
+      "pos_y": -424.35254,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 28
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2538.8381,
+      "pos_y": -445.35242,
+      "id": 29
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1329.6318,
+      "pos_y": -315.6922,
+      "id": 30
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1517.8391,
+      "pos_y": -317.35272,
+      "id": 31
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1885.8391,
+      "pos_y": -318.35272,
+      "id": 32
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1703.8391,
+      "pos_y": -264.35284,
+      "non_default_values": {
+        "y_pos": "-1"
+      },
+      "id": 33
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2077.839,
+      "pos_y": -317.35272,
+      "id": 34
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2372.839,
+      "pos_y": -298.3526,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 35
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2538.8381,
+      "pos_y": -319.35272,
+      "id": 36
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1316.6321,
+      "pos_y": -177.69232,
+      "id": 37
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1504.8391,
+      "pos_y": -179.35284,
+      "id": 38
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1885.8391,
+      "pos_y": -194.35284,
+      "id": 39
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1699.8391,
+      "pos_y": -181.35321,
+      "non_default_values": {
+        "y_pos": "1"
+      },
+      "id": 40
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1698.8391,
+      "pos_y": -88.35303,
+      "non_default_values": {
+        "y_pos": "-1"
+      },
+      "id": 41
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2077.839,
+      "pos_y": -193.35284,
+      "id": 42
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2372.839,
+      "pos_y": -174.35284,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 43
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2538.8381,
+      "pos_y": -195.35284,
+      "id": 44
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1309.6321,
+      "pos_y": 150.30768,
+      "id": 45
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1497.8391,
+      "pos_y": 148.64716,
+      "id": 46
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1871.8391,
+      "pos_y": 138.64716,
+      "id": 47
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1689.8391,
+      "pos_y": 149.64679,
+      "non_default_values": {
+        "y_pos": "1"
+      },
+      "id": 48
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2063.839,
+      "pos_y": 139.64716,
+      "id": 49
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2358.839,
+      "pos_y": 158.64716,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 50
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2524.8381,
+      "pos_y": 137.64716,
+      "id": 51
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1312.6321,
+      "pos_y": 10.308105,
+      "id": 52
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1500.8391,
+      "pos_y": 8.647583,
+      "id": 53
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1876.8391,
+      "pos_y": 11.647583,
+      "id": 54
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1692.8391,
+      "pos_y": 10.647583,
+      "non_default_values": {
+        "y_pos": "-1"
+      },
+      "id": 55
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2068.839,
+      "pos_y": 12.647583,
+      "id": 56
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2363.839,
+      "pos_y": 31.64746,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 57
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2529.8381,
+      "pos_y": 10.647583,
+      "id": 58
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1305.7509,
+      "pos_y": 423.90723,
+      "id": 59
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1493.9589,
+      "pos_y": 422.2467,
+      "id": 60
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1861.959,
+      "pos_y": 421.24658,
+      "id": 61
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1679.959,
+      "pos_y": 475.2467,
+      "non_default_values": {
+        "y_pos": "1"
+      },
+      "id": 62
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2047.9595,
+      "pos_y": 423.2467,
+      "id": 63
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2342.959,
+      "pos_y": 442.2467,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 64
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2508.9548,
+      "pos_y": 421.24658,
+      "id": 65
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1298.7511,
+      "pos_y": 561.9081,
+      "id": 66
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1486.9589,
+      "pos_y": 560.24744,
+      "id": 67
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1852.959,
+      "pos_y": 549.24756,
+      "id": 68
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1674.9592,
+      "pos_y": 560.2472,
+      "non_default_values": {
+        "y_pos": "1"
+      },
+      "id": 69
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1674.959,
+      "pos_y": 573.24817,
+      "non_default_values": {
+        "y_pos": "1"
+      },
+      "id": 70
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2044.9595,
+      "pos_y": 550.24744,
+      "id": 71
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2339.958,
+      "pos_y": 569.2479,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 72
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2505.955,
+      "pos_y": 548.2478,
+      "id": 73
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1304.7511,
+      "pos_y": 286.90533,
+      "id": 74
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 1492.9591,
+      "pos_y": 285.24493,
+      "id": 75
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.XYToIndex",
+      "pos_x": 1863.9587,
+      "pos_y": 286.24487,
+      "id": 76
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1684.959,
+      "pos_y": 286.2453,
+      "non_default_values": {
+        "y_pos": "-1"
+      },
+      "id": 77
+    },
+    {
+      "output_type": "INT",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1683.959,
+      "pos_y": 379.24524,
+      "non_default_values": {
+        "y_pos": "1"
+      },
+      "id": 78
+    },
+    {
+      "agent_reference": 1,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 2055.9595,
+      "pos_y": 287.24493,
+      "id": 79
+    },
+    {
+      "type": "INT",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 2350.9587,
+      "pos_y": 306.24463,
+      "non_default_values": {
+        "consequent": "1",
+        "alternate": "0"
+      },
+      "id": 80
+    },
+    {
+      "reference": 10,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2527.9543,
+      "pos_y": 286.24493,
+      "id": 81
+    },
+    {
+      "type": "VEC4",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 626.0,
+      "pos_y": 952.0,
+      "id": 82
+    }
+  ],
+  "links": [
+    {
+      "src": {
+        "node_id": 2,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 1,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 3,
+        "attribute_name": "random_bool"
+      },
+      "dst": {
+        "node_id": 1,
+        "attribute_name": "alive"
+      }
+    },
+    {
+      "src": {
+        "node_id": 8,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 4,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 82,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 4,
+        "attribute_name": "fragment_color"
+      }
+    },
+    {
+      "src": {
+        "node_id": 8,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 5,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 9,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 10,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 18,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 11,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 20,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 12,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 12,
+        "attribute_name": "Equal"
+      },
+      "dst": {
+        "node_id": 13,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 14,
+        "attribute_name": "Equal"
+      },
+      "dst": {
+        "node_id": 13,
+        "attribute_name": "B"
+      }
+    },
+    {
+      "src": {
+        "node_id": 20,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 14,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 11,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 15,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 13,
+        "attribute_name": "Or"
+      },
+      "dst": {
+        "node_id": 15,
+        "attribute_name": "consequent"
+      }
+    },
+    {
+      "src": {
+        "node_id": 14,
+        "attribute_name": "Equal"
+      },
+      "dst": {
+        "node_id": 15,
+        "attribute_name": "alternate"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_7"
+      },
+      "dst": {
+        "node_id": 16,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 16,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 15,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 16,
+        "attribute_name": "alive"
+      }
+    },
+    {
+      "src": {
+        "node_id": 10,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 22,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 19,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 23,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 25,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 24,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 26,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 24,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 23,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 25,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 23,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 26,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 24,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 27,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 27,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 28,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 29,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 28,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 29,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 30,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 31,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 31,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 32,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 33,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 32,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 31,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 33,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 32,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 34,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 34,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 35,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_0"
+      },
+      "dst": {
+        "node_id": 36,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 35,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 36,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 37,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 38,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 40,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 39,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 41,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 39,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 38,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 40,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 38,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 41,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 39,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 42,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 42,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 43,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_1"
+      },
+      "dst": {
+        "node_id": 44,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 43,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 44,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 45,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 46,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 48,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 47,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 46,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 47,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 46,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 48,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 47,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 49,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 49,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 50,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_3"
+      },
+      "dst": {
+        "node_id": 51,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 50,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 51,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 52,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 53,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 55,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 54,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 53,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 54,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 53,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 55,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 54,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 56,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 56,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 57,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_2"
+      },
+      "dst": {
+        "node_id": 58,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 57,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 58,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 59,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 60,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 60,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 61,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 62,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 61,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 60,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 62,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 61,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 63,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 63,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 64,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_5"
+      },
+      "dst": {
+        "node_id": 65,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 64,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 65,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 66,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 67,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 69,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 68,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 70,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 68,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 67,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 69,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 67,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 70,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 68,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 71,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 71,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 72,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_6"
+      },
+      "dst": {
+        "node_id": 73,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 72,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 73,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 74,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 75,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 77,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 76,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 78,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 76,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 75,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 77,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 75,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 78,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 76,
+        "attribute_name": "index"
+      },
+      "dst": {
+        "node_id": 79,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 79,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 80,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 22,
+        "attribute_name": "step_4"
+      },
+      "dst": {
+        "node_id": 81,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 80,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 81,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 5,
+        "attribute_name": "alive"
+      },
+      "dst": {
+        "node_id": 82,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 6,
+        "attribute_name": "vec4"
+      },
+      "dst": {
+        "node_id": 82,
+        "attribute_name": "consequent"
+      }
+    },
+    {
+      "src": {
+        "node_id": 7,
+        "attribute_name": "vec4"
+      },
+      "dst": {
+        "node_id": 82,
+        "attribute_name": "alternate"
+      }
+    }
+  ]
+}

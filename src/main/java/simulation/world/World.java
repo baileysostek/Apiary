@@ -59,6 +59,7 @@ public abstract class World extends GLStruct {
     protected abstract int generateGeometryShader(boolean is_read);
     protected abstract int generateFragmentShader(boolean is_read);
 
+    public abstract void update(double delta);
     public abstract void render();
 
     @Override

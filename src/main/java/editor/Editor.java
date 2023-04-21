@@ -74,7 +74,7 @@ public class Editor {
     private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
-    private static String save_file = "simulations/gol_test.jsonc";
+    private static String save_file = "simulations/boids.jsonc";
 
     private Editor(){
         // Initialize the other singletons that we need
@@ -429,9 +429,11 @@ public class Editor {
         if(!SimulationManager.getInstance().hasActiveSimulation()){
             // Predict memory usage
             LinkedList<Node> agent_nodes = this.graph.getNodesOfType(AgentNode.class);
-            for(Node node : agent_nodes){
-                AgentNode agent_node = (AgentNode) node;
-                predicted_memory += (agent_node.getBufferSizeInBytes() * (agent_node.overridesInstances() ? agent_node.getAgentInstances() : this.getAllocatedScreenSize()));
+            if(agent_nodes != null) {
+                for (Node node : agent_nodes) {
+                    AgentNode agent_node = (AgentNode) node;
+                    predicted_memory += (agent_node.getBufferSizeInBytes() * (agent_node.overridesInstances() ? agent_node.getAgentInstances() : this.getAllocatedScreenSize()));
+                }
             }
         }
         String predicted_memory_string = numBytesToString(predicted_memory);

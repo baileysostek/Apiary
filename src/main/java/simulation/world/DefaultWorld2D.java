@@ -18,8 +18,12 @@ public class DefaultWorld2D extends World{
         1.0f,  1.0f, 0.0f
     };
 
-    public DefaultWorld2D(String name) {
-        super(name, new JsonObject(), GL43.GL_TRIANGLES);
+    public DefaultWorld2D(JsonObject world_initialization_data) {
+        super(
+            world_initialization_data.has("simulation_name") ? world_initialization_data.get("simulation_name").getAsString() : "Unnamed Simulation",
+            world_initialization_data.has("arguments") ? world_initialization_data.get("arguments").getAsJsonObject() : world_initialization_data,
+            GL43.GL_TRIANGLES
+        );
 
         this.vao = new VAO();
         this.vao.bind();
@@ -46,6 +50,11 @@ public class DefaultWorld2D extends World{
     @Override
     public int generateFragmentShader(boolean is_odd) {
         return ShaderManager.getInstance().getDefaultFragmentShader();
+    }
+
+    @Override
+    public void update(double delta) {
+
     }
 
     @Override
