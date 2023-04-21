@@ -3,6 +3,7 @@ package simulation;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import graphics.*;
+import graphics.immediate.LineRenderer;
 import graphics.texture.TextureManager;
 import input.Keyboard;
 import nodegraph.Node;
@@ -133,6 +134,9 @@ public class SimulationManager {
 
             ShaderManager.getInstance().bindUniforms();
             simulation.render();
+
+            // All immediate Mode Graphics stuff
+            LineRenderer.getInstance().render();
 
             fbo.unbindFrameBuffer();
         }

@@ -3,6 +3,7 @@ package core;
 import com.google.gson.JsonObject;
 import editor.Editor;
 import graphics.ShaderManager;
+import graphics.immediate.LineRenderer;
 import graphics.texture.TextureManager;
 import graphics.ui.FontLoader;
 import input.Keyboard;
@@ -67,6 +68,7 @@ public class Apiary {
         FileManager.initialize();
         JsonUtils.initialize();
         ShaderManager.initialize();
+        LineRenderer.initialize();
         TextureManager.initialize();
         GLSLCompiler.initialize();
         SimulationManager.initialize();
@@ -173,8 +175,10 @@ public class Apiary {
     }
 
     private void render(){
+        // Render the simulation itself
         SimulationManager.getInstance().render();
 
+        // Render the UI and controls.
         Editor.getInstance().render();
     }
 

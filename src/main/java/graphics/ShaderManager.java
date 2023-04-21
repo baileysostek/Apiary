@@ -440,7 +440,7 @@ public class ShaderManager {
         this.allocated_programs.remove(id);
     }
 
-    public int generateVertexShader(JsonElement pegs_data, boolean is_read){
+    public int generateVertexShaderFromPegs(JsonElement pegs_data, boolean is_read){
         // Clear the state of the required imports in the PegManager. This way we only import what is needed.
         GLSLCompiler.getInstance().clearPersistentData();
 

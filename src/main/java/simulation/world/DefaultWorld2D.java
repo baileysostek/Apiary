@@ -53,6 +53,11 @@ public class DefaultWorld2D extends World{
     }
 
     @Override
+    public void update(double delta) {
+
+    }
+
+    @Override
     public void render() {
         // Clear the Screen
         GL43.glClearColor(1f, 1f, 1f, 1.0f);

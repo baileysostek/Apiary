@@ -195,6 +195,7 @@ public class Simulation {
     }
 
     public void update(double delta){
+        simulation_world.update(delta);
         // Execute compute
         if(simulation_time >= simulation_target_time) {
             simulation_time -= simulation_target_time;

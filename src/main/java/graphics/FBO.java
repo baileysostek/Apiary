@@ -81,7 +81,7 @@ public class FBO {
         }
         GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, framebufferID);
         bufferStack.push(framebufferID);
-        GL46.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        GL46.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         GL46.glClear(GL46.GL_COLOR_BUFFER_BIT | GL46.GL_DEPTH_BUFFER_BIT | GL46.GL_STENCIL_BUFFER_BIT);
         double[] buffer = new double[4];
         GL46.glGetDoublev(GL46.GL_VIEWPORT, buffer);
