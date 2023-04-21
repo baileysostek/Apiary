@@ -54,12 +54,11 @@ public class DefaultWorld3D extends World{
 
     @Override
     public int generateFragmentShader(boolean is_odd) {
-        return ShaderManager.getInstance().getDefaultFragmentShader();
-//        if(!this.arguments.has("fragment_logic")){
-//            System.err.println("Error: no member \"fragment_logic\" exists in the arguments of this simulation's definition file.");
-//            return ShaderManager.getInstance().getDefaultFragmentShader();
-//        }
-//        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"), is_odd);
+        if(!this.arguments.has("fragment_logic")){
+            System.err.println("Error: no member \"fragment_logic\" exists in the arguments of this simulation's definition file.");
+            return ShaderManager.getInstance().getDefaultFragmentShader();
+        }
+        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"), is_odd);
     }
 
     @Override
@@ -85,7 +84,7 @@ public class DefaultWorld3D extends World{
     @Override
     public void render() {
         // Clear the Screen
-        GL43.glClearColor(1f, 1f, 1f, 1.0f);
+        GL43.glClearColor(0f, 0f, 0f, 1.0f);
         GL43.glClear(GL43.GL_COLOR_BUFFER_BIT);
 
         // This stage renders an input image to the screen.

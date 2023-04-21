@@ -2,11 +2,13 @@ package graphics;
 
 import com.google.gson.JsonElement;
 import core.Apiary;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.ATIMeminfo;
 import org.lwjgl.opengl.GL43;
 import compiler.GLSLCompiler;
 import org.lwjgl.opengl.NVXGPUMemoryInfo;
 import simulation.SimulationManager;
+import util.MathUtil;
 import util.StringUtils;
 
 import java.util.*;
@@ -56,6 +58,13 @@ public class ShaderManager {
     private final Uniform u_window_size;
     private final Uniform u_aspect_ratio;
 
+    //TODO move to CameraManager classs.
+    private final Uniform u_projection_matrix;
+    private final float[] u_projection_matrix_data = new float[16];
+    private final Uniform u_view_matrix;
+    private final Matrix4f view_matrix = new Matrix4f().identity();
+    private final float[] u_view_matrix_data = new float[16];
+
     private HashMap<String, GLDataType> type_mapping = new HashMap<>();
 
     private ShaderManager() {
@@ -97,14 +106,29 @@ public class ShaderManager {
         this.u_window_size = this.createUniform("u_window_size", GLDataType.VEC2);
         this.u_aspect_ratio = this.createUniform("u_aspect_ratio", GLDataType.FLOAT);
 
+        this.u_projection_matrix = this.createUniform("u_projection_matrix", GLDataType.MAT4);
+        MathUtil.createProjectionMatrix(u_projection_matrix_data, 70.0f, Apiary.getAspectRatio(), 0.1f, 1024.0f);
+        this.u_projection_matrix.set(u_projection_matrix_data);
+
+        this.u_view_matrix = this.createUniform("u_view_matrix", GLDataType.MAT4);
+        this.view_matrix.translate(0, 0, -3);
+        this.u_view_matrix.set(
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        );
+
         // Here we setup our default shaders.
         String default_vertex_source =
             generateVersionString() +
             "layout (location = 0) in vec3 position;\n" +
+            "uniform mat4 u_projection_matrix;\n" +
+            "uniform mat4 u_view_matrix;\n" +
             "out vec3 pass_position;\n" +
             "void main(void){\n" +
             "pass_position = position;\n" +
-            "gl_Position = vec4(position, 1.0);\n" +
+            "gl_Position = u_projection_matrix * u_view_matrix * vec4(position, 1.0);\n" +
             "}\n";
         DEFAULT_VERTEX_SHADER = compileShader(GL43.GL_VERTEX_SHADER, default_vertex_source);
         reserved_shaders.add(DEFAULT_VERTEX_SHADER);
@@ -337,6 +361,15 @@ public class ShaderManager {
                 if (SimulationManager.getInstance().hasActiveSimulation()) {
                     this.u_window_size.set(SimulationManager.getInstance().getActiveSimulation().getWorldWidth(), SimulationManager.getInstance().getActiveSimulation().getWorldHeight());
                     this.u_aspect_ratio.set((float) SimulationManager.getInstance().getActiveSimulation().getWorldWidth() / (float) SimulationManager.getInstance().getActiveSimulation().getWorldHeight());
+
+                    // Update Projection Matrix
+                    MathUtil.createProjectionMatrix(u_projection_matrix_data, 70.0f, Apiary.getAspectRatio(), 0.1f, 1024.0f);
+                    this.u_projection_matrix.set(u_projection_matrix_data);
+
+                    this.view_matrix.rotate((float) (-1.0f * delta), 0, 1, 0);
+                    this.view_matrix.get(u_view_matrix_data);
+                    this.u_view_matrix.set(u_view_matrix_data);
+
                     break has_sim;
                 }
             }

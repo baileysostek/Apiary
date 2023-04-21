@@ -121,7 +121,7 @@ public class MathUtil {
         return false;
     }
 
-    public static float[] createProjectionMatrix(float FOV, float aspectRatio, float near, float far) {
+    public static void createProjectionMatrix(float[] buffer, float FOV, float aspectRatio, float near, float far) {
         Matrix4f out = new Matrix4f();
 
         float y_scale = (float) ((1f / Math.tan(Math.toRadians(FOV / 2f))));
@@ -135,7 +135,7 @@ public class MathUtil {
         out.m32(-((2 * near * far) / frustumLength));
         out.m33(0);
 
-        return out.get(new float[16]);
+        out.get(buffer);
     }
 
     public static Matrix4f createProjectionMatrix(Matrix4f buffer, float FOV, float aspectRatio, float near, float far) {

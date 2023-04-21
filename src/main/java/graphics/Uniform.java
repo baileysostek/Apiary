@@ -65,10 +65,13 @@ public class Uniform {
                     case SAMPLER_3D:
                         break;
                     case MAT2:
+                        GL43.glUniformMatrix2fv(uniform_location, false, value);
                         break;
                     case MAT3:
+                        GL43.glUniformMatrix3fv(uniform_location, false, value);
                         break;
                     case MAT4:
+                        GL43.glUniformMatrix4fv(uniform_location, false, value);
                         break;
                     case BOOL:
                         break;

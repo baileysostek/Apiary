@@ -1,3 +1,5 @@
 /build/
 /.gradle/
 /.idea/
+screenshot_*.png
+hs_err_*.log

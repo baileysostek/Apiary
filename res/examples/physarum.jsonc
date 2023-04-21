@@ -1,6 +1,4 @@
 {
-  "width": 20000,
-  "height": 20000,
   "nodes": [
     {
       "agent_name": "pheromone",
