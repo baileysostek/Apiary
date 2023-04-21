@@ -81,10 +81,7 @@ public class SSBO extends GLStruct{
 
         this.capacity = number_of_agents;
         int bytes = this.computeSizeInBytes(); // Check if this is a multiple of 4
-        int offset = 0;
-        if (!MathUtil.isFactorOf(bytes, 16)) {
-            offset = bytes < 8 ? MathUtil.computeAlignment(bytes, 4) : MathUtil.computeAlignment(bytes, 16);
-        }
+        int offset = bytes <= 4 ? MathUtil.computeAlignment(bytes, 4) : MathUtil.computeAlignment(bytes, 16);
         buffer_size = ( (bytes + offset) * capacity);
         System.out.println(String.format("Buffer Size:%s Larger than int:%s", buffer_size, buffer_size > Integer.MAX_VALUE));
     }

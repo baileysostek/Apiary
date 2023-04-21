@@ -56,6 +56,8 @@ public class AgentNode extends Node {
             }
         }
 
+        super.forceRenderInflow();
+
         super.setWidth(256);
     }
 
@@ -123,6 +125,8 @@ public class AgentNode extends Node {
                 if(ImGui.inputText("##"+attribute.id, attribute.attribute_name, ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.AutoSelectAll)){
                     String new_name = attribute.attribute_name.get();
                     super.renameAttribute(initial_name, new_name);
+                    this.attributes.put(new_name, this.attributes.get(initial_name));
+                    this.attributes.remove(initial_name);
                 }
                 ImGui.popItemWidth();
                 ImGui.sameLine();
@@ -180,6 +184,7 @@ public class AgentNode extends Node {
 
         public void setType(GLDataType type){
             if(!this.type.equals(type)){
+                removePin(attribute_name.get());
                 AgentNode.this.addInputPin(attribute_name.get(), type);
                 this.type = type;
             }
