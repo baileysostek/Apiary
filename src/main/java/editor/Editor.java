@@ -74,7 +74,7 @@ public class Editor {
     private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
-    private static String save_file = "simulations/boids.jsonc";
+    private static String save_file = "examples/boids.jsonc";
 
     private Editor(){
         // Initialize the other singletons that we need

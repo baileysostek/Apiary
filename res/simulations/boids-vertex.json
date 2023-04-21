@@ -1,0 +1,47 @@
+{
+  "world":{
+    "name":"Boids",
+    "type":"AgentGrid2D",
+    "arguments":{
+      "vertex_logic":["gl_Position", ["vec4(", "boid", "instance_id", "pos", "@agent_read", ".xy, 0.0, 1.0)"], "@set"],
+      "fragment_logic":["out_color", ["pheromone", "fragment_index", "color", "@agent_read"], "@set"]
+    }
+  },
+  "agents":{
+    "boid":{
+      "instances": 100000000,
+      "attributes":{
+        "pos":{
+          "type":"vec2",
+          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
+        },
+        "vel":{
+          "type":"vec2",
+          "default_value":["@random_float", "0.5", "@sub", "100000.0", "@div", "@random_float", "0.5", "@sub", "100000.0", "@div", "@vec2"]
+        }
+      }
+    },
+    "pheromone":{
+      "attributes":{
+        "color":{
+          "type":"vec4",
+          "default_value":["0.0","0.0","0.0","1.0","@vec4"]
+        }
+      }
+    }
+  },
+  "textures":{
+    "color_buffer":{
+      "width":100,
+      "height":100
+    }
+  },
+  "steps":[
+    {
+      "logic":[
+        "boid", "fragment_index", "pos", [["boid", "fragment_index", "vel", "@agent_read"], ["boid", "fragment_index", "pos", "@agent_read"], "@add"], "@agent_write",
+        "pheromone", [["boid", "fragment_index", "pos.x", "@agent_read"], "u_window_size.x", "@get", "2.0", "@div", "@mul", ["boid", "fragment_index", "pos.y", "@agent_read"], "u_window_size.y", "@get", "2.0", "@div", "@mul", "@xy_to_screen_index"], "color", "vec4(1.0)", "@agent_write"
+      ]
+    }
+  ]
+}

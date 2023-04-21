@@ -532,6 +532,24 @@
       "pos_x": 2316.5889,
       "pos_y": 1601.8373,
       "id": 72
+    },
+    {
+      "agent_name": "asdfsa",
+      "agent_instances": 0,
+      "attributes": [
+        {
+          "name": "dfsdf",
+          "type": "SAMPLER_2D"
+        },
+        {
+          "name": "f",
+          "type": "FLOAT"
+        }
+      ],
+      "class": "nodegraph.nodes.agent.AgentNode",
+      "pos_x": 1885.0,
+      "pos_y": 577.0,
+      "id": 73
     }
   ],
   "links": [

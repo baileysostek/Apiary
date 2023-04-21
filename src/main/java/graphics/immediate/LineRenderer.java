@@ -1,8 +1,12 @@
 package graphics.immediate;
 
+import core.Apiary;
 import graphics.ShaderManager;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL43;
+import org.lwjgl.opengl.GL46;
+import util.MathUtil;
 
 public class LineRenderer {
 
@@ -20,12 +24,19 @@ public class LineRenderer {
 
     private int shader_program_id;
 
+    private Matrix4f projection_matrix = new Matrix4f().identity();
+    private float[] projection_matrix_array = new float[16];
+    private Matrix4f view_matrix = new Matrix4f().identity();
+    private float[] view_matrix_array = new float[16];
+
     private LineRenderer(){
         vao_id = GL43.glGenVertexArrays();
         vbo_id_positions = GL43.glGenBuffers();
         vbo_id_colors = GL43.glGenBuffers();
 
         this.reallocate(MAX_LINES);
+
+        MathUtil.createProjectionMatrix(projection_matrix, 70.0f, Apiary.getAspectRatio(), 0.1f, 1024.0f);
 
         shader_program_id = ShaderManager.getInstance().linkShader(
             ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER,
@@ -38,8 +49,8 @@ public class LineRenderer {
                 "out vec3 pass_color;\n" +
                 "void main(){\n" +
                 "pass_color = col;\n" +
-//                "gl_Position = projection * view * vec4(pos, 1.0);\n" +
-                "gl_Position = vec4(pos, 1.0);\n" +
+                "gl_Position = projection * view * vec4(pos, 1.0);\n" +
+//                "gl_Position = vec4(pos, 1.0);\n" +
                 "}\n"
             ),
             ShaderManager.getInstance().compileShader(GL43.GL_FRAGMENT_SHADER,
@@ -47,10 +58,12 @@ public class LineRenderer {
                 "in vec3 pass_color;\n" +
                 "out vec4 fragment_color;\n" +
                 "void main(){\n" +
-                "fragment_color = vec4(pass_color.rgb, 1.0);\n" +
+                "fragment_color = vec4(1.0);\n" +
                 "}\n"
             )
         );
+
+        view_matrix.translate(0, 0, -3);
 
         System.out.println(shader_program_id);
     }
@@ -64,6 +77,10 @@ public class LineRenderer {
         GL43.glBufferData(GL43.GL_ARRAY_BUFFER, lines, GL43.GL_STATIC_DRAW);
         GL43.glBindBuffer(GL43.GL_ARRAY_BUFFER, vbo_id_colors);
         GL43.glBufferData(GL43.GL_ARRAY_BUFFER, colors, GL43.GL_STATIC_DRAW);
+    }
+
+    public void drawLine(float start_x, float start_y, float start_z, float end_x, float end_y, float end_z){
+        drawLine(start_x, start_y, start_z, end_x, end_y, end_z, 1, 1, 1, 1, 1, 1);
     }
 
     // Methods for drawing lines
@@ -92,10 +109,12 @@ public class LineRenderer {
 
     public void render(){
 
+        // Update Projection Matrix
+        MathUtil.createProjectionMatrix(projection_matrix, 70.0f, Apiary.getAspectRatio(), 0.1f, 1024.0f);
+
         GL43.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
         GL43.glUseProgram(this.shader_program_id);
-        // TODO load camera junk in
 
         GL43.glBindVertexArray(this.vao_id);
         GL43.glBindBuffer(GL43.GL_ARRAY_BUFFER, vbo_id_positions);
@@ -105,6 +124,13 @@ public class LineRenderer {
         GL43.glBindBuffer(GL43.GL_ARRAY_BUFFER, vbo_id_colors);
         GL43.glBufferData(GL43.GL_ARRAY_BUFFER, colors, GL43.GL_STATIC_DRAW);
         GL43.glVertexAttribPointer(1, 3, GL43.GL_FLOAT, false, 0, 0);
+
+        // Load Uniforms into this shader
+        projection_matrix.get(projection_matrix_array);
+        view_matrix.get(view_matrix_array);
+
+        GL46.glUniformMatrix4fv(GL46.glGetUniformLocation(shader_program_id, "projection"),false, projection_matrix_array);
+        GL46.glUniformMatrix4fv(GL46.glGetUniformLocation(shader_program_id, "view"), false, view_matrix_array);
 
         GL43.glEnableVertexAttribArray(0);
         GL43.glEnableVertexAttribArray(1);

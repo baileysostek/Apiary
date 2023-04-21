@@ -54,17 +54,32 @@ public class DefaultWorld3D extends World{
 
     @Override
     public int generateFragmentShader(boolean is_odd) {
-        if(!this.arguments.has("fragment_logic")){
-            System.err.println("Error: no member \"fragment_logic\" exists in the arguments of this simulation's definition file.");
-            return ShaderManager.getInstance().getDefaultFragmentShader();
-        }
-        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"), is_odd);
+        return ShaderManager.getInstance().getDefaultFragmentShader();
+//        if(!this.arguments.has("fragment_logic")){
+//            System.err.println("Error: no member \"fragment_logic\" exists in the arguments of this simulation's definition file.");
+//            return ShaderManager.getInstance().getDefaultFragmentShader();
+//        }
+//        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"), is_odd);
     }
 
     @Override
     public void update(double delta) {
-        LineRenderer.getInstance().drawLine(0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1);
-        LineRenderer.getInstance().drawLine((float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random(), 1, 1, 1, 1, 1, 1);
+
+        LineRenderer.getInstance().drawLine(-1, -1, -1, 1, -1, -1);
+        LineRenderer.getInstance().drawLine( 1, -1, -1, 1,  1, -1);
+        LineRenderer.getInstance().drawLine( 1,  1, -1,-1,  1, -1);
+        LineRenderer.getInstance().drawLine(-1,  1, -1,-1, -1, -1);
+
+        LineRenderer.getInstance().drawLine(-1, -1,  1, 1, -1,  1);
+        LineRenderer.getInstance().drawLine( 1, -1,  1, 1,  1,  1);
+        LineRenderer.getInstance().drawLine( 1,  1,  1,-1,  1,  1);
+        LineRenderer.getInstance().drawLine(-1,  1,  1,-1, -1,  1);
+
+        LineRenderer.getInstance().drawLine(-1, -1,  -1,-1, -1,  1);
+        LineRenderer.getInstance().drawLine( 1, -1,  -1, 1, -1,  1);
+        LineRenderer.getInstance().drawLine( 1,  1,  -1, 1,  1,  1);
+        LineRenderer.getInstance().drawLine(-1,  1,  -1,-1,  1,  1);
+
     }
 
     @Override

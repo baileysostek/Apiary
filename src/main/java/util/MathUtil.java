@@ -1,5 +1,6 @@
 package util;
 
+import org.joml.Matrix4f;
 import org.joml.Vector2i;
 
 import java.util.*;
@@ -118,5 +119,39 @@ public class MathUtil {
             }
         }
         return false;
+    }
+
+    public static float[] createProjectionMatrix(float FOV, float aspectRatio, float near, float far) {
+        Matrix4f out = new Matrix4f();
+
+        float y_scale = (float) ((1f / Math.tan(Math.toRadians(FOV / 2f))));
+        float x_scale = y_scale / aspectRatio;
+        float frustumLength = far - near;
+
+        out.m00(x_scale);
+        out.m11(y_scale);
+        out.m22(-((far + near) / frustumLength));
+        out.m23(-1);
+        out.m32(-((2 * near * far) / frustumLength));
+        out.m33(0);
+
+        return out.get(new float[16]);
+    }
+
+    public static Matrix4f createProjectionMatrix(Matrix4f buffer, float FOV, float aspectRatio, float near, float far) {
+        buffer.identity();
+
+        float y_scale = (float) ((1f / Math.tan(Math.toRadians(FOV / 2f))));
+        float x_scale = y_scale / aspectRatio;
+        float frustumLength = far - near;
+
+        buffer.m00(x_scale);
+        buffer.m11(y_scale);
+        buffer.m22(-((far + near) / frustumLength));
+        buffer.m23(-1);
+        buffer.m32(-((2 * near * far) / frustumLength));
+        buffer.m33(0);
+
+        return buffer;
     }
 }
