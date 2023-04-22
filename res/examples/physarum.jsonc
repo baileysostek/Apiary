@@ -112,6 +112,7 @@
     {
       "step_index": 1,
       "use_agent": true,
+      "agent_reference": 7,
       "class": "nodegraph.nodes.controlflow.StepNode",
       "pos_x": -1.0,
       "pos_y": 922.0,

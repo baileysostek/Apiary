@@ -1,5 +1,6 @@
 package graphics;
 
+import camera.ViewMode;
 import com.google.gson.JsonElement;
 import core.Apiary;
 import org.joml.Matrix4f;
@@ -65,6 +66,10 @@ public class ShaderManager {
     private final Matrix4f view_matrix = new Matrix4f().identity();
     private final float[] u_view_matrix_data = new float[16];
 
+    // 0 - 2D
+    // 1 - 3D
+    private final Uniform u_view_mode;
+
     private HashMap<String, GLDataType> type_mapping = new HashMap<>();
 
     private ShaderManager() {
@@ -119,16 +124,19 @@ public class ShaderManager {
             0.0f, 0.0f, 0.0f, 1.0f
         );
 
+        this.u_view_mode = this.createUniform("u_view_mode", GLDataType.INT);
+
         // Here we setup our default shaders.
         String default_vertex_source =
             generateVersionString() +
             "layout (location = 0) in vec3 position;\n" +
             "uniform mat4 u_projection_matrix;\n" +
             "uniform mat4 u_view_matrix;\n" +
+            "uniform int u_view_mode;\n" +
             "out vec3 pass_position;\n" +
             "void main(void){\n" +
             "pass_position = position;\n" +
-            "gl_Position = u_projection_matrix * u_view_matrix * vec4(position, 1.0);\n" +
+            "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(position, 1.0)) : vec4(position, 1.0);\n" +
             "}\n";
         DEFAULT_VERTEX_SHADER = compileShader(GL43.GL_VERTEX_SHADER, default_vertex_source);
         reserved_shaders.add(DEFAULT_VERTEX_SHADER);
@@ -630,5 +638,9 @@ public class ShaderManager {
 
     public Collection<String> getRegisteredUniforms() {
         return this.uniforms.keySet();
+    }
+
+    public void setViewMode(ViewMode view_mode){
+        this.u_view_mode.set(view_mode.getViewMode());
     }
 }

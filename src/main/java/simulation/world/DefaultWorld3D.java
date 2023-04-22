@@ -1,5 +1,6 @@
 package simulation.world;
 
+import camera.ViewMode;
 import com.google.gson.JsonObject;
 import graphics.ShaderManager;
 import graphics.VAO;
@@ -42,6 +43,9 @@ public class DefaultWorld3D extends World{
     public int generateVertex(boolean is_odd) {
         if(!this.arguments.has("vertex_logic")){
             System.err.println("Error: no member \"vertex_logic\" exists in the arguments of this simulation's definition file.");
+            /**
+             * The default Vertex Shader in the 3D configuration will render a spinning cube on the screen with the simulation running in a plane inside of it.
+             */
             return ShaderManager.getInstance().getDefaultVertexShader();
         }
         return ShaderManager.getInstance().generateVertexShaderFromPegs(this.arguments.get("vertex_logic"), is_odd);
@@ -63,6 +67,8 @@ public class DefaultWorld3D extends World{
 
     @Override
     public void update(double delta) {
+
+        ShaderManager.getInstance().setViewMode(ViewMode.VIEW_3D);
 
         LineRenderer.getInstance().drawLine(-1, -1, -1, 1, -1, -1);
         LineRenderer.getInstance().drawLine( 1, -1, -1, 1,  1, -1);

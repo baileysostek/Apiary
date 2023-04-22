@@ -14,12 +14,12 @@ import nodegraph.nodes.agent.AgentNode;
 import nodegraph.nodes.controlflow.InitializationNode;
 import nodegraph.nodes.controlflow.StepNode;
 import nodegraph.nodes.pipeline.FragmentLogicNode;
+import nodegraph.nodes.pipeline.VertexLogicNode;
 import nodegraph.nodes.variables.DefineNode;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 import nodegraph.pin.Pin;
 import simulation.SimulationManager;
-import simulation.world.AgentGrid2D;
 import simulation.world.DefaultWorld2D;
 import simulation.world.DefaultWorld3D;
 import simulation.world.World;
@@ -144,6 +144,22 @@ public class NodeGraph {
                 JsonArray fragment_logic = new JsonArray();
                 initializer.generateIntermediate(fragment_logic);
                 arguments.add("fragment_logic", fragment_logic);
+            }
+        }
+
+        if(hasNodesOfType(VertexLogicNode.class)){
+            // Serialize the node.
+            LinkedList<Node> vertex_nodes = getNodesOfType(VertexLogicNode.class);
+            // There should only be one fragment node.
+            if(vertex_nodes != null && vertex_nodes.size() > 0) {
+                VertexLogicNode vertex_logic_node = (VertexLogicNode) vertex_nodes.getFirst();
+                Node initializer = getSource(vertex_logic_node);
+                if (initializer instanceof InitializationNode) {
+                    // We have an initialization node which leads to the fragment logic, lets serialize that data.
+                    JsonArray vertex_logic = new JsonArray();
+                    initializer.generateIntermediate(vertex_logic);
+                    arguments.add("vertex_logic", vertex_logic);
+                }
             }
         }
         world.add("arguments", arguments);

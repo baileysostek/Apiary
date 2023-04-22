@@ -14,7 +14,6 @@ import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
-import simulation.world.AgentGrid2D;
 import simulation.world.World;
 import simulation.world.DefaultWorld2D;
 import util.JsonUtils;

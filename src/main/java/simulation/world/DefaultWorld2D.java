@@ -1,5 +1,7 @@
 package simulation.world;
 
+import camera.ViewMode;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import graphics.ShaderManager;
 import graphics.VAO;
@@ -20,9 +22,9 @@ public class DefaultWorld2D extends World{
 
     public DefaultWorld2D(JsonObject world_initialization_data) {
         super(
-            world_initialization_data.has("simulation_name") ? world_initialization_data.get("simulation_name").getAsString() : "Unnamed Simulation",
-            world_initialization_data.has("arguments") ? world_initialization_data.get("arguments").getAsJsonObject() : world_initialization_data,
-            GL43.GL_TRIANGLES
+                world_initialization_data.has("simulation_name") ? world_initialization_data.get("simulation_name").getAsString() : "Unnamed Simulation",
+                world_initialization_data.has("arguments") ? world_initialization_data.get("arguments").getAsJsonObject() : world_initialization_data,
+                GL43.GL_TRIANGLES
         );
 
         this.vao = new VAO();
@@ -44,17 +46,21 @@ public class DefaultWorld2D extends World{
 
     @Override
     public int generateGeometryShader(boolean is_odd) {
-        return ShaderManager.getInstance().getDefaultGeometryShader();
+        return -1;
     }
 
     @Override
     public int generateFragmentShader(boolean is_odd) {
-        return ShaderManager.getInstance().getDefaultFragmentShader();
+        if(!this.arguments.has("fragment_logic")){
+            System.err.println("Error: no member \"fragment_logic\" exists in the arguments of this simulation's definition file.");
+            return ShaderManager.getInstance().getDefaultFragmentShader();
+        }
+        return ShaderManager.getInstance().generateFragmentShaderFromPegs(this.arguments.get("fragment_logic"), is_odd);
     }
 
     @Override
     public void update(double delta) {
-
+        ShaderManager.getInstance().setViewMode(ViewMode.VIEW_2D);
     }
 
     @Override
@@ -65,7 +71,7 @@ public class DefaultWorld2D extends World{
 
         // This stage renders an input image to the screen.
         this.vao.bind();
-        GL43.glDrawArrays(this.getPrimitiveType(), 0, vertices.length / 3);
+        GL43.glDrawArrays(GL43.GL_TRIANGLES, 0, vertices.length / 3);
         this.vao.unbind();
         GL43.glUseProgram(0);
     }
