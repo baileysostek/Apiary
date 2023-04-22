@@ -15,6 +15,9 @@ public class WorldBoundaryNode extends Node {
     GLDataType target_type_vel = GLDataType.VEC2;
     OutflowPin out_vel;
 
+    // The mode we are operating in.
+    private WorldMode mode = WorldMode.WRAP;
+
     public WorldBoundaryNode(JsonObject initialization_data) {
         super(initialization_data);
 
@@ -42,6 +45,10 @@ public class WorldBoundaryNode extends Node {
             setVelType(other.getDataType());
         });
 
+        // Delta time
+
+        // Mode
+
     }
 
     private void setPosType(GLDataType type){
@@ -64,13 +71,26 @@ public class WorldBoundaryNode extends Node {
 
     @Override
     public void render() {
-        //TODO different types
+        // Render all of our inputs and outputs
         super.render();
-    }
 
+        // Render the dropdown of increment behaviors
+
+    }
     @Override
     public JsonElement getValueOfPin(OutflowPin outflow) {
         // BOUNCE Behavior
         return null;
+    }
+
+    private enum WorldMode{
+        WRAP("Wrap"),
+        BOUNCE("Bounce"),
+        RANDOM_VEL("Randomize Velocity");
+
+        String mode_name;
+        WorldMode(String mode_name){
+            this.mode_name = mode_name;
+        }
     }
 }
