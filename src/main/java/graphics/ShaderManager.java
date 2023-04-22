@@ -3,7 +3,9 @@ package graphics;
 import camera.ViewMode;
 import com.google.gson.JsonElement;
 import core.Apiary;
+import input.Keyboard;
 import org.joml.Matrix4f;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.ATIMeminfo;
 import org.lwjgl.opengl.GL43;
 import compiler.GLSLCompiler;
@@ -266,6 +268,12 @@ public class ShaderManager {
         // Allocate memory for the new shader program
         int shader_id   = GL43.glCreateShader(shader_type);
         this.allocated_shaders.add(shader_id);
+
+        //TODO debug
+        if(true){
+            StringUtils.write(precompiled_shader_source, "shaders/"+shader_type_name+"_"+System.currentTimeMillis()+".glsl");
+        }
+
         GL43.glShaderSource(shader_id, precompiled_shader_source);
         GL43.glCompileShader(shader_id);
         checkForError(String.format("Compiling %s Shader", shader_type_name));
@@ -374,9 +382,11 @@ public class ShaderManager {
                     MathUtil.createProjectionMatrix(u_projection_matrix_data, 70.0f, Apiary.getAspectRatio(), 0.1f, 1024.0f);
                     this.u_projection_matrix.set(u_projection_matrix_data);
 
-                    this.view_matrix.rotate((float) (-1.0f * delta), 0, 1, 0);
-                    this.view_matrix.get(u_view_matrix_data);
-                    this.u_view_matrix.set(u_view_matrix_data);
+                    if (Keyboard.getInstance().isKeyPressed(GLFW.GLFW_KEY_LEFT, GLFW.GLFW_KEY_RIGHT)) {
+                        this.view_matrix.rotate((float) ((Keyboard.getInstance().isKeyPressed(GLFW.GLFW_KEY_LEFT) ? -1.0f : 1.0) * delta), 0, 1, 0);
+                        this.view_matrix.get(u_view_matrix_data);
+                        this.u_view_matrix.set(u_view_matrix_data);
+                    }
 
                     break has_sim;
                 }
@@ -530,17 +540,22 @@ public class ShaderManager {
         String source =
             "{{shader_version}}" +
             "layout (location = 0) in vec3 position;\n" +
+            "uniform mat4 u_projection_matrix;\n" +
+            "uniform mat4 u_view_matrix;\n" +
+            "uniform int u_view_mode;\n" +
             "{{uniforms}}" +
             "out vec3 pass_position;\n" +
             "flat out int pass_instance_id;\n" +
             "{{includes}}" +
             "{{agents_ssbos}}" +
             "void main() {\n" +
-            "int instance_id = gl_InstanceID;\n" +
+            "int instance = gl_InstanceID;\n" +
+            "vec3 world_position = position;\n" +
             "{{include_in_main}}" +
-            "{{vertex_source}}"+
-            "pass_position = gl_Position.xyz;\n" +
-            "pass_instance_id = instance_id;\n" +
+            "{{vertex_source}}"+ // Vertex Source can modify world_position
+            "pass_position = world_position;\n" +
+            "pass_instance_id = instance;\n" +
+            "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(world_position, 1.0)) : vec4(world_position, 1.0);\n" +
             "}\n";
 
         return ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER, StringUtils.format(source, substitutions));

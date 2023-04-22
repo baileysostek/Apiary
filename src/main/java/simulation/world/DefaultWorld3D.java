@@ -11,14 +11,7 @@ public class DefaultWorld3D extends World{
 
     private final VAO vao;
 
-    float vertices[] = {
-        -1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-        1.0f,  1.0f, 0.0f
-    };
+    float vertices[] = {0.0f, 0.0f, 0.0f};
 
     public DefaultWorld3D(JsonObject world_initialization_data) {
         super(
@@ -95,9 +88,14 @@ public class DefaultWorld3D extends World{
 
         // This stage renders an input image to the screen.
         // Instead of rendering the screen we are going to render points based on something.
+//        this.vao.bind();
+//        GL43.glDrawArrays(GL43.GL_POINTS, 0, vertices.length);
+//        this.vao.unbind();
+
         this.vao.bind();
-        GL43.glDrawArrays(GL43.GL_TRIANGLES, 0, vertices.length / 3);
+        GL43.glDrawArraysInstanced(GL43.GL_POINTS, 0, 1, 100);
         this.vao.unbind();
+
         GL43.glUseProgram(0);
     }
 }

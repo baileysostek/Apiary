@@ -1,5 +1,7 @@
 /build/
 /.gradle/
 /.idea/
+/res/shaders
+/res/shaders/*
 screenshot_*.png
 hs_err_*.log

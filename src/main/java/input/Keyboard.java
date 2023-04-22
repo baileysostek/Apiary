@@ -163,9 +163,8 @@ public class Keyboard {
         return false;
     }
 
-    public boolean isKeyPressed(float key){
-        int iKey = (int)key;
-        return keys[iKey];
+    public boolean isKeyPressed(int key){
+        return keys[key];
     }
 
     public void removeCallback(IntConsumer callback) {

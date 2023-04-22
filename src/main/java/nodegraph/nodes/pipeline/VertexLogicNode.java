@@ -17,7 +17,7 @@ public class VertexLogicNode extends Node {
 
         super.setTitle("Vertex");
 
-        super.addInputPin("position", GLDataType.VEC4);
+        super.addInputPin("position", GLDataType.VEC3);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class VertexLogicNode extends Node {
 
     @Override
     public void transpile(JsonArray evaluation_stack) {
-        evaluation_stack.add("gl_Position");
+        evaluation_stack.add("world_position");
         super.transpile(evaluation_stack);
         evaluation_stack.add(FunctionDirective.SET.getNodeID());
     }

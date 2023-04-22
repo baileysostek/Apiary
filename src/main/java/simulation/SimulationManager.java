@@ -64,9 +64,6 @@ public class SimulationManager {
                 templates.add(world_child_class); // Populate our templates based on reflection.
             }
         }
-
-        System.out.println(templates);
-
     }
 
     public void load(String path){
