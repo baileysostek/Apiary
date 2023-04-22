@@ -2,25 +2,25 @@
   "nodes": [
     {
       "class": "nodegraph.nodes.pipeline.FragmentLogicNode",
-      "pos_x": 682.0,
-      "pos_y": 1257.0,
+      "pos_x": 610.0,
+      "pos_y": 2449.0,
       "id": 1
     },
     {
       "class": "nodegraph.nodes.controlflow.InitializationNode",
-      "pos_x": 231.0,
-      "pos_y": 1256.0,
+      "pos_x": 198.0,
+      "pos_y": 2451.0,
       "id": 2
     },
     {
       "class": "nodegraph.nodes.vector.Vec4Node",
-      "pos_x": 496.0,
-      "pos_y": 1343.0,
+      "pos_x": 424.0,
+      "pos_y": 2490.0,
       "non_default_values": {
-        "x": "1",
-        "y": "0",
-        "z": "0",
-        "w": "1"
+        "x": "1.0",
+        "y": "0.0",
+        "z": "0.0",
+        "w": "1.0"
       },
       "id": 3
     },
@@ -32,7 +32,7 @@
     },
     {
       "agent_name": "boid",
-      "agent_instances": 100,
+      "agent_instances": 10000,
       "attributes": [
         {
           "name": "pos",
@@ -44,154 +44,454 @@
         }
       ],
       "class": "nodegraph.nodes.agent.AgentNode",
-      "pos_x": 1238.0,
-      "pos_y": 175.0,
+      "pos_x": 1412.0,
+      "pos_y": 173.0,
       "id": 5
     },
     {
       "class": "nodegraph.nodes.vector.Vec3Node",
-      "pos_x": 515.0,
-      "pos_y": 245.0,
+      "pos_x": 629.0,
+      "pos_y": 246.0,
       "id": 6
     },
     {
       "class": "nodegraph.nodes.vector.Vec3Node",
-      "pos_x": 775.0,
-      "pos_y": 408.0,
+      "pos_x": 506.0,
+      "pos_y": 528.0,
       "id": 7
     },
     {
       "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 249.0,
-      "pos_y": 256.0,
+      "pos_x": 428.0,
+      "pos_y": 213.0,
       "id": 8
     },
     {
       "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 246.0,
-      "pos_y": 315.0,
+      "pos_x": 425.0,
+      "pos_y": 272.0,
       "id": 9
     },
     {
       "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 245.0,
-      "pos_y": 382.0,
+      "pos_x": 424.0,
+      "pos_y": 339.0,
       "id": 10
     },
     {
-      "class": "nodegraph.nodes.controlflow.InitializationNode",
-      "pos_x": 229.0,
-      "pos_y": 1057.0,
-      "id": 11
-    },
-    {
+      "agent_reference": 5,
       "class": "nodegraph.nodes.pipeline.VertexLogicNode",
-      "pos_x": 743.0,
-      "pos_y": 1057.0,
-      "id": 12
+      "pos_x": 726.0,
+      "pos_y": 2219.0,
+      "id": 11
     },
     {
       "agent_reference": 5,
       "class": "nodegraph.nodes.agent.AgentReadNode",
-      "pos_x": 415.0,
-      "pos_y": 1077.0,
-      "id": 13
+      "pos_x": 382.0,
+      "pos_y": 2272.0,
+      "id": 12
     },
     {
       "output_type": "VEC3",
       "class": "nodegraph.nodes.math.MulNode",
-      "pos_x": 702.0,
+      "pos_x": 802.0,
       "pos_y": 248.0,
       "non_default_values": {
         "y_pos": "2.0"
       },
-      "id": 14
+      "id": 13
     },
     {
       "output_type": "VEC3",
       "class": "nodegraph.nodes.math.SubNode",
-      "pos_x": 872.0,
-      "pos_y": 249.0,
+      "pos_x": 972.0,
+      "pos_y": 248.0,
       "non_default_values": {
         "y_pos": "1.0"
       },
+      "id": 14
+    },
+    {
+      "step_index": 1,
+      "use_agent": true,
+      "agent_reference": 5,
+      "class": "nodegraph.nodes.controlflow.StepNode",
+      "pos_x": 131.0,
+      "pos_y": 1812.0,
       "id": 15
+    },
+    {
+      "agent_reference": 5,
+      "class": "nodegraph.nodes.agent.AgentWriteNode",
+      "pos_x": 1835.0,
+      "pos_y": 1827.0,
+      "id": 16
+    },
+    {
+      "agent_reference": 5,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 350.0,
+      "pos_y": 1882.0,
+      "id": 17
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1044.0,
+      "pos_y": 1895.0,
+      "id": 18
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 833.0,
+      "pos_y": 1973.0,
+      "id": 19
+    },
+    {
+      "reference_uniform_name": "u_time_delta",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 459.0,
+      "pos_y": 1992.0,
+      "id": 20
+    },
+    {
+      "class": "nodegraph.nodes.random.RandomFloatNode",
+      "pos_x": 306.0,
+      "pos_y": 486.0,
+      "id": 21
+    },
+    {
+      "class": "nodegraph.nodes.controlflow.InitializationNode",
+      "pos_x": 174.0,
+      "pos_y": 2218.0,
+      "id": 22
+    },
+    {
+      "reference_uniform_name": "angle",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 456.46527,
+      "pos_y": 2077.4692,
+      "id": 23
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 641.4653,
+      "pos_y": 2036.4692,
+      "id": 24
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.SubNode",
+      "pos_x": 892.73315,
+      "pos_y": 2515.0564,
+      "non_default_values": {
+        "y_pos": "0.5"
+      },
+      "id": 25
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 1054.7332,
+      "pos_y": 2516.0564,
+      "non_default_values": {
+        "y_pos": "2.0"
+      },
+      "id": 26
     },
     {
       "step_index": 0,
       "use_agent": true,
       "agent_reference": 5,
       "class": "nodegraph.nodes.controlflow.StepNode",
-      "pos_x": 238.0,
-      "pos_y": 604.0,
-      "id": 16
+      "pos_x": -162.34885,
+      "pos_y": 973.5012,
+      "id": 27
     },
     {
       "agent_reference": 5,
-      "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 1262.0,
-      "pos_y": 609.0,
-      "id": 17
+      "class": "nodegraph.nodes.controlflow.ForEachNode",
+      "pos_x": 704.6511,
+      "pos_y": 969.5013,
+      "id": 28
+    },
+    {
+      "variable_name": "center_of_mass",
+      "variable_type": "VEC3",
+      "variable_value": "vec3(0,0,0)",
+      "class": "nodegraph.nodes.variables.DefineNode",
+      "pos_x": 216.02832,
+      "pos_y": 970.9777,
+      "id": 29
+    },
+    {
+      "class": "nodegraph.nodes.controlflow.ConditionalNode",
+      "pos_x": 1924.9814,
+      "pos_y": 962.48206,
+      "id": 30
     },
     {
       "agent_reference": 5,
       "class": "nodegraph.nodes.agent.AgentReadNode",
-      "pos_x": 437.0,
-      "pos_y": 674.0,
-      "id": 18
+      "pos_x": 846.51385,
+      "pos_y": 1109.5077,
+      "id": 31
+    },
+    {
+      "class": "nodegraph.nodes.logic.LessEqualNode",
+      "pos_x": 1532.9741,
+      "pos_y": 1051.9346,
+      "non_default_values": {
+        "B": ".1"
+      },
+      "id": 32
+    },
+    {
+      "reference": 34,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2127.5535,
+      "pos_y": 1001.43335,
+      "non_default_values": {
+        "value": "1.0"
+      },
+      "id": 33
+    },
+    {
+      "variable_name": "neighbors",
+      "variable_type": "FLOAT",
+      "variable_value": "0.0",
+      "class": "nodegraph.nodes.variables.DefineNode",
+      "pos_x": 26.953583,
+      "pos_y": 972.9657,
+      "id": 34
+    },
+    {
+      "reference": 29,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2329.5535,
+      "pos_y": 1001.43335,
+      "id": 35
     },
     {
       "output_type": "VEC3",
-      "class": "nodegraph.nodes.math.AddNode",
-      "pos_x": 963.0,
-      "pos_y": 692.0,
-      "id": 19
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 699.302,
+      "pos_y": 1383.7494,
+      "id": 36
     },
     {
-      "output_type": "VEC3",
-      "class": "nodegraph.nodes.math.MulNode",
-      "pos_x": 752.0,
-      "pos_y": 770.0,
-      "id": 20
+      "variable_reference": 29,
+      "class": "nodegraph.nodes.variables.VariableReferenceNode",
+      "pos_x": 509.3695,
+      "pos_y": 1341.5603,
+      "id": 37
     },
     {
-      "reference_uniform_name": "u_time_delta",
-      "class": "nodegraph.nodes.variables.UniformReferenceNode",
-      "pos_x": 546.0,
-      "pos_y": 784.0,
-      "id": 21
+      "variable_reference": 34,
+      "class": "nodegraph.nodes.variables.VariableReferenceNode",
+      "pos_x": 506.3695,
+      "pos_y": 1423.5603,
+      "id": 38
     },
     {
-      "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 518.0,
-      "pos_y": 500.0,
-      "id": 22
+      "agent_reference": 5,
+      "class": "nodegraph.nodes.agent.AgentWriteNode",
+      "pos_x": 1613.9133,
+      "pos_y": 1180.0507,
+      "id": 39
     },
     {
-      "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 522.0,
-      "pos_y": 374.0,
-      "id": 23
-    },
-    {
-      "class": "nodegraph.nodes.random.RandomFloatNode",
-      "pos_x": 519.0,
-      "pos_y": 433.0,
-      "id": 24
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1255.9706,
+      "pos_y": 1181.6421,
+      "id": 40
     },
     {
       "output_type": "VEC3",
       "class": "nodegraph.nodes.vector.NormalizeNode",
-      "pos_x": 945.0,
-      "pos_y": 406.0,
-      "id": 25
+      "pos_x": 880.9706,
+      "pos_y": 1381.6421,
+      "id": 41
     },
     {
-      "agent_reference": 5,
-      "class": "nodegraph.nodes.agent.AgentCountNode",
-      "pos_x": 968.0,
-      "pos_y": 964.0,
-      "id": 26
+      "class": "nodegraph.nodes.random.RandomFloatNode",
+      "pos_x": 303.0,
+      "pos_y": 552.0,
+      "id": 42
+    },
+    {
+      "class": "nodegraph.nodes.random.RandomFloatNode",
+      "pos_x": 304.0,
+      "pos_y": 619.0,
+      "id": 43
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.vector.NormalizeNode",
+      "pos_x": 846.44836,
+      "pos_y": 529.29285,
+      "id": 44
+    },
+    {
+      "class": "nodegraph.nodes.vector.AbsoluteDistanceNode",
+      "pos_x": 1325.9513,
+      "pos_y": 1053.1431,
+      "id": 45
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.SubNode",
+      "pos_x": 677.1137,
+      "pos_y": 529.45557,
+      "non_default_values": {
+        "y_pos": "0.5"
+      },
+      "id": 46
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 1144.1136,
+      "pos_y": 248.4556,
+      "non_default_values": {
+        "y_pos": "2.0"
+      },
+      "id": 47
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.ModNode",
+      "pos_x": 1410.7988,
+      "pos_y": 1896.5742,
+      "non_default_values": {
+        "B": "2.0"
+      },
+      "id": 48
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1239.7988,
+      "pos_y": 1894.5742,
+      "non_default_values": {
+        "y_pos": "1.0"
+      },
+      "id": 49
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.SubNode",
+      "pos_x": 1587.6418,
+      "pos_y": 1897.7178,
+      "non_default_values": {
+        "y_pos": "1.0"
+      },
+      "id": 50
+    },
+    {
+      "class": "nodegraph.nodes.logic.EqualNode",
+      "pos_x": 1298.8982,
+      "pos_y": 877.9673,
+      "id": 51
+    },
+    {
+      "class": "nodegraph.nodes.variables.common.InstanceNode",
+      "pos_x": 1092.223,
+      "pos_y": 833.6637,
+      "id": 52
+    },
+    {
+      "class": "nodegraph.nodes.logic.AndNode",
+      "pos_x": 1724.2897,
+      "pos_y": 963.66296,
+      "id": 53
+    },
+    {
+      "class": "nodegraph.nodes.logic.NotNode",
+      "pos_x": 1471.2897,
+      "pos_y": 877.66296,
+      "id": 54
+    },
+    {
+      "class": "nodegraph.nodes.logic.EqualNode",
+      "pos_x": 704.8982,
+      "pos_y": 1467.9673,
+      "non_default_values": {
+        "B": "0"
+      },
+      "id": 55
+    },
+    {
+      "type": "VEC3",
+      "class": "nodegraph.nodes.controlflow.TernaryNode",
+      "pos_x": 1437.5879,
+      "pos_y": 1241.7085,
+      "id": 56
+    },
+    {
+      "variable_name": "average_velocity",
+      "variable_type": "VEC3",
+      "variable_value": "vec3(0,0,0)",
+      "class": "nodegraph.nodes.variables.DefineNode",
+      "pos_x": 407.02832,
+      "pos_y": 970.9777,
+      "id": 57
+    },
+    {
+      "reference": 57,
+      "class": "nodegraph.nodes.variables.IncrementNode",
+      "pos_x": 2523.1724,
+      "pos_y": 1000.95435,
+      "id": 58
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 700.302,
+      "pos_y": 1297.7494,
+      "id": 59
+    },
+    {
+      "variable_reference": 57,
+      "class": "nodegraph.nodes.variables.VariableReferenceNode",
+      "pos_x": 510.3695,
+      "pos_y": 1255.5603,
+      "id": 60
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.vector.NormalizeNode",
+      "pos_x": 881.9706,
+      "pos_y": 1307.6421,
+      "id": 61
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.AddNode",
+      "pos_x": 1057.5363,
+      "pos_y": 1336.2661,
+      "id": 62
+    },
+    {
+      "output_type": "VEC3",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 1221.5363,
+      "pos_y": 1338.2661,
+      "non_default_values": {
+        "y_pos": "2.0"
+      },
+      "id": 63
+    },
+    {
+      "pos_type": "VEC3",
+      "vel_type": "VEC2",
+      "class": "nodegraph.nodes.optimizations.WorldBoundaryNode",
+      "pos_x": 1273.0002,
+      "pos_y": 2057.4763,
+      "id": 64
     }
   ],
   "links": [
@@ -227,8 +527,8 @@
     },
     {
       "src": {
-        "node_id": 15,
-        "attribute_name": "Sub"
+        "node_id": 47,
+        "attribute_name": "Div"
       },
       "dst": {
         "node_id": 5,
@@ -237,7 +537,7 @@
     },
     {
       "src": {
-        "node_id": 25,
+        "node_id": 44,
         "attribute_name": "Normalize"
       },
       "dst": {
@@ -277,7 +577,7 @@
     },
     {
       "src": {
-        "node_id": 23,
+        "node_id": 21,
         "attribute_name": "random_float"
       },
       "dst": {
@@ -287,7 +587,7 @@
     },
     {
       "src": {
-        "node_id": 24,
+        "node_id": 42,
         "attribute_name": "random_float"
       },
       "dst": {
@@ -297,7 +597,7 @@
     },
     {
       "src": {
-        "node_id": 22,
+        "node_id": 43,
         "attribute_name": "random_float"
       },
       "dst": {
@@ -307,31 +607,31 @@
     },
     {
       "src": {
-        "node_id": 11,
+        "node_id": 22,
         "attribute_name": "outflow"
       },
       "dst": {
-        "node_id": 12,
+        "node_id": 11,
         "attribute_name": "inflow"
       }
     },
     {
       "src": {
-        "node_id": 13,
+        "node_id": 12,
         "attribute_name": "pos"
       },
       "dst": {
-        "node_id": 12,
+        "node_id": 11,
         "attribute_name": "position"
       }
     },
     {
       "src": {
-        "node_id": 11,
+        "node_id": 22,
         "attribute_name": "instance"
       },
       "dst": {
-        "node_id": 13,
+        "node_id": 12,
         "attribute_name": "instance"
       }
     },
@@ -341,64 +641,84 @@
         "attribute_name": "vec3"
       },
       "dst": {
-        "node_id": 14,
+        "node_id": 13,
         "attribute_name": "x_pos"
       }
     },
     {
       "src": {
-        "node_id": 14,
+        "node_id": 13,
         "attribute_name": "Mul"
       },
       "dst": {
-        "node_id": 15,
+        "node_id": 14,
         "attribute_name": "x_pos"
       }
     },
     {
       "src": {
-        "node_id": 16,
+        "node_id": 15,
         "attribute_name": "outflow"
       },
       "dst": {
-        "node_id": 17,
+        "node_id": 16,
         "attribute_name": "inflow"
       }
     },
     {
       "src": {
+        "node_id": 15,
+        "attribute_name": "instance"
+      },
+      "dst": {
         "node_id": 16,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 50,
+        "attribute_name": "Sub"
+      },
+      "dst": {
+        "node_id": 16,
+        "attribute_name": "pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 15,
         "attribute_name": "instance"
       },
       "dst": {
         "node_id": 17,
         "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "pos"
+      },
+      "dst": {
+        "node_id": 18,
+        "attribute_name": "x_pos"
       }
     },
     {
       "src": {
         "node_id": 19,
-        "attribute_name": "Add"
+        "attribute_name": "Mul"
       },
       "dst": {
+        "node_id": 18,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
         "node_id": 17,
-        "attribute_name": "pos"
-      }
-    },
-    {
-      "src": {
-        "node_id": 16,
-        "attribute_name": "instance"
-      },
-      "dst": {
-        "node_id": 18,
-        "attribute_name": "instance"
-      }
-    },
-    {
-      "src": {
-        "node_id": 18,
-        "attribute_name": "pos"
+        "attribute_name": "vel"
       },
       "dst": {
         "node_id": 19,
@@ -407,7 +727,7 @@
     },
     {
       "src": {
-        "node_id": 20,
+        "node_id": 24,
         "attribute_name": "Mul"
       },
       "dst": {
@@ -417,21 +737,221 @@
     },
     {
       "src": {
-        "node_id": 18,
-        "attribute_name": "vel"
+        "node_id": 20,
+        "attribute_name": "output"
       },
       "dst": {
-        "node_id": 20,
+        "node_id": 24,
         "attribute_name": "x_pos"
       }
     },
     {
       "src": {
-        "node_id": 21,
+        "node_id": 23,
         "attribute_name": "output"
       },
       "dst": {
-        "node_id": 20,
+        "node_id": 24,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 25,
+        "attribute_name": "Sub"
+      },
+      "dst": {
+        "node_id": 26,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 57,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 28,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 34,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 29,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 28,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 30,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 53,
+        "attribute_name": "And"
+      },
+      "dst": {
+        "node_id": 30,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 27,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 31,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 45,
+        "attribute_name": "Absolute Distance"
+      },
+      "dst": {
+        "node_id": 32,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 30,
+        "attribute_name": "then"
+      },
+      "dst": {
+        "node_id": 33,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 27,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 34,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 33,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 35,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 28,
+        "attribute_name": "pos"
+      },
+      "dst": {
+        "node_id": 35,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 37,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 36,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 38,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 36,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 28,
+        "attribute_name": "then"
+      },
+      "dst": {
+        "node_id": 39,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 40,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 39,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 56,
+        "attribute_name": "Ternary"
+      },
+      "dst": {
+        "node_id": 39,
+        "attribute_name": "vel"
+      }
+    },
+    {
+      "src": {
+        "node_id": 36,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 41,
+        "attribute_name": "vector"
+      }
+    },
+    {
+      "src": {
+        "node_id": 46,
+        "attribute_name": "Sub"
+      },
+      "dst": {
+        "node_id": 44,
+        "attribute_name": "vector"
+      }
+    },
+    {
+      "src": {
+        "node_id": 28,
+        "attribute_name": "pos"
+      },
+      "dst": {
+        "node_id": 45,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 31,
+        "attribute_name": "pos"
+      },
+      "dst": {
+        "node_id": 45,
         "attribute_name": "y_pos"
       }
     },
@@ -441,8 +961,248 @@
         "attribute_name": "vec3"
       },
       "dst": {
-        "node_id": 25,
+        "node_id": 46,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 14,
+        "attribute_name": "Sub"
+      },
+      "dst": {
+        "node_id": 47,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 49,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 48,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 18,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 49,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 48,
+        "attribute_name": "mod"
+      },
+      "dst": {
+        "node_id": 50,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 52,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 51,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 28,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 51,
+        "attribute_name": "B"
+      }
+    },
+    {
+      "src": {
+        "node_id": 54,
+        "attribute_name": "Not"
+      },
+      "dst": {
+        "node_id": 53,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 32,
+        "attribute_name": "Less or Equal"
+      },
+      "dst": {
+        "node_id": 53,
+        "attribute_name": "B"
+      }
+    },
+    {
+      "src": {
+        "node_id": 51,
+        "attribute_name": "Equal"
+      },
+      "dst": {
+        "node_id": 54,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 38,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 55,
+        "attribute_name": "A"
+      }
+    },
+    {
+      "src": {
+        "node_id": 55,
+        "attribute_name": "Equal"
+      },
+      "dst": {
+        "node_id": 56,
+        "attribute_name": "condition"
+      }
+    },
+    {
+      "src": {
+        "node_id": 31,
+        "attribute_name": "vel"
+      },
+      "dst": {
+        "node_id": 56,
+        "attribute_name": "consequent"
+      }
+    },
+    {
+      "src": {
+        "node_id": 61,
+        "attribute_name": "Normalize"
+      },
+      "dst": {
+        "node_id": 56,
+        "attribute_name": "alternate"
+      }
+    },
+    {
+      "src": {
+        "node_id": 29,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 57,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 35,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 58,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 28,
+        "attribute_name": "vel"
+      },
+      "dst": {
+        "node_id": 58,
+        "attribute_name": "value"
+      }
+    },
+    {
+      "src": {
+        "node_id": 60,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 59,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 38,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 59,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 59,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 61,
         "attribute_name": "vector"
+      }
+    },
+    {
+      "src": {
+        "node_id": 61,
+        "attribute_name": "Normalize"
+      },
+      "dst": {
+        "node_id": 62,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 41,
+        "attribute_name": "Normalize"
+      },
+      "dst": {
+        "node_id": 62,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 62,
+        "attribute_name": "Add"
+      },
+      "dst": {
+        "node_id": 63,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "pos"
+      },
+      "dst": {
+        "node_id": 64,
+        "attribute_name": "input pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 17,
+        "attribute_name": "vel"
+      },
+      "dst": {
+        "node_id": 64,
+        "attribute_name": "input vel"
       }
     }
   ]

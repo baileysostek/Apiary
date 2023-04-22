@@ -1,0 +1,56 @@
+package util;
+
+public enum EnumInterpolation {
+    LINEAR(),
+    COSINE(),
+
+    // SIN
+    EASE_IN_SIN(),
+    EASE_OUT_SIN(),
+    EASE_IN_OUT_SIN(),
+
+    // QUADRATIC
+    EASE_IN_QUAD(),
+    EASE_OUT_QUAD(),
+    EASE_IN_OUT_QUAD(),
+
+    //CUBIC
+    EASE_IN_CUBIC(),
+    EASE_OUT_CUBIC(),
+    EASE_IN_OUT_CUBIC(),
+
+    //QUARTIC
+    EASE_IN_QUARTIC(),
+    EASE_OUT_QUARTIC(),
+    EASE_IN_OUT_QUARTIC(),
+
+    //QUINTIC
+    EASE_IN_QUINTIC(),
+    EASE_OUT_QUINTIC(),
+    EASE_IN_OUT_QUINTIC(),
+
+    //EXPONENTIAL
+    EASE_IN_EXPONENTIAL(),
+    EASE_OUT_EXPONENTIAL(),
+    EASE_IN_OUT_EXPONENTIAL(),
+
+    //CIRCULAR
+    EASE_IN_CIRCULAR(),
+    EASE_OUT_CIRCULAR(),
+    EASE_IN_OUT_CIRCULAR(),
+
+    //BACK
+    EASE_IN_BACK(),
+    EASE_OUT_BACK(),
+    EASE_IN_OUT_BACK(),
+
+    //ELASTIC
+    EASE_IN_ELASTIC(),
+    EASE_OUT_ELASTIC(),
+    EASE_IN_OUT_ELASTIC(),
+
+    //BOUNCE
+    EASE_IN_BOUNCE(),
+    EASE_OUT_BOUNCE(),
+    EASE_IN_OUT_BOUNCE(),
+}

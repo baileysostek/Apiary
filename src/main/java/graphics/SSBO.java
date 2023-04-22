@@ -73,17 +73,17 @@ public class SSBO extends GLStruct{
     public void allocate(int number_of_agents){
 
 //        // I am not sire if this memory alignement is needed at all.
-//        this.capacity = number_of_agents; //Temp
-//        int alignment_4 = 4 - (this.computeSizeInBytes() % 4);
-//        int alignment_16 = 16 - (this.computeSizeInBytes() % 16);
+        this.capacity = number_of_agents; //Temp
+        int alignment_4 = 4 - (this.computeSizeInBytes() % 4);
+        int alignment_16 = 16 - (this.computeSizeInBytes() % 16);
 //        buffer_size = ((long) (this.computeSizeInBytes()) * capacity); //TODO maybe remove?
-////        buffer_size = ((long) (this.computeSizeInBytes() + (this.computeSizeInBytes() < 4 ? alignment_4 : (this.computeSizeInBytes() == 4) ? 0 :alignment_16)) * capacity);
+        buffer_size = ((int) (this.computeSizeInBytes() + (this.computeSizeInBytes() < 4 ? alignment_4 : (this.computeSizeInBytes() == 4) ? 0 :alignment_16)) * capacity);
 
-        this.capacity = number_of_agents;
-        int bytes = this.computeSizeInBytes(); // Check if this is a multiple of 4
-        int offset = bytes <= 4 ? MathUtil.computeAlignment(bytes, 4) : MathUtil.computeAlignment(bytes, 16);
-        buffer_size = ( (bytes + offset) * capacity);
-        System.out.println(String.format("Buffer Size:%s Larger than int:%s", buffer_size, buffer_size > Integer.MAX_VALUE));
+//        this.capacity = number_of_agents;
+//        int bytes = this.computeSizeInBytes(); // Check if this is a multiple of 4
+//        int offset = bytes <= 4 ? MathUtil.computeAlignment(bytes, 4) : MathUtil.computeAlignment(bytes, 16);
+//        buffer_size = ( (bytes + offset) * capacity);
+//        System.out.println(String.format("Buffer Size:%s Larger than int:%s", buffer_size, buffer_size > Integer.MAX_VALUE));
     }
 
     private void bind(){

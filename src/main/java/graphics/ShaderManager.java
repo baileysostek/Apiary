@@ -119,12 +119,8 @@ public class ShaderManager {
 
         this.u_view_matrix = this.createUniform("u_view_matrix", GLDataType.MAT4);
         this.view_matrix.translate(0, 0, -3);
-        this.u_view_matrix.set(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f
-        );
+        this.view_matrix.get(u_view_matrix_data);
+        this.u_view_matrix.set(u_view_matrix_data);
 
         this.u_view_mode = this.createUniform("u_view_mode", GLDataType.INT);
 
@@ -132,13 +128,14 @@ public class ShaderManager {
         String default_vertex_source =
             generateVersionString() +
             "layout (location = 0) in vec3 position;\n" +
+            "uniform vec2 u_mouse_scroll;\n" +
             "uniform mat4 u_projection_matrix;\n" +
             "uniform mat4 u_view_matrix;\n" +
             "uniform int u_view_mode;\n" +
             "out vec3 pass_position;\n" +
             "void main(void){\n" +
             "pass_position = position;\n" +
-            "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(position, 1.0)) : vec4(position, 1.0);\n" +
+            "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(position * u_mouse_scroll.y, 1.0)) : vec4(position, 1.0);\n" +
             "}\n";
         DEFAULT_VERTEX_SHADER = compileShader(GL43.GL_VERTEX_SHADER, default_vertex_source);
         reserved_shaders.add(DEFAULT_VERTEX_SHADER);
@@ -270,9 +267,9 @@ public class ShaderManager {
         this.allocated_shaders.add(shader_id);
 
         //TODO debug
-        if(true){
-            StringUtils.write(precompiled_shader_source, "shaders/"+shader_type_name+"_"+System.currentTimeMillis()+".glsl");
-        }
+//        if(true){
+//            StringUtils.write(precompiled_shader_source, "shaders/"+shader_type_name+"_"+System.currentTimeMillis()+".glsl");
+//        }
 
         GL43.glShaderSource(shader_id, precompiled_shader_source);
         GL43.glCompileShader(shader_id);
@@ -540,6 +537,7 @@ public class ShaderManager {
         String source =
             "{{shader_version}}" +
             "layout (location = 0) in vec3 position;\n" +
+            "uniform vec2 u_mouse_scroll;\n" +
             "uniform mat4 u_projection_matrix;\n" +
             "uniform mat4 u_view_matrix;\n" +
             "uniform int u_view_mode;\n" +
@@ -555,7 +553,7 @@ public class ShaderManager {
             "{{vertex_source}}"+ // Vertex Source can modify world_position
             "pass_position = world_position;\n" +
             "pass_instance_id = instance;\n" +
-            "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(world_position, 1.0)) : vec4(world_position, 1.0);\n" +
+            "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(world_position * u_mouse_scroll.y, 1.0)) : vec4(world_position, 1.0);\n" +
             "}\n";
 
         return ShaderManager.getInstance().compileShader(GL43.GL_VERTEX_SHADER, StringUtils.format(source, substitutions));
@@ -577,7 +575,7 @@ public class ShaderManager {
         String agent_ssbos = "";
         HashMap<String, SSBO> required_agents = GLSLCompiler.getInstance().getRequiredAgents();
         for(String agent_name : required_agents.keySet()){
-            agent_ssbos += required_agents.get(agent_name).generateGLSL(!is_read);
+            agent_ssbos += required_agents.get(agent_name).generateGLSL(is_read);
         }
         substitutions.put("agents_ssbos", agent_ssbos);
 

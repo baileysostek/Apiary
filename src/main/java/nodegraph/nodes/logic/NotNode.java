@@ -8,6 +8,8 @@ import nodegraph.nodes.TemplateNode;
 public class NotNode extends TemplateNode {
 
     public NotNode(JsonObject initialization_data) {
-        super("Equal", FunctionDirective.EQUALS, GLDataType.BOOL, initialization_data);
+        super("Not", FunctionDirective.NOT, GLDataType.BOOL, initialization_data);
+
+        super.addInputPin("A", GLDataType.BOOL);
     }
 }

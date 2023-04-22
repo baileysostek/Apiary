@@ -7,20 +7,21 @@ import nodegraph.nodes.TemplateNode;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 
-public class AddNode extends TemplateNode {
+public class ModNode extends TemplateNode {
 
     GLDataType target_type = GLDataType.INT;
 
-    public AddNode(JsonObject initialization_data) {
-        super("Add", FunctionDirective.ADD, GLDataType.INT, initialization_data);
+    public ModNode(JsonObject initialization_data) {
+        super("mod", FunctionDirective.MOD, GLDataType.FLOAT, initialization_data);
+
+        // Still need to add our input values.
+        InflowPin input_x = addInputPin("A", GLDataType.INT, GLDataType.FLOAT, GLDataType.VEC2, GLDataType.VEC3, GLDataType.VEC4);
+        InflowPin input_y = addInputPin("B", GLDataType.INT, GLDataType.FLOAT, GLDataType.VEC2, GLDataType.VEC3, GLDataType.VEC4);
 
         if(initialization_data.has("output_type")){
             target_type = GLDataType.valueOf(initialization_data.get("output_type").getAsString());
             out.setType(target_type);
         }
-
-        InflowPin input_x = addInputPin("x_pos", GLDataType.INT , GLDataType.FLOAT, GLDataType.VEC2, GLDataType.VEC3, GLDataType.VEC4);
-        InflowPin input_y = addInputPin("y_pos", GLDataType.INT , GLDataType.FLOAT, GLDataType.VEC2, GLDataType.VEC3, GLDataType.VEC4);
 
         input_x.onConnect((OutflowPin other) -> {
             if(!input_y.isConnected()){
@@ -28,6 +29,7 @@ public class AddNode extends TemplateNode {
                 out.setType(target_type);
             }
         });
+
         input_y.onConnect((OutflowPin other) -> {
             if(!input_x.isConnected()){
                 target_type = other.getDataType();
@@ -45,11 +47,6 @@ public class AddNode extends TemplateNode {
 
     @Override
     public void render() {
-        // Render all of our inputs and outputs
         super.render();
-
-        // Render the dropdown of increment behaviors
-
-
     }
 }

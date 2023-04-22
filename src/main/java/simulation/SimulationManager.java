@@ -136,9 +136,6 @@ public class SimulationManager {
 
             fbo.unbindFrameBuffer();
         }
-
-        GL43.glEnable(GL43.GL_DEPTH_TEST);
-        GL43.glClear(GL43.GL_DEPTH_BUFFER_BIT | GL43.GL_COLOR_BUFFER_BIT);
     }
 
 

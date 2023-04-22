@@ -388,33 +388,30 @@ public class Editor {
 //        ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
         if (ImGui.begin("Apiary", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize)) {
 
-            ImGui.columns(2, "Editor");
-            ImGui.setColumnWidth(0, Math.max(256, ImGui.getColumnWidth()));
-            if(initialize){
-                ImGui.setColumnWidth(0, 256);
-            }
-            ImGui.beginChild("Simulation Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse| ImGuiWindowFlags.AlwaysAutoResize);
-            renderSimulationEditor();
-            ImGui.endChild();
-
-            ImGui.nextColumn();
-            ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
-            node_editor_width = ImGui.getWindowWidth();
-            node_editor_height = ImGui.getWindowHeight();
-            if(!SimulationManager.getInstance().hasActiveSimulation()) {
-                renderNodeEditor();
+            if(Keyboard.getInstance().isKeyPressed(GLFW_KEY_F) && SimulationManager.getInstance().hasActiveSimulation()) {
+                // Full screen
+                ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
             }else{
-                ImGui.image(SimulationManager.getInstance().getSimulationTexture(), node_editor_width, node_editor_height);
-            }
-            ImGui.endChild();
+                ImGui.columns(2, "Editor");
+                ImGui.setColumnWidth(0, Math.max(256, ImGui.getColumnWidth()));
+                if (initialize) {
+                    ImGui.setColumnWidth(0, 256);
+                }
+                ImGui.beginChild("Simulation Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize);
+                renderSimulationEditor();
+                ImGui.endChild();
 
-//            if(SimulationManager.getInstance().hasActiveSimulation()){
-////                ImGui.setWindowFocus("Simulation");
-//                if(ImGui.begin("Simulation")){
-//                    ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
-//                }
-//                ImGui.end();
-//            }
+                ImGui.nextColumn();
+                ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
+                node_editor_width = ImGui.getWindowWidth();
+                node_editor_height = ImGui.getWindowHeight();
+                if (!SimulationManager.getInstance().hasActiveSimulation()) {
+                    renderNodeEditor();
+                } else {
+                    ImGui.image(SimulationManager.getInstance().getSimulationTexture(), node_editor_width, node_editor_height);
+                }
+                ImGui.endChild();
+            }
 
             ImGui.end();
         }

@@ -22,6 +22,14 @@ public enum FunctionDirective {
         (stack, params) -> String.format("abs(%s)", params[0])
     ),
 
+    ABSOLUTE_DISTANCE("@absolute_distance",
+        new String[]{
+            "vec_a",
+            "vec_b"
+        },
+        (stack, params) -> String.format("abs(distance(%s , %s))", params[0], params[1])
+    ),
+
     ADD("@add",
         new String[]{
             "A",
@@ -170,6 +178,14 @@ public enum FunctionDirective {
         (stack, params) -> String.format("%s %s = %s ;\n", params[0], params[1], params[2])
     ),
 
+    DISTANCE("@distance",
+        new String[]{
+            "vec_a",
+            "vec_b"
+        },
+        (stack, params) -> String.format("distance(%s , %s)", params[0], params[1])
+    ),
+
     DIV("@div",
         new String[]{
             "A",
@@ -199,6 +215,16 @@ public enum FunctionDirective {
             "A",
         },
         (stack, params) -> String.format("floor(%s)", params[0])
+    ),
+
+    FOR_EACH("@for_each",
+        new String[]{
+            "iterator_variable_name",
+            "iteration_start",
+            "iteration_count",
+            "iteration_logic"
+        },
+        (stack, params) -> String.format("for(int %s = %s; %s < %s; %s++){\n%s\n}\n", params[0], params[1], params[0], params[2], params[0], params[3])
     ),
 
     GET("@get",

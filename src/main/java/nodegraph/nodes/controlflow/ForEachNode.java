@@ -1,6 +1,7 @@
 package nodegraph.nodes.controlflow;
 
 import com.google.gson.*;
+import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
@@ -16,9 +17,11 @@ import java.util.LinkedList;
 
 public class ForEachNode extends Node {
 
+    private static final String ITERATOR_VARIABLE_NAME = "agent_index_";
+
     private AgentNode agent = null;
 
-    private final OutflowPin body;
+    private final OutflowPin agent_instance;
     private final OutflowPin then;
 
     private int current_iteration_x = 0;
@@ -42,9 +45,8 @@ public class ForEachNode extends Node {
         //
         super.setWidth(256);
 
-        //TODO maybe change instance to agent_id
+        agent_instance = super.addOutputPin("instance", GLDataType.INT);
         then = super.addOutflowPin("then");
-        body = super.addOutflowPin("body");
     }
 
     @Override
@@ -107,23 +109,13 @@ public class ForEachNode extends Node {
             ImGui.endCombo();
         }
 
-        // Render the controls to adjust the kernel size.
-//        ImGui.setNextItemWidth(this.width / 2.0f);
-//        ImGui.inputInt("##"+super.getID()+"_kernel_width", kernel_width);
-//        ImGui.sameLine();
-//        ImGui.setNextItemWidth(this.width / 2.0f);
-//        ImGui.inputInt("##"+super.getID()+"_kernel_height", kernel_height);
-//        ImGui.setNextItemWidth(this.width / 2.0f);
-//        ImGui.checkbox("Ignore Self", ignore_self);
-//        ImGui.sameLine();
-//        ImGui.setNextItemWidth(this.width / 2.0f);
-//        if(ImGui.button("Edit Kernel")){
-//            // TODO popup
-//        }
-
         ImGui.image(0, this.width, 2);
         // Render the agent attributes
         if (!(agent == null)) {
+            // Index
+            super.renderOutputAttribute(agent_instance.getAttributeName());
+
+            // Direct properties of the agent
             for(OutflowPin outflow : super.getNodeOutflowPins()){
                 if(agent.hasPinWithName(outflow.getAttributeName())) {
                     super.renderOutputAttribute(outflow.getAttributeName());
@@ -134,7 +126,6 @@ public class ForEachNode extends Node {
         // Now we need to render a divider
         ImGui.image(0, this.width, 2);
         super.renderOutputAttribute(then.getAttributeName());
-        super.renderOutputAttribute(body.getAttributeName());
     }
 
     public void setAgent(AgentNode agent) {
@@ -158,6 +149,31 @@ public class ForEachNode extends Node {
 
     @Override
     public void transpile(JsonArray evaluation_stack) {
+
+        // Compute the logic for the
+        JsonArray for_loop_data = new JsonArray();
+
+        for_loop_data.add(this.getIterationVariableName());
+        for_loop_data.add("0");
+        for_loop_data.add(this.agent.getAgentInstances()+"");
+        JsonArray iteration_logic = new JsonArray();
+        if(this.getOutflow().isConnected()) {
+            super.getOutflow().getConnection().getParent().transpile(iteration_logic);
+        }
+        for_loop_data.add(iteration_logic);
+        for_loop_data.add(FunctionDirective.FOR_EACH.getNodeID());
+
+        // Push the data used to generate our for_loop to the evaluation_stack
+        evaluation_stack.add(for_loop_data);
+
+        // Push the continued evaluation onto the stack.
+        if(then.isConnected()){
+            JsonArray then_data = new JsonArray();
+            then.getConnection().getParent().transpile(then_data);
+            evaluation_stack.add(then_data);
+        }
+
+
         // Reset state
 //        this.current_iteration_x = 0;
 //        this.current_iteration_y = 0;
@@ -201,10 +217,30 @@ public class ForEachNode extends Node {
 
     @Override
     public JsonElement getValueOfPin(OutflowPin outflow) {
-        if (!(agent == null) && body.isConnected()) {
+        if (!(agent == null) && outflow.isConnected()) {
+
+            if(agent.hasPinWithName(outflow.getAttributeName())){
+                // Agent Read
+                JsonArray agent_read_reference = new JsonArray();
+                agent_read_reference.add(this.agent.getTitle()); // First we say which agent we are reference
+                agent_read_reference.add(getIterationVariableName());
+                agent_read_reference.add(outflow.getAttributeName()); // Which property we are getting.
+                agent_read_reference.add(FunctionDirective.AGENT_READ.getNodeID()); // Get the reference to the AgentRead function directive.
+
+                return agent_read_reference;
+            }
+
+            // If we are accessing the agent_instance
+            if(outflow.equals(agent_instance)){
+                return new JsonPrimitive(getIterationVariableName());
+            }
 
         }
 
         return JsonNull.INSTANCE;
+    }
+
+    private String getIterationVariableName(){
+        return String.format("%s%s", ITERATOR_VARIABLE_NAME, this.getReferenceID());
     }
 }

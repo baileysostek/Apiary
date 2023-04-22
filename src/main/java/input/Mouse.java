@@ -8,6 +8,9 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
+import util.EasingUtils;
+import util.EnumInterpolation;
+import util.MathUtil;
 
 import java.nio.DoubleBuffer;
 import java.util.HashMap;
@@ -34,8 +37,12 @@ public class Mouse {
     private int mouse_x = 0;
     private int mouse_y = 0;
 
+    private float mouse_scroll_target_x = 1f;
+    private float mouse_scroll_target_y = 1f;
     private float mouse_scroll_x = 1f;
     private float mouse_scroll_y = 1f;
+
+    private float easing_delta = 0;
 
     private final Vector2i vec_mouse_position = new Vector2i();
 
@@ -66,11 +73,13 @@ public class Mouse {
         });
 
         GLFW.glfwSetScrollCallback(Apiary.getWindowPointer(), (long window, double xoffset, double yoffset) -> {
-            // Default for Engine opperation
-            mouse_scroll_x += (float) xoffset;
-            mouse_scroll_x = Math.max(mouse_scroll_x, 1f);
-            mouse_scroll_y += (float) yoffset;
-            mouse_scroll_y = Math.max(mouse_scroll_y, 1f);
+            // Default for Engine operation
+            mouse_scroll_target_x += (float) xoffset;
+            mouse_scroll_target_x = Math.max(mouse_scroll_target_x, 1f);
+            mouse_scroll_target_y += (float) yoffset;
+            mouse_scroll_target_y = Math.max(mouse_scroll_target_y, 1f);
+
+            easing_delta = 0.0f;
 
             // Process our scroll events
             for(MouseScrollEvent event : mouse_scroll_events){
@@ -94,6 +103,10 @@ public class Mouse {
     }
 
     public void update(double delta){
+
+        // Update easing
+        easing_delta += delta / 100.0f;
+        easing_delta = (float) Math.min(1.0, easing_delta);
 
         // Calculate how much the mouse has moved
         DoubleBuffer buffer_x = BufferUtils.createDoubleBuffer(1);
@@ -121,7 +134,13 @@ public class Mouse {
 
         // Update our Uniform Variables
         u_mouse_pos_pixels.set((int)screen_pos_normalized_device_coords_x, (int)screen_pos_normalized_device_coords_y);
+
+        // Smoothly lerp towards destination
+        mouse_scroll_x = EasingUtils.easeBetween(mouse_scroll_x, mouse_scroll_target_x, easing_delta, EnumInterpolation.EASE_OUT_CUBIC);
+        mouse_scroll_y = EasingUtils.easeBetween(mouse_scroll_y, mouse_scroll_target_y, easing_delta, EnumInterpolation.EASE_OUT_CUBIC);
+
         u_mouse_scroll.set(mouse_scroll_x, mouse_scroll_y);
+
         u_mouse_pressed.set(
             mouseKeys.get(0) ? 1.0f : 0.0f,
             mouseKeys.get(1) ? 1.0f : 0.0f,

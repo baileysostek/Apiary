@@ -84,19 +84,19 @@ public class Apiary {
 
         Editor.initialize();
 
-        // Generate Documentation for the Thesis Writeup
-        System.out.print("\\begin{tabular}{ | m{2cm} | m{4cm}| m{4cm} | } \n");
-        for(Class<? extends Node> template : NodeRegistry.getInstance().getRegisteredNodes()){
-            System.out.print("  \\hline\n");
-            Node node = NodeRegistry.getInstance().getNodeFromClass(template, new JsonObject());
-            // Node info
-            if(node != null){
-                System.out.print(String.format("%s&%s&%s \\\\ \n", node.getTitle(), node.getInputNames(), node.getOutputNames()));
-            }else{
-//                System.err.println("Class could not deserialize:" + template.getName());
-            }
-        }
-        System.out.print("\\end{tabular}");
+//        // Generate Documentation for the Thesis Writeup
+//        System.out.print("\\begin{tabular}{ | m{2cm} | m{4cm}| m{4cm} | } \n");
+//        for(Class<? extends Node> template : NodeRegistry.getInstance().getRegisteredNodes()){
+//            System.out.print("  \\hline\n");
+//            Node node = NodeRegistry.getInstance().getNodeFromClass(template, new JsonObject());
+//            // Node info
+//            if(node != null){
+//                System.out.print(String.format("%s&%s&%s \\\\ \n", node.getTitle(), node.getInputNames(), node.getOutputNames()));
+//            }else{
+////                System.err.println("Class could not deserialize:" + template.getName());
+//            }
+//        }
+//        System.out.print("\\end{tabular}");
 
 //        SimulationManager.getInstance().load("simulations/gol.json");
 //        SimulationManager.getInstance().load("simulations/physarum.jsonc");
@@ -175,10 +175,9 @@ public class Apiary {
     }
 
     private void render(){
-        // Render the simulation itself
-        SimulationManager.getInstance().render();
 
         // Render the UI and controls.
+        SimulationManager.getInstance().render();
         Editor.getInstance().render();
     }
 

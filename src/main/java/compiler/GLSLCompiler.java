@@ -139,12 +139,22 @@ public class GLSLCompiler {
                 {
                     if (top instanceof JsonArray) {
                         JsonArray array = top.getAsJsonArray();
-                        if (array.size() == 1) {
-                            test.push(array.get(0).getAsString());
-                            break loop;
-                        }else{
-                            test.push(transpile(array));
-                            break loop;
+                        // Here we need to handle how to process the next element
+                        while(true){
+                            if (array.size() == 1) {
+                                // Single Element
+                                if(array.get(0).isJsonArray()){
+                                    array = array.get(0).getAsJsonArray();
+                                }else {
+                                    // Not Json Array either object or literal
+                                    test.push(array.get(0).getAsString());
+                                    break loop;
+                                }
+                            }else{
+                                // Complex element
+                                test.push(transpile(array));
+                                break loop;
+                            }
                         }
                     }
                     test.push(top.getAsString());

@@ -154,12 +154,19 @@ public class NodeGraph {
             if(vertex_nodes != null && vertex_nodes.size() > 0) {
                 VertexLogicNode vertex_logic_node = (VertexLogicNode) vertex_nodes.getFirst();
                 Node initializer = getSource(vertex_logic_node);
+
+                // Generate Logic for VertexNode
                 if (initializer instanceof InitializationNode) {
                     // We have an initialization node which leads to the fragment logic, lets serialize that data.
                     JsonArray vertex_logic = new JsonArray();
                     initializer.generateIntermediate(vertex_logic);
                     arguments.add("vertex_logic", vertex_logic);
                 }
+
+                // Determine how many instances we will render
+                arguments.add("instance_count", vertex_logic_node.getInstanceCount());
+
+
             }
         }
         world.add("arguments", arguments);

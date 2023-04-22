@@ -36,12 +36,13 @@ public class LineRenderer {
     "#version 430\n" +
                 "layout (location = 0) in vec3 pos;\n" +
                 "layout (location = 1) in vec3 col;\n" +
+                "uniform vec2 u_mouse_scroll;\n" +
                 "uniform mat4 u_projection_matrix;\n" +
                 "uniform mat4 u_view_matrix;\n" +
                 "out vec3 pass_color;\n" +
                 "void main(){\n" +
                 "pass_color = col;\n" +
-                "gl_Position = u_projection_matrix * u_view_matrix * vec4(pos, 1.0);\n" +
+                "gl_Position = u_projection_matrix * u_view_matrix * vec4(pos * u_mouse_scroll.y, 1.0);\n" +
 //                "gl_Position = vec4(pos, 1.0);\n" +
                 "}\n"
             ),
