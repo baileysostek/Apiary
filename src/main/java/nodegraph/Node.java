@@ -27,9 +27,11 @@ public abstract class Node{
     private static final String INFLOW = "inflow";
     private static final String OUTFLOW = "outflow";
     private static final HashSet<String> RESERVED_NAMES = new HashSet<>(Arrays.asList(new String[]{
-            INFLOW,
-            OUTFLOW,
+        INFLOW,
+        OUTFLOW,
     }));
+
+    private static final HashSet<Integer> used_ids = new HashSet<>();
 
     private static int next_id = 0;
 
@@ -67,12 +69,15 @@ public abstract class Node{
 
     public Node(JsonObject initialization_data){
         // Determine ID
-        this.id = ++next_id;
         if(initialization_data.has("id")){
             this.reference_id = initialization_data.get("id").getAsInt();
         }else{
-            this.reference_id = this.id;
+            this.reference_id = getNextAvailableID();
         }
+        used_ids.add(this.reference_id);
+        this.id = this.reference_id;
+
+        // Now id is guaranteed to be unique and never intersect with a reference id.
 
         if(initialization_data.has("pos_x")){
             this.initial_node_pos_x = initialization_data.get("pos_x").getAsFloat();
@@ -96,6 +101,14 @@ public abstract class Node{
         // Reserve some Pins
         this.inflow = new InflowPin(this, INFLOW, PinType.FLOW);
         this.outflow = new OutflowPin(this, OUTFLOW, PinType.FLOW, null);
+    }
+
+    private int getNextAvailableID() {
+        int next_available_id = ++next_id;
+        while(used_ids.contains(next_available_id)){
+            next_available_id = ++next_id;
+        }
+        return next_available_id;
     }
 
     public final void init(JsonObject initialization_data){
@@ -676,5 +689,7 @@ public abstract class Node{
         }
         this.inflow.disconnect();
         this.outflow.disconnect();
+
+        // Need to remove this ID from the hash-set of used IDs.
     }
 }

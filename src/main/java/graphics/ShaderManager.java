@@ -551,6 +551,7 @@ public class ShaderManager {
             "vec3 world_position = position;\n" +
             "{{include_in_main}}" +
             "{{vertex_source}}"+ // Vertex Source can modify world_position
+            "world_position += position;\n" +
             "pass_position = world_position;\n" +
             "pass_instance_id = instance;\n" +
             "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(world_position * u_mouse_scroll.y, 1.0)) : vec4(world_position, 1.0);\n" +
@@ -620,7 +621,7 @@ public class ShaderManager {
             "uint x_pos = uint(floor(screen_pos.x * u_window_size.x));\n" +
             "uint y_pos = uint(floor(screen_pos.y * u_window_size.y));\n" +
             "uint fragment_index = x_pos + (y_pos * uint(u_window_size.x));\n" +
-            "uint instance = uint(fragment_index);\n" +
+            "uint instance = uint((pass_instance_id > 0) ? pass_instance_id : fragment_index);\n" +
             "{{include_in_main}}" +
             "{{fragment_source}}"+
             "}\n";

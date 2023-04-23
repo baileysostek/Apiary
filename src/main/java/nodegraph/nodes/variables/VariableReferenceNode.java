@@ -10,7 +10,6 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
 import nodegraph.NodeColors;
-import nodegraph.nodes.agent.AgentNode;
 import nodegraph.pin.OutflowPin;
 
 public class VariableReferenceNode extends Node {

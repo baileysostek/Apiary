@@ -306,7 +306,7 @@ public enum FunctionDirective {
         new String[]{
             "A",
             "B",
-            "Delta"
+            "Theta"
         },
         (stack, params) -> String.format("mix(%s, %s, %s)", params[0], params[1], params[2])
     ),

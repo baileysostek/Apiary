@@ -74,6 +74,8 @@ public class Editor {
     private LinkedHashSet<Node> to_select = new LinkedHashSet<>();
     JsonObject serialized_clipboard_data = null;
 
+    private boolean full_screen = false;
+
     private static String save_file = "examples/boids.jsonc";
 
     private Editor(){
@@ -297,6 +299,13 @@ public class Editor {
             graph.saveToFile(path);
         });
 
+        // Fullscreen
+        Keyboard.getInstance().addPressCallback(GLFW_KEY_F, () -> {
+            if(SimulationManager.getInstance().hasActiveSimulation()){
+                this.full_screen = !this.full_screen;
+            }
+        });
+
         // Screenshot
         Keyboard.getInstance().addPressCallback(GLFW.GLFW_KEY_INSERT, () -> {
             if(SimulationManager.getInstance().hasActiveSimulation()){
@@ -312,10 +321,12 @@ public class Editor {
     private void runSimulation() {
         JsonObject simulation_data = this.getNodeGraph().serialize();
         SimulationManager.getInstance().load(simulation_data);
+        this.full_screen = false;
     }
 
     private void stopSimulation(){
         SimulationManager.getInstance().unloadSimulation();
+        this.full_screen = false;
     }
 
     public static void initialize(){
@@ -388,7 +399,7 @@ public class Editor {
 //        ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
         if (ImGui.begin("Apiary", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize)) {
 
-            if(Keyboard.getInstance().isKeyPressed(GLFW_KEY_F) && SimulationManager.getInstance().hasActiveSimulation()) {
+            if(full_screen && SimulationManager.getInstance().hasActiveSimulation()) {
                 // Full screen
                 ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
             }else{

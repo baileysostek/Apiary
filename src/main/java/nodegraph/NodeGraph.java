@@ -259,9 +259,9 @@ public class NodeGraph {
         int node_index = 0;
         for(Node node : nodes){
             int id = ++node_index;
-            node_ids.put(node, id);
+            node_ids.put(node, node.getReferenceID());
             JsonObject node_save_data = node.serializeBase();
-            node_save_data.addProperty("id", id);
+            node_save_data.addProperty("id", node.getReferenceID());
             nodes_array.add(node_save_data);
         }
         serialization_object.add("nodes", nodes_array);

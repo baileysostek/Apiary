@@ -120,7 +120,7 @@ public class DefaultWorld3D extends World{
             // Real 3D
             GL43.glPointSize(3);
             this.vao_3D.bind();
-            GL43.glDrawArraysInstanced(GL43.GL_POINTS, 0, 1, this.instances);
+            GL43.glDrawArraysInstanced(GL43.GL_POINTS, 0, vertices_3D.length / 3, this.instances);
             this.vao_3D.unbind();
         }else{
             // This stage renders an input image to the screen.
