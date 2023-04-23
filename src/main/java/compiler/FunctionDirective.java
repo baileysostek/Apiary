@@ -96,6 +96,20 @@ public enum FunctionDirective {
         (stack, params) -> String.format("%s(%s)", params[1], params[0])
     ),
 
+    CAST_TO_FLOAT("@cast_to_float",
+        new String[]{
+            "value",
+        },
+        (stack, params) -> String.format("float(%s)", params[0])
+    ),
+
+    CAST_TO_INT("@cast_to_int",
+        new String[]{
+            "value",
+        },
+        (stack, params) -> String.format("int(%s)", params[0])
+    ),
+
     CLAMP("@clamp",
         new String[]{
             "value",
@@ -317,6 +331,14 @@ public enum FunctionDirective {
             "B"
         },
         (stack, params) -> String.format("mod(%s,%s)", params[0], params[1])
+    ),
+
+    MOD_I("@mod_i",
+        new String[]{
+            "A",
+            "B"
+        },
+        (stack, params) -> String.format("(%s %% %s)", params[0], params[1])
     ),
 
     MUL("@mul",

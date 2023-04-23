@@ -226,7 +226,7 @@ public class KernelNode extends Node {
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
                 agent_read_index.add(String.format("u_%s_width", this.agent.getTitle()));
                 agent_read_index.add(FunctionDirective.GET.getNodeID());
-                agent_read_index.add(FunctionDirective.MOD.getNodeID());
+                agent_read_index.add(FunctionDirective.MOD_I.getNodeID());
                 // Produces value 0 - width in pixels
 
                 // Y offset
@@ -255,8 +255,8 @@ public class KernelNode extends Node {
 
                 // Convert to screen coordinates
                 agent_read_index.add(FunctionDirective.ADD.getNodeID());
-                agent_read_index.add("uint");
-                agent_read_index.add(FunctionDirective.CAST.getNodeID());
+//                agent_read_index.add("uint");
+//                agent_read_index.add(FunctionDirective.CAST.getNodeID());
 
                 // Agent Read
                 JsonArray agent_read_reference = new JsonArray();

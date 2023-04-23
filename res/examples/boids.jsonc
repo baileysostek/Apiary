@@ -2,8 +2,8 @@
   "nodes": [
     {
       "class": "nodegraph.nodes.pipeline.FragmentLogicNode",
-      "pos_x": 1694.0,
-      "pos_y": 2455.0,
+      "pos_x": 1484.0,
+      "pos_y": 2452.0,
       "id": 1
     },
     {
@@ -14,12 +14,9 @@
     },
     {
       "class": "nodegraph.nodes.vector.Vec4Node",
-      "pos_x": 937.0,
-      "pos_y": 2662.0,
+      "pos_x": 877.0,
+      "pos_y": 2682.0,
       "non_default_values": {
-        "x": "1.0",
-        "y": "1.0",
-        "z": "1.0",
         "w": "1.0"
       },
       "id": 3
@@ -32,7 +29,7 @@
     },
     {
       "agent_name": "boid",
-      "agent_instances": 10000,
+      "agent_instances": 20000,
       "attributes": [
         {
           "name": "pos",
@@ -228,6 +225,9 @@
       "class": "nodegraph.nodes.logic.LessEqualNode",
       "pos_x": 1532.9741,
       "pos_y": 1051.9346,
+      "non_default_values": {
+        "B": ".1"
+      },
       "id": 32
     },
     {
@@ -265,8 +265,8 @@
     },
     {
       "class": "nodegraph.nodes.variables.common.InstanceNode",
-      "pos_x": 2327.9707,
-      "pos_y": 1254.6421,
+      "pos_x": 1255.9706,
+      "pos_y": 1181.6421,
       "id": 37
     },
     {
@@ -621,23 +621,23 @@
     {
       "output_type": "FLOAT",
       "class": "nodegraph.nodes.math.DivNode",
-      "pos_x": 929.47144,
-      "pos_y": 2793.2314,
+      "pos_x": 661.47144,
+      "pos_y": 2692.2314,
       "non_default_values": {
-        "y_pos": "32.0"
+        "y_pos": "64.0"
       },
       "id": 25
     },
     {
       "class": "nodegraph.nodes.vector.DecomposeVec3",
-      "pos_x": 762.5251,
-      "pos_y": 2530.2825,
+      "pos_x": 711.5251,
+      "pos_y": 2528.2825,
       "id": 26
     },
     {
       "class": "nodegraph.nodes.vector.Vec4Node",
-      "pos_x": 938.0,
-      "pos_y": 2530.0,
+      "pos_x": 888.0,
+      "pos_y": 2525.0,
       "non_default_values": {
         "w": "1.0"
       },
@@ -646,22 +646,27 @@
     {
       "output_type": "VEC4",
       "class": "nodegraph.nodes.math.AbsNode",
-      "pos_x": 1171.0,
-      "pos_y": 2588.0,
+      "pos_x": 1057.7507,
+      "pos_y": 2524.7974,
       "id": 80
     },
     {
-      "output_type": "VEC4",
-      "class": "nodegraph.nodes.math.MixNode",
-      "pos_x": 1402.0,
-      "pos_y": 2650.0,
+      "class": "nodegraph.nodes.vector.Vec4Node",
+      "pos_x": 875.0,
+      "pos_y": 2824.0,
+      "non_default_values": {
+        "x": "1.0",
+        "y": "0.0",
+        "z": "0.0",
+        "w": "1.0"
+      },
       "id": 81
     },
     {
-      "reference_uniform_name": "turn",
-      "class": "nodegraph.nodes.variables.UniformReferenceNode",
-      "pos_x": 1319.6371,
-      "pos_y": 1134.19,
+      "output_type": "VEC4",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 1249.7507,
+      "pos_y": 2646.7974,
       "id": 82
     }
   ],
@@ -684,6 +689,36 @@
       "dst": {
         "node_id": 1,
         "attribute_name": "fragment_color"
+      }
+    },
+    {
+      "src": {
+        "node_id": 25,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 3,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 25,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 3,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 25,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 3,
+        "attribute_name": "z"
       }
     },
     {
@@ -988,21 +1023,21 @@
     },
     {
       "src": {
-        "node_id": 82,
-        "attribute_name": "output"
-      },
-      "dst": {
-        "node_id": 32,
-        "attribute_name": "B"
-      }
-    },
-    {
-      "src": {
         "node_id": 30,
         "attribute_name": "then"
       },
       "dst": {
         "node_id": 33,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 27,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 34,
         "attribute_name": "inflow"
       }
     },
@@ -1712,8 +1747,8 @@
         "attribute_name": "Absolute Value"
       },
       "dst": {
-        "node_id": 81,
-        "attribute_name": "A"
+        "node_id": 82,
+        "attribute_name": "x_pos"
       }
     },
     {
@@ -1722,18 +1757,8 @@
         "attribute_name": "vec4"
       },
       "dst": {
-        "node_id": 81,
-        "attribute_name": "B"
-      }
-    },
-    {
-      "src": {
-        "node_id": 25,
-        "attribute_name": "Div"
-      },
-      "dst": {
-        "node_id": 81,
-        "attribute_name": "Theta"
+        "node_id": 82,
+        "attribute_name": "y_pos"
       }
     }
   ]

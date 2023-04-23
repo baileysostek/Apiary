@@ -40,7 +40,7 @@ public class IndexToXY extends Node {
             out.add(index.getValue());
             out.add("window_width_pixels");
             out.add(FunctionDirective.GET.getNodeID());
-            out.add(FunctionDirective.MOD.getNodeID());
+            out.add(FunctionDirective.MOD_I.getNodeID());
 
             return out;
         }

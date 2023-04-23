@@ -1,4 +1,6 @@
 {
+  "width": 32000,
+  "height": 32000,
   "nodes": [
     {
       "agent_name": "gol_cell",
@@ -192,50 +194,39 @@
       "id": 24
     },
     {
-      "class": "nodegraph.nodes.random.RandomBoolNode",
-      "pos_x": 1642.0,
-      "pos_y": 803.0,
-      "id": 25
-    },
-    {
-      "class": "nodegraph.nodes.controlflow.ConditionalNode",
-      "pos_x": 771.2734,
-      "pos_y": -715.9751,
-      "non_default_values": {
-        "condition": "true"
-      },
-      "id": 26
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 632.0,
+      "pos_y": 1273.0,
+      "id": 84
     },
     {
       "agent_reference": 1,
-      "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 1050.2733,
-      "pos_y": -749.9751,
-      "non_default_values": {
-        "instance": "instance",
-        "alive": "true"
-      },
-      "id": 27
+      "class": "nodegraph.nodes.agent.AgentCountNode",
+      "pos_x": 209.0,
+      "pos_y": 1443.0,
+      "id": 85
     },
     {
-      "agent_reference": 1,
-      "class": "nodegraph.nodes.agent.AgentWriteNode",
-      "pos_x": 1050.2733,
-      "pos_y": -638.9751,
+      "class": "nodegraph.nodes.vector.Vec4Node",
+      "pos_x": 879.98303,
+      "pos_y": 1176.1682,
       "non_default_values": {
-        "instance": "instance",
-        "alive": "false"
+        "w": "1.0"
       },
-      "id": 28
+      "id": 86
     },
     {
-      "step_index": 0,
-      "use_agent": true,
-      "agent_reference": 1,
-      "class": "nodegraph.nodes.controlflow.StepNode",
-      "pos_x": 530.2734,
-      "pos_y": -715.9751,
-      "id": 29
+      "class": "nodegraph.nodes.math.CastToFloatNode",
+      "pos_x": 402.0,
+      "pos_y": 1438.0,
+      "id": 83
+    },
+    {
+      "class": "nodegraph.nodes.math.CastToFloatNode",
+      "pos_x": 394.0,
+      "pos_y": 1357.0,
+      "id": 94
     }
   ],
   "links": [
@@ -491,32 +482,72 @@
     },
     {
       "src": {
-        "node_id": 29,
-        "attribute_name": "outflow"
+        "node_id": 94,
+        "attribute_name": "Cast to Float"
       },
       "dst": {
-        "node_id": 26,
-        "attribute_name": "inflow"
+        "node_id": 84,
+        "attribute_name": "x_pos"
       }
     },
     {
       "src": {
-        "node_id": 26,
-        "attribute_name": "then"
+        "node_id": 83,
+        "attribute_name": "Cast to Float"
       },
       "dst": {
-        "node_id": 27,
-        "attribute_name": "inflow"
+        "node_id": 84,
+        "attribute_name": "y_pos"
       }
     },
     {
       "src": {
-        "node_id": 26,
-        "attribute_name": "else"
+        "node_id": 84,
+        "attribute_name": "Div"
       },
       "dst": {
-        "node_id": 28,
-        "attribute_name": "inflow"
+        "node_id": 86,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 84,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 86,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 84,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 86,
+        "attribute_name": "z"
+      }
+    },
+    {
+      "src": {
+        "node_id": 85,
+        "attribute_name": "count"
+      },
+      "dst": {
+        "node_id": 83,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 9,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 94,
+        "attribute_name": "theta"
       }
     }
   ]
