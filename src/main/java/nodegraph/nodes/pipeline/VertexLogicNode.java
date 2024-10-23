@@ -5,7 +5,6 @@ import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
 import nodegraph.NodeColors;

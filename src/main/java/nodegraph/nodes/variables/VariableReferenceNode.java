@@ -6,11 +6,13 @@ import com.google.gson.JsonObject;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
 import nodegraph.NodeColors;
 import nodegraph.pin.OutflowPin;
+
+import java.util.Collection;
 
 public class VariableReferenceNode extends Node {
 
@@ -51,15 +53,18 @@ public class VariableReferenceNode extends Node {
         ImGui.pushItemWidth(this.width);
         String variable_name = (variable_reference != null) ? variable_reference.getVariableName() : "Select a Variable";
         if (ImGui.beginCombo("##"+super.getID()+"_type", variable_name, ImGuiComboFlags.None)){
-            for (Node node : Editor.getInstance().getNodeGraph().getNodesOfType(DefineNode.class)) {
-                DefineNode variable_node = (DefineNode) node;
+            Collection<Node> nodes = Editor.getInstance().getNodeGraph().getNodesOfType(DefineNode.class);
+            if(nodes != null && nodes.size() > 0) {
+                for (Node node : nodes) {
+                    DefineNode variable_node = (DefineNode) node;
 
-                boolean is_selected = variable_node.getVariableName().equals(variable_name);
-                if (ImGui.selectable(variable_node.getVariableName(), is_selected)){
-                    this.setVariable(variable_node);
-                }
-                if (is_selected) {
-                    ImGui.setItemDefaultFocus();
+                    boolean is_selected = variable_node.getVariableName().equals(variable_name);
+                    if (ImGui.selectable(variable_node.getVariableName(), is_selected)) {
+                        this.setVariable(variable_node);
+                    }
+                    if (is_selected) {
+                        ImGui.setItemDefaultFocus();
+                    }
                 }
             }
             ImGui.endCombo();
@@ -78,7 +83,7 @@ public class VariableReferenceNode extends Node {
         }else{
             output.setType(GLDataType.INT);
         }
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(output.getDataType()));
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.getTypeColor(output.getDataType()));
     }
 
     @Override

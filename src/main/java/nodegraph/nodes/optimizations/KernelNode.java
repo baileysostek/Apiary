@@ -7,7 +7,7 @@ import editor.Editor;
 import graphics.GLDataType;
 import graphics.ShaderManager;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiComboFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -42,8 +42,8 @@ public class KernelNode extends Node {
 
         super.setTitle("Convolution Kernel");
 
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.AGENT_NODE_TITLE);
-        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.AGENT_NODE_TITLE);
+        this.applyStyle(ImNodesCol.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
 
         super.setNodeProcessesOwnFlow(true);
 

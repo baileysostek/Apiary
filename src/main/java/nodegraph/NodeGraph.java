@@ -42,7 +42,7 @@ public class NodeGraph {
     private ImInt simulation_height = new ImInt();
 
     // Variables to use for this simulation instance
-    private Class<? extends World> world_template = DefaultWorld3D.class;
+    private Class<? extends World> world_template = DefaultWorld2D.class;
 
 
     public NodeGraph() {

@@ -3,7 +3,7 @@ package nodegraph.nodes.vector;
 import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import nodegraph.NodeColors;
 import nodegraph.nodes.TemplateNode;
 
@@ -16,6 +16,6 @@ public class Vec2Node extends TemplateNode {
         addInputPin("x", GLDataType.FLOAT);
         addInputPin("y", GLDataType.FLOAT);
 
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(GLDataType.VEC2));
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.getTypeColor(GLDataType.VEC2));
     }
 }

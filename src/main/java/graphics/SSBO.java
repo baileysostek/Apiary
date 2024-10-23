@@ -109,6 +109,10 @@ public class SSBO extends GLStruct{
      */
     public String generateGLSL(boolean isRead){
 
+        if (this.getAttributes().size() <= 0) {
+            return "";
+        }
+
         HashMap<String, Object> substitutions = new HashMap<>();
         substitutions.put("version", ShaderManager.getInstance().getGLTargetVersion());
         substitutions.put("binding_location_read", (isRead ? this.location_read : this.location_write));

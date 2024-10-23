@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import compiler.FunctionDirective;
 import graphics.GLDataType;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import nodegraph.Node;
 import nodegraph.NodeColors;
 import nodegraph.pin.OutflowPin;
@@ -24,7 +24,7 @@ public class BuiltInVariableNode extends Node {
         // No flow controls
         super.disableFlowControls();
 
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(type));
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.getTypeColor(type));
         this.setWidth(128);
 //        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.WHITE);
     }

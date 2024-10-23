@@ -8,7 +8,7 @@ import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
 import nodegraph.NodeColors;
@@ -111,7 +111,7 @@ public class IncrementNode extends Node {
         if(reference != null){
             value.setType(reference.getVariableDataType());
         }
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(this.reference.getVariableDataType()));
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.getTypeColor(this.reference.getVariableDataType()));
     }
 
 }

@@ -7,7 +7,7 @@ import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
@@ -95,8 +95,8 @@ public abstract class Node{
         this.outflow_id = -1;
 
         // Push some nice colors
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.CODE_NODE_TITLE);
-        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.CODE_NODE_TITLE_HOVER);
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.CODE_NODE_TITLE);
+        this.applyStyle(ImNodesCol.TitleBarHovered, NodeColors.CODE_NODE_TITLE_HOVER);
 
         // Reserve some Pins
         this.inflow = new InflowPin(this, INFLOW, PinType.FLOW);
@@ -134,8 +134,10 @@ public abstract class Node{
         save_object.addProperty("class", this.getClass().getName());
 
         // We are going to encode the screen position of this object.
-        save_object.addProperty("pos_x", ImNodes.getNodeGridSpacePosX(id)); // The 100 here is kindof a magic number. For whatever reason when you set a node to 0,0 it appears at 100,100
-        save_object.addProperty("pos_y", ImNodes.getNodeGridSpacePosY(id));
+        //TODO: This should return a float
+        ImNodes.getNodeEditorSpacePos(id);
+//        save_object.addProperty("pos_x", ImNodes.getNodeGridSpacePosX(id)); // The 100 here is kindof a magic number. For whatever reason when you set a node to 0,0 it appears at 100,100
+//        save_object.addProperty("pos_y", ImNodes.getNodeGridSpacePosY(id));
 
         // Add any default values
         JsonObject non_default_values = new JsonObject();
@@ -353,7 +355,7 @@ public abstract class Node{
         if(this.inputs.containsKey(param_name)) {
             InflowPin pin = this.inputs.get(param_name);
             pin.setRenderedThisFrame(true);
-            ImNodes.pushColorStyle(ImNodesColorStyle.Pin, pin.getColor());
+            ImNodes.pushColorStyle(ImNodesCol.Pin, pin.getColor());
             ImNodes.beginInputAttribute(pin.getID(), pin.getShape());
             render_override.render();
             ImNodes.endInputAttribute();
@@ -372,7 +374,7 @@ public abstract class Node{
         if(this.outputs.containsKey(out_name)) {
             OutflowPin outflow = this.outputs.get(out_name);
             outflow.setRenderedThisFrame(true);
-            ImNodes.pushColorStyle(ImNodesColorStyle.Pin, outflow.getColor());
+            ImNodes.pushColorStyle(ImNodesCol.Pin, outflow.getColor());
             ImNodes.beginOutputAttribute(outflow.getID(), outflow.getShape());
             render_override.render();
             ImNodes.endOutputAttribute();
@@ -382,7 +384,7 @@ public abstract class Node{
 
     private void renderFlowControls(){
         if((inputs.size() > 0 || force_render_inflow) && inflow_controls_enabled) {
-            ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
+            ImNodes.pushColorStyle(ImNodesCol.Pin, NodeColors.WHITE);
             ImNodes.beginInputAttribute(inflow_id, getInflow().isConnected() ? ImNodesPinShape.TriangleFilled : ImNodesPinShape.Triangle);
             ImNodes.endInputAttribute();
             ImNodes.popColorStyle();
@@ -394,7 +396,7 @@ public abstract class Node{
         }
         if((outputs.size() > 0 || force_render_outflow) && outflow_controls_enabled) {
             ImGui.sameLine();
-            ImNodes.pushColorStyle(ImNodesColorStyle.Pin, NodeColors.WHITE);
+            ImNodes.pushColorStyle(ImNodesCol.Pin, NodeColors.WHITE);
             ImNodes.beginOutputAttribute(outflow_id, getOutflow().isConnected() ? ImNodesPinShape.TriangleFilled : ImNodesPinShape.Triangle);
             ImNodes.endOutputAttribute();
             ImNodes.popColorStyle();

@@ -1,0 +1,432 @@
+{
+  "width": 640,
+  "height": 480,
+  "nodes": [
+    {
+      "class": "nodegraph.nodes.controlflow.InitializationNode",
+      "pos_x": 382.0,
+      "pos_y": 246.0,
+      "id": 73
+    },
+    {
+      "class": "nodegraph.nodes.pipeline.FragmentLogicNode",
+      "pos_x": 1305.0,
+      "pos_y": 1058.0,
+      "id": 1
+    },
+    {
+      "class": "nodegraph.nodes.controlflow.InitializationNode",
+      "pos_x": 381.0,
+      "pos_y": 1056.0,
+      "id": 2
+    },
+    {
+      "agent_name": "ray",
+      "agent_instances": 0,
+      "attributes": [
+        {
+          "name": "pos",
+          "type": "VEC3"
+        },
+        {
+          "name": "dir",
+          "type": "VEC3"
+        }
+      ],
+      "class": "nodegraph.nodes.agent.AgentNode",
+      "pos_x": 2045.0,
+      "pos_y": 248.0,
+      "id": 3
+    },
+    {
+      "class": "nodegraph.nodes.vector.Vec4Node",
+      "pos_x": 1109.0,
+      "pos_y": 1078.0,
+      "non_default_values": {
+        "w": "1"
+      },
+      "id": 4
+    },
+    {
+      "agent_reference": 3,
+      "class": "nodegraph.nodes.agent.AgentReadNode",
+      "pos_x": 562.0,
+      "pos_y": 1089.0,
+      "id": 5
+    },
+    {
+      "class": "nodegraph.nodes.vector.DecomposeVec3",
+      "pos_x": 880.0,
+      "pos_y": 1134.0,
+      "id": 6
+    },
+    {
+      "class": "nodegraph.nodes.vector.Vec3Node",
+      "pos_x": 1857.0,
+      "pos_y": 348.0,
+      "non_default_values": {
+        "z": "0"
+      },
+      "id": 7
+    },
+    {
+      "variable_name": "fov",
+      "variable_type": "FLOAT",
+      "variable_value": "70",
+      "class": "nodegraph.nodes.variables.DefineNode",
+      "pos_x": 858.0,
+      "pos_y": 246.0,
+      "id": 10
+    },
+    {
+      "class": "nodegraph.nodes.optimizations.IndexToXY",
+      "pos_x": 643.0,
+      "pos_y": 445.0,
+      "id": 11
+    },
+    {
+      "reference_uniform_name": "u_simulation_width",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 656.0,
+      "pos_y": 529.0,
+      "id": 83
+    },
+    {
+      "reference_uniform_name": "u_simulation_height",
+      "class": "nodegraph.nodes.variables.UniformReferenceNode",
+      "pos_x": 647.0,
+      "pos_y": 617.0,
+      "id": 84
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 1070.0,
+      "pos_y": 483.0,
+      "id": 85
+    },
+    {
+      "class": "nodegraph.nodes.math.CastToFloatNode",
+      "pos_x": 879.0,
+      "pos_y": 528.0,
+      "id": 86
+    },
+    {
+      "class": "nodegraph.nodes.math.CastToFloatNode",
+      "pos_x": 881.0,
+      "pos_y": 452.0,
+      "id": 93
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.SubNode",
+      "pos_x": 1248.0,
+      "pos_y": 485.0,
+      "non_default_values": {
+        "y_pos": "0.5"
+      },
+      "id": 94
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 1418.0,
+      "pos_y": 485.0,
+      "non_default_values": {
+        "y_pos": "2.0"
+      },
+      "id": 95
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.DivNode",
+      "pos_x": 1070.0,
+      "pos_y": 641.0,
+      "id": 96
+    },
+    {
+      "class": "nodegraph.nodes.math.CastToFloatNode",
+      "pos_x": 879.0,
+      "pos_y": 686.0,
+      "id": 97
+    },
+    {
+      "class": "nodegraph.nodes.math.CastToFloatNode",
+      "pos_x": 881.0,
+      "pos_y": 610.0,
+      "id": 98
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.SubNode",
+      "pos_x": 1248.0,
+      "pos_y": 643.0,
+      "non_default_values": {
+        "y_pos": "0.5"
+      },
+      "id": 99
+    },
+    {
+      "output_type": "FLOAT",
+      "class": "nodegraph.nodes.math.MulNode",
+      "pos_x": 1418.0,
+      "pos_y": 643.0,
+      "non_default_values": {
+        "y_pos": "2.0"
+      },
+      "id": 100
+    }
+  ],
+  "links": [
+    {
+      "src": {
+        "node_id": 2,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 1,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 4,
+        "attribute_name": "vec4"
+      },
+      "dst": {
+        "node_id": 1,
+        "attribute_name": "fragment_color"
+      }
+    },
+    {
+      "src": {
+        "node_id": 10,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 3,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 7,
+        "attribute_name": "vec3"
+      },
+      "dst": {
+        "node_id": 3,
+        "attribute_name": "dir"
+      }
+    },
+    {
+      "src": {
+        "node_id": 6,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 4,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 6,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 4,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 6,
+        "attribute_name": "z"
+      },
+      "dst": {
+        "node_id": 4,
+        "attribute_name": "z"
+      }
+    },
+    {
+      "src": {
+        "node_id": 2,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 5,
+        "attribute_name": "instance"
+      }
+    },
+    {
+      "src": {
+        "node_id": 5,
+        "attribute_name": "dir"
+      },
+      "dst": {
+        "node_id": 6,
+        "attribute_name": "input"
+      }
+    },
+    {
+      "src": {
+        "node_id": 95,
+        "attribute_name": "Mul"
+      },
+      "dst": {
+        "node_id": 7,
+        "attribute_name": "x"
+      }
+    },
+    {
+      "src": {
+        "node_id": 100,
+        "attribute_name": "Mul"
+      },
+      "dst": {
+        "node_id": 7,
+        "attribute_name": "y"
+      }
+    },
+    {
+      "src": {
+        "node_id": 73,
+        "attribute_name": "outflow"
+      },
+      "dst": {
+        "node_id": 10,
+        "attribute_name": "inflow"
+      }
+    },
+    {
+      "src": {
+        "node_id": 73,
+        "attribute_name": "instance"
+      },
+      "dst": {
+        "node_id": 11,
+        "attribute_name": "index"
+      }
+    },
+    {
+      "src": {
+        "node_id": 93,
+        "attribute_name": "Cast to Float"
+      },
+      "dst": {
+        "node_id": 85,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 86,
+        "attribute_name": "Cast to Float"
+      },
+      "dst": {
+        "node_id": 85,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 83,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 86,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 11,
+        "attribute_name": "x"
+      },
+      "dst": {
+        "node_id": 93,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 85,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 94,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 94,
+        "attribute_name": "Sub"
+      },
+      "dst": {
+        "node_id": 95,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 98,
+        "attribute_name": "Cast to Float"
+      },
+      "dst": {
+        "node_id": 96,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 97,
+        "attribute_name": "Cast to Float"
+      },
+      "dst": {
+        "node_id": 96,
+        "attribute_name": "y_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 84,
+        "attribute_name": "output"
+      },
+      "dst": {
+        "node_id": 97,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 11,
+        "attribute_name": "y"
+      },
+      "dst": {
+        "node_id": 98,
+        "attribute_name": "theta"
+      }
+    },
+    {
+      "src": {
+        "node_id": 96,
+        "attribute_name": "Div"
+      },
+      "dst": {
+        "node_id": 99,
+        "attribute_name": "x_pos"
+      }
+    },
+    {
+      "src": {
+        "node_id": 99,
+        "attribute_name": "Sub"
+      },
+      "dst": {
+        "node_id": 100,
+        "attribute_name": "x_pos"
+      }
+    }
+  ]
+}

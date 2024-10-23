@@ -8,7 +8,7 @@ import compiler.FunctionDirective;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
 import nodegraph.NodeColors;
@@ -28,8 +28,8 @@ public class AgentReadNode extends Node {
 
         super.setTitle("Agent Read");
 
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.AGENT_NODE_TITLE);
-        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.AGENT_NODE_TITLE);
+        this.applyStyle(ImNodesCol.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
 
         super.disableFlowControls();
 

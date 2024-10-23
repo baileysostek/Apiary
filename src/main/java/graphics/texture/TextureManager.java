@@ -182,13 +182,10 @@ public class TextureManager {
                 int output_h = Math.max(1, input_h / 2);
 
                 ByteBuffer output_pixels = MemoryUtil.memAlloc(output_w * output_h * 4);
-                STBImageResize.stbir_resize_uint8_generic(
+                STBImageResize.stbir_resize_uint8_srgb(
                         input_pixels, input_w, input_h, input_w * 4,
                         output_pixels, output_w, output_h, output_w * 4,
-                        4, 3, STBImageResize.STBIR_FLAG_ALPHA_PREMULTIPLIED,
-                        STBImageResize.STBIR_EDGE_CLAMP,
-                        STBImageResize.STBIR_FILTER_DEFAULT,
-                        STBImageResize.STBIR_COLORSPACE_SRGB
+                        STBImageResize.STBIR_TYPE_FLOAT
                 );
 
                 MemoryUtil.memFree(input_pixels);

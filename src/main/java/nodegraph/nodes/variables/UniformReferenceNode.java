@@ -11,7 +11,7 @@ import graphics.GLDataType;
 import graphics.ShaderManager;
 import graphics.Uniform;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
 import nodegraph.NodeColors;
@@ -81,7 +81,7 @@ public class UniformReferenceNode extends Node {
         }else{
             output.setType(GLDataType.INT);
         }
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.getTypeColor(output.getDataType()));
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.getTypeColor(output.getDataType()));
     }
 
     @Override

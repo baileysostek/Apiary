@@ -47,7 +47,7 @@
     },
     {
       "agent_name": "physarum",
-      "agent_instances": 1000000,
+      "agent_instances": 100000,
       "attributes": [
         {
           "name": "pos",
@@ -534,22 +534,25 @@
       "id": 72
     },
     {
-      "agent_name": "asdfsa",
-      "agent_instances": 0,
-      "attributes": [
-        {
-          "name": "dfsdf",
-          "type": "SAMPLER_2D"
-        },
-        {
-          "name": "f",
-          "type": "FLOAT"
-        }
-      ],
-      "class": "nodegraph.nodes.agent.AgentNode",
-      "pos_x": 1885.0,
-      "pos_y": 577.0,
-      "id": 73
+      "class": "nodegraph.nodes.vector.Vec3Node",
+      "pos_x": 1616.6279,
+      "pos_y": 239.10596,
+      "non_default_values": {
+        "x": "1.0",
+        "y": "1.0",
+        "z": "1.0"
+      },
+      "id": 83
+    },
+    {
+      "class": "nodegraph.nodes.vector.Vec2Node",
+      "pos_x": 1235.0,
+      "pos_y": 281.0,
+      "non_default_values": {
+        "x": "0.0",
+        "y": "0.0"
+      },
+      "id": 84
     }
   ],
   "links": [
@@ -615,8 +618,8 @@
     },
     {
       "src": {
-        "node_id": 26,
-        "attribute_name": "Sub"
+        "node_id": 84,
+        "attribute_name": "vec2"
       },
       "dst": {
         "node_id": 7,
@@ -635,7 +638,7 @@
     },
     {
       "src": {
-        "node_id": 30,
+        "node_id": 83,
         "attribute_name": "vec3"
       },
       "dst": {

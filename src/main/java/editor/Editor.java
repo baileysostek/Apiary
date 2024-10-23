@@ -8,11 +8,16 @@ import graphics.texture.TextureManager;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImGuiViewport;
+import imgui.assertion.ImAssertCallback;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.ImNodesContext;
+import imgui.extension.imnodes.ImNodesEditorContext;
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
+import imgui.extension.nodeditor.NodeEditor;
+import imgui.extension.nodeditor.NodeEditorConfig;
+import imgui.extension.nodeditor.NodeEditorContext;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
@@ -42,7 +47,8 @@ public class Editor {
     private final ImGuiIO io;
     private final ImGuiImplGl3 imgui_impl;
 
-    private final ImNodesContext CONTEXT = new ImNodesContext();
+    private final ImNodesEditorContext CONTEXT = ImNodes.editorContextCreate();
+    private final NodeEditorContext CONTEXT_V2 = NodeEditor.createEditor();
 
     private static final ImBoolean SHOW = new ImBoolean(true);
 
@@ -95,7 +101,6 @@ public class Editor {
         SVG_LOAD = TextureManager.getInstance().loadSVG("textures/svg/" + "download.svg");
         SVG_TRASH = TextureManager.getInstance().loadSVG("textures/svg/" + "trash-alt.svg");
 
-
         //Now that we have our instance
         // Initialize ImGuiIO config
         io = ImGui.getIO();
@@ -106,6 +111,9 @@ public class Editor {
         io.addConfigFlags(ImGuiConfigFlags.ViewportsEnable);    // Enable Multi-Viewport / Platform Windows
         io.addConfigFlags(ImGuiConfigFlags.DpiEnableScaleFonts);
         io.setBackendFlags(ImGuiBackendFlags.HasMouseCursors); // Mouse cursors to display while resizing windows etc.
+
+        io.getFonts().addFontDefault();
+        io.getFonts().build();
 
         io.setBackendPlatformName("imgui_java_impl_glfw"); // For clarity reasons
         io.setBackendRendererName("imgui_java_impl_lwjgl"); // For clarity reason
@@ -332,7 +340,7 @@ public class Editor {
     public static void initialize(){
         if(instance == null){
             instance = new Editor();
-            instance.load(save_file);
+//            instance.load(save_file);
         }
     }
 
@@ -373,6 +381,7 @@ public class Editor {
 
     public void render(){
         ImGui.newFrame();
+        imgui_impl.newFrame();
 
         renderEditorWindow();
 
@@ -391,12 +400,15 @@ public class Editor {
     }
 
     private void renderEditorWindow(){
+
+
+//        ImGui.showDemoWindow();
+
         ImGuiViewport viewport = ImGui.getMainViewport();
         ImGui.setNextWindowPos(viewport.getWorkPosX(), viewport.getWorkPosY());
         ImGui.setNextWindowSize(viewport.getWorkSizeX(), viewport.getWorkSizeY());
         ImGui.setNextWindowViewport(viewport.getParentViewportId());
 
-//        ImGui.pushStyleVar(ImGuiStyleVar.WindowRounding, 0.0f);
         if (ImGui.begin("Apiary", SHOW, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoResize)) {
 
             if(full_screen && SimulationManager.getInstance().hasActiveSimulation()) {
@@ -417,7 +429,7 @@ public class Editor {
                 node_editor_width = ImGui.getWindowWidth();
                 node_editor_height = ImGui.getWindowHeight();
                 if (!SimulationManager.getInstance().hasActiveSimulation()) {
-                    renderNodeEditor();
+                    renderNodeEditorV2();
                 } else {
                     ImGui.image(SimulationManager.getInstance().getSimulationTexture(), node_editor_width, node_editor_height);
                 }
@@ -426,12 +438,13 @@ public class Editor {
 
             ImGui.end();
         }
+
     }
 
     private void renderSimulationEditor(){
         // First we compute some memory stuff
         long free_gpu_memory = ShaderManager.getInstance().getAvailableGPUMemoryInBytes();
-        String free_memory_string = numBytesToString(free_gpu_memory);
+        String free_memory_string = StringUtils.numBytesToString(free_gpu_memory);
 
         long predicted_memory = 0;
         if(!SimulationManager.getInstance().hasActiveSimulation()){
@@ -444,7 +457,7 @@ public class Editor {
                 }
             }
         }
-        String predicted_memory_string = numBytesToString(predicted_memory);
+        String predicted_memory_string = StringUtils.numBytesToString(predicted_memory);
 
         // First we have the Apiary logo and some file options.
         ImGui.image(APIARY_TEXTURE_ID, 32, 32);
@@ -550,7 +563,7 @@ public class Editor {
             ImGui.separator();
 
             // Compute the free and used memory
-            String used_memory_string = numBytesToString(memory);
+            String used_memory_string = StringUtils.numBytesToString(memory);
 
             int longest_string_length = Math.max(free_memory_string.length(), used_memory_string.length());
 
@@ -558,14 +571,15 @@ public class Editor {
             ImGui.textColored(0, 255, 0, 255, String.format("Free Memory:%s", StringUtils.padStart(free_memory_string, longest_string_length, " ")));
         } else {
             ImGui.text(String.format("Estimated Simulation Size:%s", predicted_memory_string));
+            ImGui.textColored(0, 255, 0, 255, String.format("Free Memory:%s", StringUtils.padStart(free_memory_string, Math.max(predicted_memory_string.length(), free_memory_string.length()), " ")));
         }
     }
 
-    private String numBytesToString(long num_bytes){
-        String[] suffix = new String[]{"bytes", "KB", "MB", "GB", "TB"};
-        String num_bytes_string = String.valueOf(num_bytes);
-        int index = Math.min(suffix.length, Math.max(0, (num_bytes_string.length() - 1) / 3));
-        return String.format("%.3f %s", num_bytes / Math.pow(10, index * 3), suffix[index]);
+    private void renderNodeEditorV2(){
+        NodeEditor.setCurrentEditor(CONTEXT_V2);
+        NodeEditor.begin("NodeEditor");
+
+        NodeEditor.end();
     }
 
     private void renderNodeEditor(){
@@ -620,7 +634,7 @@ public class Editor {
     }
 
     public void onShutdown() {
-        imgui_impl.dispose();
+        imgui_impl.shutdown();
         ImGui.destroyContext();
     }
 

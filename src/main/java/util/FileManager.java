@@ -31,7 +31,7 @@ public class FileManager {
 
             String comma_delimited_accepted_extensions = String.join(",", accepted_extensions);
 
-            String resource_path = checkResult(NativeFileDialog.NFD_OpenDialog(comma_delimited_accepted_extensions, base_path, pp), pp);
+            String resource_path = checkResult(NativeFileDialog.NFD_OpenDialog(pp, null, base_path), pp);
             return resource_path.replaceAll("\\\\", "/");
         }catch (Exception e){
             e.printStackTrace();
@@ -46,7 +46,7 @@ public class FileManager {
 
             String comma_delimited_accepted_extensions = String.join(",", accepted_extensions);
 
-            return checkResult(NativeFileDialog.NFD_SaveDialog(comma_delimited_accepted_extensions, path, pp), pp);
+            return checkResult(NativeFileDialog.NFD_SaveDialog(pp, null, comma_delimited_accepted_extensions, path), pp);
         }catch (Exception e){
             e.printStackTrace();
         }

@@ -7,7 +7,7 @@ import com.google.gson.JsonPrimitive;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiComboFlags;
 import nodegraph.Node;
 import nodegraph.NodeColors;
@@ -26,8 +26,8 @@ public class AgentCountNode extends Node {
 
         this.disableFlowControls();
 
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.RED);
-        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.RED);
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.RED);
+        this.applyStyle(ImNodesCol.TitleBarHovered, NodeColors.RED);
 
         count = this.addOutputPin("count", GLDataType.INT);
     }

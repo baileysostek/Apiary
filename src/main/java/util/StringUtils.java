@@ -22,6 +22,8 @@ public class StringUtils {
     private static String RESOURCES_DIRECTORY = "/res/";
     private static String NATIVES_DIRECTORY   = "/natives/";
 
+    private static String[] SUFFIX = new String[]{"bytes", "KB", "MB", "GB", "TB"};
+
     private static String PATH = new File("").getAbsolutePath().replaceAll("\\\\", "/");
 
     public static byte[] loadByteArray(String filePath){
@@ -233,6 +235,12 @@ public class StringUtils {
         }
 
         return template;
+    }
+
+    public static String numBytesToString(long num_bytes){
+        String num_bytes_string = String.valueOf(num_bytes);
+        int index = Math.min(SUFFIX.length, Math.max(0, (num_bytes_string.length() - 1) / 3));
+        return String.format("%.3f %s", num_bytes / Math.pow(10, index * 3), SUFFIX[index]);
     }
 
 }

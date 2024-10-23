@@ -5,7 +5,7 @@ import core.Apiary;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiComboFlags;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImInt;
@@ -33,8 +33,8 @@ public class AgentNode extends Node {
     public AgentNode(JsonObject initialization_data){
         super(initialization_data);
 
-        this.applyStyle(ImNodesColorStyle.TitleBar, NodeColors.AGENT_NODE_TITLE);
-        this.applyStyle(ImNodesColorStyle.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
+        this.applyStyle(ImNodesCol.TitleBar, NodeColors.AGENT_NODE_TITLE);
+        this.applyStyle(ImNodesCol.TitleBarHovered, NodeColors.AGENT_NODE_TITLE_HIGHLIGHT);
 
         if(initialization_data.has("agent_name")){
             super.setTitle(initialization_data.get("agent_name").getAsString());

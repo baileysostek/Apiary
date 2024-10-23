@@ -26,7 +26,7 @@ public class GLSLCompiler {
     private HashSet<String> required_uniforms = new HashSet<>();
     private HashSet<String> required_imports = new HashSet<>();
     private HashSet<String> required_imports_in_main = new HashSet<>();
-    private HashSet<String> requried_agents = new HashSet<>();
+    private HashSet<String> required_agents = new HashSet<>();
 
     public static void initialize(){
         if(instance == null){
@@ -185,12 +185,12 @@ public class GLSLCompiler {
     }
 
     public void requireAgent(String agent_type) {
-        this.requried_agents.add(agent_type);
+        this.required_agents.add(agent_type);
     }
 
     public HashMap<String, SSBO> getRequiredAgents() {
         HashMap<String, SSBO> required_agents = new HashMap<>();
-        for(String agent_name : this.requried_agents){
+        for(String agent_name : this.required_agents){
             if(SimulationManager.getInstance().hasAgent(agent_name)){
                 required_agents.put(agent_name, SimulationManager.getInstance().getAgent(agent_name));
             }
@@ -199,7 +199,7 @@ public class GLSLCompiler {
     }
 
     public void clearPersistentData() {
-        this.requried_agents.clear();
+        this.required_agents.clear();
         this.required_uniforms.clear();
         this.required_imports_in_main.clear();
         this.required_imports.clear();

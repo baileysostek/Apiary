@@ -7,7 +7,8 @@ import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.ImNodesStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import nodegraph.Node;
@@ -40,7 +41,7 @@ public class InflowPin extends Pin {
 
     @Override
     public void render() {
-        ImNodes.pushColorStyle(ImNodesColorStyle.Pin, getColor());
+        ImNodes.pushColorStyle(ImNodesCol.Pin, getColor());
         ImNodes.beginInputAttribute(getID(), getShape());
         if(this.isConnected()){
             // Render the name
@@ -142,9 +143,9 @@ public class InflowPin extends Pin {
                     color = NodeColors.getTypeColor(this.getLink().getDataType());
                 }
 
-                ImNodes.pushColorStyle(ImNodesColorStyle.Link, color);
-                ImNodes.pushColorStyle(ImNodesColorStyle.LinkHovered, color);
-                ImNodes.pushColorStyle(ImNodesColorStyle.LinkSelected, color);
+                ImNodes.pushColorStyle(ImNodesCol.Link, color);
+                ImNodes.pushColorStyle(ImNodesCol.LinkHovered, color);
+                ImNodes.pushColorStyle(ImNodesCol.LinkSelected, color);
                 ImNodes.link(Editor.getInstance().getNextAvailableID(), link.getID(), this.getID());
                 ImNodes.popColorStyle();
                 ImNodes.popColorStyle();

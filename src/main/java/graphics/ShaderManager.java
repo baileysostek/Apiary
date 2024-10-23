@@ -133,7 +133,9 @@ public class ShaderManager {
             "uniform mat4 u_view_matrix;\n" +
             "uniform int u_view_mode;\n" +
             "out vec3 pass_position;\n" +
+            "flat out int pass_instance_id;\n" +
             "void main(void){\n" +
+            "pass_instance_id = gl_InstanceID;\n" +
             "pass_position = position;\n" +
             "gl_Position = (u_view_mode == 1) ? (u_projection_matrix * u_view_matrix * vec4(position * u_mouse_scroll.y, 1.0)) : vec4(position, 1.0);\n" +
             "}\n";

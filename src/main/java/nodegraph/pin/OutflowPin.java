@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import graphics.GLDataType;
 import imgui.ImGui;
 import imgui.extension.imnodes.ImNodes;
-import imgui.extension.imnodes.flag.ImNodesColorStyle;
+import imgui.extension.imnodes.flag.ImNodesCol;
 import nodegraph.Node;
 import nodegraph.NodeColors;
 
@@ -104,7 +104,7 @@ public class OutflowPin extends Pin{
 
     @Override
     public void render() {
-        ImNodes.pushColorStyle(ImNodesColorStyle.Pin, getColor());
+        ImNodes.pushColorStyle(ImNodesCol.Pin, getColor());
         ImNodes.beginOutputAttribute(getID(), getShape());
         ImGui.text(getAttributeName());
         ImNodes.endOutputAttribute();

@@ -31,7 +31,7 @@ public class FontLoader {
         int result = 0;
         try {
             ByteBuffer fontBuffer = StringUtils.loadRaw(StringUtils.getPathToResources() + filePath, 450 * 1024);
-            result = NanoVG.nvgCreateFontMem(vg, id, fontBuffer, 0);
+            result = NanoVG.nvgCreateFontMem(vg, id, fontBuffer, true);
             loadedFonts.put(id, fontBuffer);
         } catch (IOException e) {
             e.printStackTrace();
