@@ -78,7 +78,8 @@ public class NodeGraph {
             node.renderNode();
         }
         for(Node node : nodes.values()){
-            node.renderLinks();
+            //TODO
+//            node.renderLinks();
         }
     }
 

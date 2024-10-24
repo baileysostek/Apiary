@@ -9,6 +9,7 @@ import graphics.ui.FontLoader;
 import input.Keyboard;
 import input.Mouse;
 import compiler.GLSLCompiler;
+import nodegraph.ImNodeAddons;
 import nodegraph.Node;
 import nodegraph.NodeRegistry;
 import org.lwjgl.*;
@@ -73,6 +74,7 @@ public class Apiary {
         GLSLCompiler.initialize();
         SimulationManager.initialize();
         FontLoader.initialize();
+        ImNodeAddons.initialize();
 //        FontLoader.getInstance().loadFont("font/Roboto/Roboto-Regular.ttf", "roboto");
 //        FontLoader.getInstance().loadFont("font/Roboto_Mono/static/RobotoMono-Regular.ttf", "roboto_mono");
 

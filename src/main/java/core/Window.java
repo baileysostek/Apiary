@@ -39,11 +39,12 @@ public class Window {
         glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_SOFT_FULLSCREEN, GLFW_TRUE);
 
         //Figure out the monitor size
         GLFWVidMode video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-        width = (int) (video_mode.width() * 0.99f);
+        width = video_mode.width() - 1;
         height = video_mode.height();
         aspect_ratio = (float)width / (float)height;
 

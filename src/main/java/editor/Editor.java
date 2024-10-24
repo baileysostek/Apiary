@@ -18,6 +18,7 @@ import imgui.extension.imnodes.flag.ImNodesMiniMapLocation;
 import imgui.extension.nodeditor.NodeEditor;
 import imgui.extension.nodeditor.NodeEditorConfig;
 import imgui.extension.nodeditor.NodeEditorContext;
+import imgui.extension.nodeditor.flag.NodeEditorPinKind;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
@@ -27,6 +28,7 @@ import nodegraph.Node;
 import nodegraph.NodeGraph;
 import nodegraph.nodes.agent.AgentNode;
 import nodegraph.pin.Pin;
+import nodegraph.pin.PinType;
 import org.lwjgl.glfw.GLFW;
 import simulation.SimulationManager;
 import util.FileManager;
@@ -47,8 +49,7 @@ public class Editor {
     private final ImGuiIO io;
     private final ImGuiImplGl3 imgui_impl;
 
-    private final ImNodesEditorContext CONTEXT = ImNodes.editorContextCreate();
-    private final NodeEditorContext CONTEXT_V2 = NodeEditor.createEditor();
+    private final NodeEditorContext CONTEXT = NodeEditor.createEditor();
 
     private static final ImBoolean SHOW = new ImBoolean(true);
 
@@ -110,6 +111,7 @@ public class Editor {
         io.addConfigFlags(ImGuiConfigFlags.DockingEnable);      // Enable Docking
         io.addConfigFlags(ImGuiConfigFlags.ViewportsEnable);    // Enable Multi-Viewport / Platform Windows
         io.addConfigFlags(ImGuiConfigFlags.DpiEnableScaleFonts);
+        io.addConfigFlags(ImGuiConfigFlags.DpiEnableScaleViewports);
         io.setBackendFlags(ImGuiBackendFlags.HasMouseCursors); // Mouse cursors to display while resizing windows etc.
 
         io.getFonts().addFontDefault();
@@ -385,6 +387,8 @@ public class Editor {
 
         renderEditorWindow();
 
+        ImGui.showDemoWindow();
+
         // Actually render the frame
         ImGui.render();
         imgui_impl.renderDrawData(ImGui.getDrawData());
@@ -400,10 +404,6 @@ public class Editor {
     }
 
     private void renderEditorWindow(){
-
-
-//        ImGui.showDemoWindow();
-
         ImGuiViewport viewport = ImGui.getMainViewport();
         ImGui.setNextWindowPos(viewport.getWorkPosX(), viewport.getWorkPosY());
         ImGui.setNextWindowSize(viewport.getWorkSizeX(), viewport.getWorkSizeY());
@@ -426,10 +426,27 @@ public class Editor {
 
                 ImGui.nextColumn();
                 ImGui.beginChild("Node Editor", -1, -1, false, ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoCollapse);
+                ImGui.beginTabBar("Simulation Steps");
+                if (ImGui.tabItemButton("Initialization")) {
+
+                }
+                if (ImGui.tabItemButton("Step 1")) {
+
+                }
+                if (ImGui.tabItemButton("Step 2")) {
+
+                }
+                if (ImGui.tabItemButton("Fragment")) {
+
+                }
+                if (ImGui.tabItemButton("+", ImGuiTabItemFlags.Trailing)) {
+
+                }
+                ImGui.endTabBar();
                 node_editor_width = ImGui.getWindowWidth();
                 node_editor_height = ImGui.getWindowHeight();
                 if (!SimulationManager.getInstance().hasActiveSimulation()) {
-                    renderNodeEditorV2();
+                    renderNodeEditor();
                 } else {
                     ImGui.image(SimulationManager.getInstance().getSimulationTexture(), node_editor_width, node_editor_height);
                 }
@@ -576,34 +593,37 @@ public class Editor {
     }
 
     private void renderNodeEditorV2(){
-        NodeEditor.setCurrentEditor(CONTEXT_V2);
-        NodeEditor.begin("NodeEditor");
+//        NodeEditor.setCurrentEditor(CONTEXT_V2);
+//        NodeEditor.begin("NodeEditor");
+        NodeEditor.beginNode(1L);
+        ImGui.text("Node Test");
 
-        NodeEditor.end();
+        NodeEditor.beginPin(2L, NodeEditorPinKind.Output);
+        ImGui.text("Pin Name");
+        NodeEditor.endPin();
+//        NodeEditor.endNode();
+//        NodeEditor.end();
     }
 
     private void renderNodeEditor(){
-        ImNodes.editorContextSet(CONTEXT);
-        ImNodes.beginNodeEditor();
+        NodeEditor.setCurrentEditor(CONTEXT);
+        NodeEditor.begin("Node Editor");
 
         graph.render();
 
         final boolean isEditorHovered = ImNodes.isEditorHovered();
+        NodeEditor.end();
 
-        ImNodes.miniMap(.1f, ImNodesMiniMapLocation.BottomRight);
-
-        ImNodes.endNodeEditor();
-
-        int[] selected_nodes_ids = new int[ImNodes.numSelectedNodes()];
-        HashSet<Integer> selected_nodes_hashed = new HashSet<>(selected_nodes_ids.length);
-        ImNodes.getSelectedNodes(selected_nodes_ids);
-        ImNodes.clearNodeSelection();
+//        int[] selected_nodes_ids = new int[NodeEditor.selectedN];
+//        HashSet<Integer> selected_nodes_hashed = new HashSet<>(selected_nodes_ids.length);
+//        ImNodes.getSelectedNodes(selected_nodes_ids);
+//        ImNodes.clearNodeSelection();
         this.selected_nodes.clear();
-        for(int node_id : selected_nodes_ids) {
-            if (node_id >= 0){
-                this.select(this.graph.getNodeFromID(node_id));
-            }
-        }
+//        for(int node_id : selected_nodes_ids) {
+//            if (node_id >= 0){
+//                this.select(this.graph.getNodeFromID(node_id));
+//            }
+//        }
         for(Node node : to_select) {
             if (node.getID() >= 0){
                 this.select(node);
@@ -611,15 +631,15 @@ public class Editor {
         }
         to_select.clear();
         // After our graph renders we know that our nodes are in the node editor so this code can be executed without crashing.
-        for (Node selected_node : selected_nodes) {
-            try {
-                if (!selected_nodes_hashed.contains(selected_node.getID())) {
-                    ImNodes.selectNode(selected_node.getID());
-                }
-            }catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        for (Node selected_node : selected_nodes) {
+//            try {
+//                if (!selected_nodes_hashed.contains(selected_node.getID())) {
+////                    ImNodes.selectNode(selected_node.getID());
+//                }
+//            }catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         add_node_popup.render();
     }

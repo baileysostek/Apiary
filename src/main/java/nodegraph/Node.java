@@ -6,9 +6,13 @@ import com.google.gson.JsonObject;
 import editor.Editor;
 import graphics.GLDataType;
 import imgui.ImGui;
+import imgui.ImVec2;
+import imgui.ImVec4;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
+import imgui.extension.nodeditor.NodeEditor;
+import imgui.extension.nodeditor.flag.NodeEditorStyleColor;
 import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 import nodegraph.pin.Pin;
@@ -260,43 +264,61 @@ public abstract class Node{
         }
     }
 
+    private void renderTitleBar() {
+        // Start Group for Title bar
+        ImGui.beginGroup();
+        // Title bar as BOLD
+        float originalFontSize = ImGui.getFont().getScale();
+        ImGui.getFont().setScale(originalFontSize * 2);
+        ImGui.pushFont(ImGui.getFont());
+        ImGui.textColored(0, 0, 0, 255, this.title);
+        ImGui.getFont().setScale(originalFontSize);
+        ImGui.popFont();
+        ImGui.endGroup();
+    }
+
+    private void renderPins() {
+        ImGui.beginGroup();
+
+        ImGui.endGroup();
+    }
+
     public final void renderNode(){
 
-        // associate each pin with a unique id
+        // Every time we render a frame we need to do this.
+        // Based on which pins and nodes were removed last frame we need to associate each pin with a unique id.
         regeneratePinIDs();
 
         // Push all of our style attributes onto the stack.
-        this.colors.forEach((style, color) -> {
-            ImNodes.pushColorStyle(style, color);
-        });
+//        this.colors.forEach((style, color) -> {
+//            ImNodes.pushColorStyle(style, color);
+//        });
 
         // Set the position of this node
 //        ImNodes.editorResetPanning(node_pos_x, node_pos_y);
 
+        // Set Formatting
+        NodeEditor.pushStyleColor(NodeEditorStyleColor.NodeBg, new ImVec4(255, 255, 255, 64));
+        NodeEditor.pushStyleColor(NodeEditorStyleColor.NodeBorder,  new ImVec4(255, 255, 255, 64));
         // Begin a node.
-        ImNodes.beginNode(this.getID());
-        ImGui.beginGroup();
-        // Title Bar
-        ImNodes.beginNodeTitleBar();
-        renderFlowControls();
-        ImGui.textColored(255, 255, 255, 255, this.title);
-        ImNodes.endNodeTitleBar();
+        NodeEditor.beginNode(this.getID());
+        // Render the Title bar
+        renderTitleBar();
+        // Render a Divider to separate the title from the node content.
 
-        render();
 
-        ImGui.endGroup();
 
-        ImNodes.endNode();
+        NodeEditor.endNode();
 
         // Now we can position the node
         if (initial_render) {
-            ImNodes.setNodeGridSpacePos(getID(), initial_node_pos_x, initial_node_pos_y);
+            NodeEditor.setNodePosition(getID(), new ImVec2(initial_node_pos_x, initial_node_pos_y));
             initial_render = false;
         }
 
-        this.colors.forEach((style, color) -> {
-            ImNodes.popColorStyle();
-        });
+//        this.colors.forEach((style, color) -> {
+//            ImNodes.popColorStyle();
+//        });
         // Reset the camera.
 //        ImNodes.editorResetPanning(0, 0);
     }
