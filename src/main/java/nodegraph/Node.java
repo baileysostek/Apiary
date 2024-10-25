@@ -5,9 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import editor.Editor;
 import graphics.GLDataType;
-import imgui.ImGui;
-import imgui.ImVec2;
-import imgui.ImVec4;
+import imgui.*;
 import imgui.extension.imnodes.ImNodes;
 import imgui.extension.imnodes.flag.ImNodesCol;
 import imgui.extension.imnodes.flag.ImNodesPinShape;
@@ -17,6 +15,7 @@ import nodegraph.pin.InflowPin;
 import nodegraph.pin.OutflowPin;
 import nodegraph.pin.Pin;
 import nodegraph.pin.PinType;
+import org.lwjgl.opengl.GL43;
 
 import java.util.*;
 
@@ -267,6 +266,8 @@ public abstract class Node{
     private void renderTitleBar() {
         // Start Group for Title bar
         ImGui.beginGroup();
+        // Set the size
+        ImGui.dummy(this.width, 0);
         // Title bar as BOLD
         float originalFontSize = ImGui.getFont().getScale();
         ImGui.getFont().setScale(originalFontSize * 2);
@@ -277,9 +278,49 @@ public abstract class Node{
         ImGui.endGroup();
     }
 
+    /**
+     * Render the flow of this node. This is the portion of the node below the title, that governs controlflow.
+     */
+    private void renderFlow() {
+        ImGui.beginGroup();
+        ImGui.textColored(0, 0, 0, 255, "Flow");
+        ImGui.endGroup();
+    }
+
     private void renderPins() {
         ImGui.beginGroup();
+        ImDrawList drawList = ImGui.getWindowDrawList();
+        // Step 1 is to determine how many rows we need to have
 
+        float PADDING = 4f;
+        float FONT_WIDTH = 12f;
+        float THICKNESS = 2f;
+
+        int rows = Math.max(this.inputs.size(), this.outputs.size());
+//        ImGui.columns(2);
+//        ImGui.nextColumn();
+
+        for (String inputName : this.inputs.keySet()) {
+            InflowPin inflowPin =  this.inputs.get(inputName);
+            NodeEditor.beginPin(inflowPin.getID(), inflowPin.getShape());
+            ImGui.dummy(FONT_WIDTH, FONT_WIDTH + (2 * PADDING));
+            if (inflowPin.isConnected()) {
+                // If connected draw a Filled Circle
+                drawList.addCircleFilled(ImGui.getCursorPos().plus(FONT_WIDTH, -FONT_WIDTH), FONT_WIDTH - (2 * THICKNESS), inflowPin.getColor(), 32);
+            } else {
+                drawList.addCircle(ImGui.getCursorPos().plus(FONT_WIDTH, -FONT_WIDTH), FONT_WIDTH - (2 * THICKNESS), inflowPin.getColor(), 32, THICKNESS);
+            }
+            ImGui.sameLine();
+            ImGui.setCursorPos(ImGui.getCursorPos().plus(PADDING, PADDING));
+            ImGui.textColored(0, 0, 0, 255, inputName);
+            ImGui.sameLine();
+            ImGui.dummy(PADDING, 0);
+            NodeEditor.endPin();
+        }
+        for (String outputName : this.outputs.keySet()) {
+            ImGui.textColored(0, 0, 0, 255, outputName);
+            drawList.addCircle(ImGui.getCursorPos().plus(ImGui.calcTextSizeX(outputName), 0), 16.0f, ImColor.rgb("#0000FF"), 32, 8);
+        }
         ImGui.endGroup();
     }
 
@@ -298,14 +339,16 @@ public abstract class Node{
 //        ImNodes.editorResetPanning(node_pos_x, node_pos_y);
 
         // Set Formatting
-        NodeEditor.pushStyleColor(NodeEditorStyleColor.NodeBg, new ImVec4(255, 255, 255, 64));
-        NodeEditor.pushStyleColor(NodeEditorStyleColor.NodeBorder,  new ImVec4(255, 255, 255, 64));
+//        NodeEditor.pushStyleColor(NodeEditorStyleColor.NodeBg, new ImVec4(255, 255, 255, 64));
+//        NodeEditor.pushStyleColor(NodeEditorStyleColor.NodeBorder,  new ImVec4(255, 255, 255, 64));
         // Begin a node.
         NodeEditor.beginNode(this.getID());
         // Render the Title bar
         renderTitleBar();
         // Render a Divider to separate the title from the node content.
-
+        renderFlow();
+        // Render the Pins
+        renderPins();
 
 
         NodeEditor.endNode();

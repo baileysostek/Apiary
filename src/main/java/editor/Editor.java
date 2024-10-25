@@ -5,9 +5,7 @@ import core.Apiary;
 import graphics.ShaderManager;
 import graphics.texture.FilterOption;
 import graphics.texture.TextureManager;
-import imgui.ImGui;
-import imgui.ImGuiIO;
-import imgui.ImGuiViewport;
+import imgui.*;
 import imgui.assertion.ImAssertCallback;
 import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
@@ -73,6 +71,8 @@ public class Editor {
     final int SVG_SAVE;
     final int SVG_LOAD;
     final int SVG_TRASH;
+    final int SVG_CIRCLE;
+    final int SVG_CIRCLE_SOLID;
 
     private AddNodePopup add_node_popup;
 
@@ -101,6 +101,9 @@ public class Editor {
         SVG_SAVE = TextureManager.getInstance().loadSVG("textures/svg/" + "save.svg");
         SVG_LOAD = TextureManager.getInstance().loadSVG("textures/svg/" + "download.svg");
         SVG_TRASH = TextureManager.getInstance().loadSVG("textures/svg/" + "trash-alt.svg");
+        SVG_CIRCLE = TextureManager.getInstance().loadSVG("textures/svg/" + "circle.svg");
+        SVG_CIRCLE_SOLID = TextureManager.getInstance().loadSVG("textures/svg/" + "circle-solid.svg");
+
 
         //Now that we have our instance
         // Initialize ImGuiIO config
@@ -114,7 +117,8 @@ public class Editor {
         io.addConfigFlags(ImGuiConfigFlags.DpiEnableScaleViewports);
         io.setBackendFlags(ImGuiBackendFlags.HasMouseCursors); // Mouse cursors to display while resizing windows etc.
 
-        io.getFonts().addFontDefault();
+//        io.getFonts().addFontDefault();
+        io.getFonts().addFontFromFileTTF(StringUtils.getPathToResources() + "font/Roboto/Roboto-Regular.ttf", 32);
         io.getFonts().build();
 
         io.setBackendPlatformName("imgui_java_impl_glfw"); // For clarity reasons
@@ -416,7 +420,7 @@ public class Editor {
                 ImGui.image(SimulationManager.getInstance().getSimulationTexture(), ImGui.getContentRegionAvailX(), ImGui.getContentRegionAvailY());
             }else{
                 ImGui.columns(2, "Editor");
-                ImGui.setColumnWidth(0, Math.max(256, ImGui.getColumnWidth()));
+//                ImGui.setColumnWidth(0, Math.max(256, ImGui.getColumnWidth()));
                 if (initialize) {
                     ImGui.setColumnWidth(0, 256);
                 }
@@ -552,14 +556,14 @@ public class Editor {
 
         ImGui.separator();
 
-        // Render all simulation controls from nodegraph
-        if(getNodeGraph() != null){
-            this.graph.renderSimulationParamEditor();
-        }
-
-        // Render our uniforms
-        UniformManager.getInstance().render(null);
-        ImGui.separator();
+//        // Render all simulation controls from nodegraph
+//        if(getNodeGraph() != null){
+//            this.graph.renderSimulationParamEditor();
+//        }
+//
+//        // Render our uniforms
+//        UniformManager.getInstance().render(null);
+//        ImGui.separator();
 
         // Metrics?
         if(SimulationManager.getInstance().hasActiveSimulation()){
@@ -644,6 +648,10 @@ public class Editor {
         add_node_popup.render();
     }
 
+    private void renderOpenDocuments(){
+
+    }
+
     public void load(String file_path){
         this.save_file = file_path;
         this.graph.load(file_path);
@@ -699,8 +707,20 @@ public class Editor {
         }
     }
 
+    public int getApiaryLogoIcon() {
+        return this.APIARY_TEXTURE_ID;
+    }
+
     public int getTrashIcon() {
         return this.SVG_TRASH;
+    }
+
+    public int getCircleIcon() {
+        return this.SVG_CIRCLE;
+    }
+
+    public int getCircleSolidIcon() {
+        return this.SVG_CIRCLE_SOLID;
     }
 
     public long getAllocatedScreenSize(){

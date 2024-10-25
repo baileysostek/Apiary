@@ -86,6 +86,8 @@ public class Apiary {
 
         Editor.initialize();
 
+        Editor.getInstance().load("examples/boids.jsonc");
+
 //        // Generate Documentation for the Thesis Writeup
 //        System.out.print("\\begin{tabular}{ | m{2cm} | m{4cm}| m{4cm} | } \n");
 //        for(Class<? extends Node> template : NodeRegistry.getInstance().getRegisteredNodes()){
