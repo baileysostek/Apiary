@@ -1,0 +1,47 @@
+{
+  "world":{
+    "name":"Conway's Game of Life",
+    "type":"AgentGrid2D",
+    "arguments":{
+      "fragment_logic":["out_color", ["0.0", "0.0", "0.0", "1.0", "@vec4", "1.0", "1.0", "1.0", "0.1", "@vec4", "pheromone", "fragment_index", "concentration", "@agent_read", "@mix"], "@set"]
+//      "fragment_logic":["out_color", ["vec4(", "boid", "fragment_index", "pos", "@agent_read", ", 1.0, 1.0)"], "@set"]
+    }
+  },
+  "agents":{
+    "boid":{
+      "instances": 100,
+      "attributes":{
+        "pos":{
+          "type":"vec2",
+          "default_value":["gl_LocalInvocationIndex", "100.0", "@div", "1.0", "@add", "0.0","@vec2"]
+//          "default_value":["@random_float", "2.0", "@mul", "1.0", "@sub", "@random_float", "2.0", "@mul", "1.0", "@sub", "@vec2"]
+          //          "default_value":["float(x_pos)", "10.0", "@div", "float(y_pos)", "10.0", "@div", "@vec2"]
+        },
+        "vel":{
+          "type":"vec2",
+          "default_value":[
+            //            "float", "angle", "@random_float", "@pi", "2.0", "@mul", "@mul", "@define",
+            //            "angle", "@sin", "angle", "@cos", "@vec2"
+            "vec2(-1.0,0.0)"
+          ]
+        }
+      }
+    },
+    "pheromone":{
+      "attributes":{
+        "concentration":{
+          "type":"float",
+          "default_value":["0.0"]
+        }
+      }
+    }
+  },
+  "steps":[
+    {
+      "for_each": "boid",
+      "logic":[
+        "pheromone", [["boid", "gl_LocalInvocationIndex", "pos.x", "@agent_read"], "1.0", "@add", "2.0", "@div", "gl_LocalInvocationIndex", "@get", "@mul", ["boid", "gl_LocalInvocationIndex", "pos.y", "@agent_read"], "1.0", "@add", "2.0", "@div", "u_window_size.y", "@get", "@mul", "@xy_to_screen_index"], "concentration", "1.0", "@agent_write"
+      ]
+    }
+  ]
+}

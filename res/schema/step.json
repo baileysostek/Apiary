@@ -1,0 +1,14 @@
+{
+  "name": "step_schema",
+  "fields":{
+    "agent":{
+      "type":"JsonArray"
+    },
+    "logic":{
+      "type":"JsonArray"
+    },
+    "out":{
+      "type":"JsonPrimitive"
+    }
+  }
+}
